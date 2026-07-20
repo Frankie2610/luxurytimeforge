@@ -1,0 +1,39 @@
+{
+  "rules": {
+    "timeforge": {
+      "products": {
+        ".read": true,
+        ".indexOn": ["vendor", "status", "handle", "published"],
+        "$sku": {
+          ".write": "auth != null && false",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','sku','handle','title','status','published','images','price','inventory','variants','createdAt','updatedAt']) && newData.child('id').val() == $sku && newData.child('sku').val() == $sku && newData.child('title').isString() && newData.child('handle').isString() && newData.child('images').hasChildren() && newData.child('price').isNumber() && newData.child('inventory').isNumber())"
+        }
+      },
+      "collections": {".read": true, ".write": "auth != null && false"},
+      "themes": {
+        "published": {".read": true, ".write": "auth != null && false"},
+        "draft": {".read": "auth != null && false", ".write": "auth != null && false"},
+        "versions": {".read": "auth != null && false", ".write": "auth != null && false"}
+      },
+      "customers": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "orders": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "discounts": {".read": true, ".write": "auth != null && false"},
+      "inventoryAdjustments": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "activities": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "orderWorkflows": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "customerSegments": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "draftOrders": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "returnRequests": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "settings": {"integrations": {".read": "auth != null && false", ".write": "auth != null && false"}},
+      "blogPosts": {".read": true, ".write": "auth != null && false"},
+      "newsletterSubscribers": {
+        ".read": "auth != null && false",
+        "$subscriberId": {
+          ".write": "(auth != null && false) || !data.exists()",
+          ".validate": "newData.hasChildren(['id','email','source','status','createdAt','updatedAt']) && newData.child('id').val() == $subscriberId && newData.child('email').isString() && newData.child('email').val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/) && (newData.child('status').val() == 'active' || newData.child('status').val() == 'unsubscribed')"
+        }
+      }
+    }
+  }
+}
+

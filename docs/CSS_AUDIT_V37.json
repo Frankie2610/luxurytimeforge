@@ -1,0 +1,457 @@
+{
+  "generatedAt": "2026-07-18T21:47:39.227Z",
+  "files": 30,
+  "sourceBytes": 649990,
+  "importantDeclarations": 2162,
+  "uniqueSelectors": 5735,
+  "duplicatedSelectors": 1575,
+  "productionCss": [
+    {
+      "name": "index-tGdSCCu2.css",
+      "bytes": 332850
+    },
+    {
+      "name": "storefront-v10-ChTbiM6U.css",
+      "bytes": 117984
+    },
+    {
+      "name": "admin-shell-v16-BKaXe7fg.css",
+      "bytes": 37749
+    },
+    {
+      "name": "online-store-v19-CBvcaG7m.css",
+      "bytes": 23536
+    }
+  ],
+  "productionCssBytes": 512119,
+  "topDuplicates": [
+    {
+      "selector": "select",
+      "count": 19,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint20.css",
+        "src/sprint21.css",
+        "src/styles.css",
+        "src/v24-storefront.css",
+        "src/v27-storefront.css",
+        "src/v28-storefront.css",
+        "src/v29-storefront.css",
+        "src/v31-storefront.css",
+        "src/v39-admin.css",
+        "src/v39-storefront.css",
+        "src/v39-theme-editor.css"
+      ]
+    },
+    {
+      "selector": ".lux-header-inner",
+      "count": 15,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint21.css"
+      ]
+    },
+    {
+      "selector": ".media-grid",
+      "count": 14,
+      "files": [
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css",
+        "src/sprint21.css",
+        "src/styles.css"
+      ]
+    },
+    {
+      "selector": ".lux-product-main",
+      "count": 13,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css"
+      ]
+    },
+    {
+      "selector": ".lux-buy-panel",
+      "count": 13,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css",
+        "src/sprint21.css"
+      ]
+    },
+    {
+      "selector": "to",
+      "count": 13,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint13.css",
+        "src/sprint22.css",
+        "src/styles.css",
+        "src/ui/ui.css",
+        "src/v29-storefront.css"
+      ]
+    },
+    {
+      "selector": "@media(max-width:900px)",
+      "count": 13,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/styles.css",
+        "src/v24-storefront.css",
+        "src/v26-storefront.css",
+        "src/v28-storefront.css",
+        "src/v39-admin.css"
+      ]
+    },
+    {
+      "selector": ".v18-journal-home",
+      "count": 13,
+      "files": [
+        "src/sprint18.css",
+        "src/v31-storefront.css"
+      ]
+    },
+    {
+      "selector": ".lux-main-photo",
+      "count": 12,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css"
+      ]
+    },
+    {
+      "selector": ".v19-template-trigger",
+      "count": 12,
+      "files": [
+        "src/sprint19.css",
+        "src/sprint21.css",
+        "src/sprint22.css",
+        "src/sprint23.css"
+      ]
+    },
+    {
+      "selector": ".v18-best-sellers",
+      "count": 12,
+      "files": [
+        "src/v31-storefront.css"
+      ]
+    },
+    {
+      "selector": ".lux-logo span",
+      "count": 11,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint21.css"
+      ]
+    },
+    {
+      "selector": ".lux-product-heading h1",
+      "count": 11,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css",
+        "src/sprint21.css"
+      ]
+    },
+    {
+      "selector": "@media(max-width:1100px)",
+      "count": 11,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint15.css",
+        "src/sprint17.css",
+        "src/sprint19.css",
+        "src/sprint20.css",
+        "src/styles.css",
+        "src/v25-storefront.css",
+        "src/v39-admin.css"
+      ]
+    },
+    {
+      "selector": ".editor-side",
+      "count": 11,
+      "files": [
+        "src/sprint16.css",
+        "src/styles.css"
+      ]
+    },
+    {
+      "selector": "h2",
+      "count": 11,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v24-tokens.css",
+        "src/v25-storefront.css",
+        "src/v27-storefront.css",
+        "src/v28-storefront.css",
+        "src/v29-storefront.css"
+      ]
+    },
+    {
+      "selector": "h3",
+      "count": 11,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v24-tokens.css",
+        "src/v25-storefront.css",
+        "src/v27-storefront.css",
+        "src/v28-storefront.css",
+        "src/v29-storefront.css"
+      ]
+    },
+    {
+      "selector": "a",
+      "count": 11,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint20.css",
+        "src/styles.css",
+        "src/v27-storefront.css",
+        "src/v28-storefront.css",
+        "src/v31-storefront.css",
+        "src/v39-storefront.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v31 :is(.lux-featured-products",
+      "count": 11,
+      "files": [
+        "src/v31-storefront.css"
+      ]
+    },
+    {
+      "selector": ".lux-gallery",
+      "count": 10,
+      "files": [
+        "src/sprint10.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css"
+      ]
+    },
+    {
+      "selector": "@media(max-width:680px)",
+      "count": 10,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/ui/ui.css",
+        "src/v29-storefront.css",
+        "src/v31-storefront.css"
+      ]
+    },
+    {
+      "selector": "@media(prefers-reduced-motion:reduce)",
+      "count": 10,
+      "files": [
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint15.css",
+        "src/sprint16.css",
+        "src/ui/ui.css",
+        "src/v24-tokens.css",
+        "src/v30-storefront.css",
+        "src/v31-storefront.css",
+        "src/v32-storefront.css",
+        "src/v39-storefront.css"
+      ]
+    },
+    {
+      "selector": ":root",
+      "count": 10,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint20.css",
+        "src/sprint21.css",
+        "src/styles.css",
+        "src/v24-storefront.css",
+        "src/v24-tokens.css"
+      ]
+    },
+    {
+      "selector": "input",
+      "count": 10,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint20.css",
+        "src/styles.css",
+        "src/v24-storefront.css",
+        "src/v27-storefront.css",
+        "src/v28-storefront.css",
+        "src/v29-storefront.css",
+        "src/v31-storefront.css",
+        "src/v39-admin.css",
+        "src/v39-storefront.css"
+      ]
+    },
+    {
+      "selector": "@media(max-width:640px)",
+      "count": 10,
+      "files": [
+        "src/styles.css",
+        "src/v27-storefront.css",
+        "src/v39-admin.css",
+        "src/v39-storefront.css"
+      ]
+    },
+    {
+      "selector": ".s11-page-head",
+      "count": 9,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint16.css"
+      ]
+    },
+    {
+      "selector": ".s11-order-head",
+      "count": 9,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint16.css"
+      ]
+    },
+    {
+      "selector": ".admin-head",
+      "count": 9,
+      "files": [
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint14.css",
+        "src/styles.css"
+      ]
+    },
+    {
+      "selector": ".v13-admin-heading",
+      "count": 9,
+      "files": [
+        "src/sprint13.css",
+        "src/sprint16.css"
+      ]
+    },
+    {
+      "selector": ".lux-product-description-v14",
+      "count": 9,
+      "files": [
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css"
+      ]
+    },
+    {
+      "selector": ".conflict-product-card",
+      "count": 9,
+      "files": [
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css"
+      ]
+    },
+    {
+      "selector": ".conflict-product-media",
+      "count": 9,
+      "files": [
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint17.css"
+      ]
+    },
+    {
+      "selector": ".import-export-side",
+      "count": 9,
+      "files": [
+        "src/sprint14.css",
+        "src/sprint16.css",
+        "src/sprint17.css",
+        "src/styles.css"
+      ]
+    },
+    {
+      "selector": ".v16-user-trigger",
+      "count": 9,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/sprint22.css"
+      ]
+    },
+    {
+      "selector": ".editor-grid",
+      "count": 9,
+      "files": [
+        "src/sprint16.css",
+        "src/styles.css"
+      ]
+    },
+    {
+      "selector": ".collection-admin-grid",
+      "count": 9,
+      "files": [
+        "src/sprint16.css",
+        "src/styles.css"
+      ]
+    },
+    {
+      "selector": "span",
+      "count": 9,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v27-storefront.css",
+        "src/v28-storefront.css",
+        "src/v31-storefront.css"
+      ]
+    },
+    {
+      "selector": ".v19-top-actions .tf-button",
+      "count": 9,
+      "files": [
+        "src/sprint19.css",
+        "src/sprint21.css",
+        "src/sprint22.css",
+        "src/sprint23.css"
+      ]
+    },
+    {
+      "selector": "from",
+      "count": 9,
+      "files": [
+        "src/sprint22.css",
+        "src/styles.css",
+        "src/ui/ui.css",
+        "src/v29-storefront.css"
+      ]
+    },
+    {
+      "selector": ":where(.tf-storefront-v24",
+      "count": 9,
+      "files": [
+        "src/v24-tokens.css"
+      ]
+    }
+  ]
+}

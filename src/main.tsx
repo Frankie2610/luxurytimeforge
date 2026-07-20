@@ -1,0 +1,2 @@
+import{StrictMode}from'react';import{createRoot}from'react-dom/client';import{BrowserRouter}from'react-router-dom';import{Toaster}from'sonner';import{CommerceProvider}from'./context';import{AuthProvider}from'./auth';import{App}from'./App';import'./app.css';
+createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><AuthProvider><CommerceProvider><App/><Toaster position="top-right" richColors closeButton/></CommerceProvider></AuthProvider></BrowserRouter></StrictMode>);
