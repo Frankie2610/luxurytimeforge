@@ -11,7 +11,6 @@ import {useCommerce} from './context';
 import type {Metafield, Product, ProductOption, Variant} from './types';
 import {money, slugify, strip, uid} from './utils';
 import {isFirebaseSafeSku, normalizeSku} from './product-data';
-import './v4915-product-editor.css';
 
 const blankProduct = (): Product => {
   const now = new Date().toISOString();

@@ -50,6 +50,7 @@ import {isThemePreviewV26, readThemePreviewExtrasV26, THEME_PREVIEW_UPDATED_V26}
 import {sectionLabels, blockLabels} from './theme';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {useManagedContentPages} from './content-pages-v23';
+import {findProductByRoute} from './product-data';
 import './legacy.css';
 import './v4913-storefront-compat.css';
 import './v4912-storefront.css';
@@ -59,6 +60,7 @@ import './v4923-storefront.css';
 import './v4924-storefront.css';
 import './v4925-storefront.css';
 import './v4933-collection.css';
+import './v4936-mobile-product-grid.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -720,9 +722,9 @@ function ProductDeliveryEstimate() {
 
 export function ProductPageV10() {
   const {handle} = useParams();
-  const {products, addToCart, theme} = useCommerce();
+  const {products, addToCart, theme, isLoading} = useCommerce();
   const {openCart} = useOutletContext<{openCart: () => void}>();
-  const product = products.find((item) => item.handle === handle);
+  const product = findProductByRoute(products, handle);
   const [imageIndex, setImageIndex] = useState(0);
   const [zoom, setZoom] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -737,7 +739,8 @@ export function ProductPageV10() {
   useEffect(() => { if (product?.id) trackCommerceEvent('product_view',{productId:product.id,value:product.price}); }, [product?.id]);
 
   const parsedContent = useMemo(() => product ? productContent(product, product.variants[0]?.sku || product.sku) : {paragraphs: [], specs: []}, [product]);
-  if (!product) return <Navigate to="/404" />;
+  if (!product && isLoading) return <main className="tf-product-route-loading" aria-live="polite" aria-busy="true"><span>Đang tải sản phẩm…</span></main>;
+  if (!product) return <Navigate to="/404" replace />;
 
   const images = product.images.length ? product.images : ['https://placehold.co/1200x1200/f0eee8/25231f?text=TimeForge'];
   const variant = product.variants.find((item) => item.id === variantId) || product.variants[0];
@@ -894,8 +897,19 @@ export function ContentPageV10() {
   const supplemental = theme.templates.page.sections.filter((section) => isSharedThemeSectionV27(section));
   if(!managedPage&&!staticContentPages[slug])return <Navigate to="/404" replace/>;
   if(managedPage&&!managedPage.published)return <Navigate to="/404" replace/>;
-  const core = slug === 'about'
-    ? <article className="lux-content-page v18-story-page"><header><small>{page.eyebrow}</small><h1>{page.title}</h1><strong>{page.lead}</strong></header><section className="v18-story-layout"><div className="v18-story-visual"><span>TIMEFORGE</span><div><b>Chính hãng</b><b>Minh bạch</b><b>Hậu mãi</b></div></div><div className="v18-story-copy">{page.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}<blockquote>Giá trị của một chiếc đồng hồ được tiếp nối bằng trải nghiệm rõ ràng trước, trong và sau khi sở hữu.</blockquote><Link to="/collections">Khám phá sản phẩm<ArrowRight /></Link></div></section><section className="v18-story-pillars"><article><span>01</span><h2>Tuyển chọn có chủ đích</h2><p>Ưu tiên thiết kế, chất lượng sử dụng và giá trị lâu dài.</p></article><article><span>02</span><h2>Thông tin minh bạch</h2><p>Thông số, nguồn hàng và chính sách được trình bày rõ ràng.</p></article><article><span>03</span><h2>Đồng hành sau bán hàng</h2><p>Hỗ trợ bảo hành, chăm sóc và các nhu cầu phát sinh trong quá trình sử dụng.</p></article></section></article>
+  const core = slug === 'about'&&managedPage
+    ? <article className="tf4941-about-page">
+      <nav className="tf4941-about-breadcrumb" aria-label="Đường dẫn"><Link to="/">Trang chủ</Link><ChevronRight/><span>{managedPage.label}</span></nav>
+      <header className="tf4941-about-hero">
+        <div><span>{managedPage.eyebrow}</span><h1>{managedPage.title}</h1><p>{managedPage.lead}</p><Link to="/collections">Khám phá bộ sưu tập<ArrowRight/></Link></div>
+        <aside aria-hidden="true"><small>EST.</small><b>TF</b><span>2026 · VIETNAM</span><i/></aside>
+      </header>
+      <section className="tf4941-about-story">
+        <aside><small>THE TIMEFORGE STANDARD</small><h2>Mỗi lựa chọn đều bắt đầu từ thông tin rõ ràng.</h2><div><span><b>01</b>Tuyển chọn</span><span><b>02</b>Minh bạch</span><span><b>03</b>Đồng hành</span></div></aside>
+        <main>{managedPage.sections.map((section,index)=><article key={section.id}><span>{String(index+1).padStart(2,'0')}</span><div><h2>{section.title}</h2>{section.body.split(/\n+/).filter(Boolean).map(paragraph=><p key={paragraph}>{paragraph}</p>)}</div></article>)}</main>
+      </section>
+      <footer className="tf4941-about-footer"><div><small>CURATED WITH PURPOSE</small><h2>Khám phá chiếc đồng hồ phù hợp với nhịp sống riêng.</h2></div><Link to="/collections">Xem tất cả sản phẩm<ArrowRight/></Link></footer>
+    </article>
     : managedPage?<article className={`tf4923-policy-page tf4923-policy-${managedPage.slug}`}>
       <nav className="tf4923-policy-breadcrumb" aria-label="Đường dẫn"><Link to="/">Trang chủ</Link><ChevronRight/><span>{managedPage.label}</span></nav>
       <header className="tf4923-policy-hero">

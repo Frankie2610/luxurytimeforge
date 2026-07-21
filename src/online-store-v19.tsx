@@ -13,7 +13,7 @@ import {
   SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode} from 'react';
+import {useDeferredValue, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import {Link, useSearchParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {useCommerce} from './context';
@@ -28,7 +28,6 @@ import type {
 import {readThemeExtrasV23, saveThemeExtrasV23, type ThemeExtrasV23} from './theme-extras-v23';
 import {ResourcePicker} from './resource-picker';
 import {writeThemePreviewExtrasV26, writeThemePreviewV26} from './theme-preview-v26';
-import './v499-theme-editor.css';
 import {uid} from './utils';
 import {
   Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -274,6 +273,8 @@ function ThemeEditorV19({close}: {close: () => void}) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [extras, setExtras] = useState<EditorExtras>(readExtras);
   const [baselineExtras, setBaselineExtras] = useState<EditorExtras>(readExtras);
+  const deferredTheme = useDeferredValue(theme);
+  const deferredExtras = useDeferredValue(extras);
   const previewRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const themeImportRef = useRef<HTMLInputElement>(null);
@@ -282,7 +283,9 @@ function ThemeEditorV19({close}: {close: () => void}) {
   const current = theme.templates[template];
   const selectedSection = selection.kind === 'virtual' ? undefined : current.sections.find((section) => section.id === selection.sectionId);
   const selectedBlock = selection.kind === 'block' && selectedSection ? findBlock(selectedSection.blocks, selection.blockId) : undefined;
-  const dirty = JSON.stringify(theme) !== JSON.stringify(baseline) || JSON.stringify(extras) !== JSON.stringify(baselineExtras);
+  const themeDirty = useMemo(() => JSON.stringify(theme) !== JSON.stringify(baseline), [theme, baseline]);
+  const extrasDirty = useMemo(() => JSON.stringify(extras) !== JSON.stringify(baselineExtras), [extras, baselineExtras]);
+  const dirty = themeDirty || extrasDirty;
   const sampleProduct = products.find((item) => item.id === previewProductId) || products[0];
   const sampleCollection = collections.find((item) => item.id === previewCollectionId) || collections[0];
   const storefrontPath = template === 'product' && sampleProduct ? `/products/${sampleProduct.handle}` : template === 'collection' ? (sampleCollection ? `/collections/${sampleCollection.handle}` : '/collections') : template === 'cart' ? '/cart' : template === 'search' ? '/search?q=versace' : template === 'page' ? '/pages/about' : '/';
@@ -344,9 +347,11 @@ function ThemeEditorV19({close}: {close: () => void}) {
   const sectionDrag = ({active, over}: DragEndEvent) => {if (!over || active.id === over.id) return; const from = current.sections.findIndex((item) => item.id === active.id); const to = current.sections.findIndex((item) => item.id === over.id); if (from >= 0 && to >= 0) setSections(arrayMove(current.sections, from, to));};
   const blockDrag = (sectionId: string, {active, over}: DragEndEvent) => {if (!over || active.id === over.id) return; const section = current.sections.find((item) => item.id === sectionId); if (!section) return; patchSection(sectionId, {blocks: moveBlock(section.blocks, String(active.id), String(over.id))});};
 
-  useEffect(() => {writeThemePreviewV26(theme); writeThemePreviewExtrasV26(extras);}, [theme, extras]);
+  /* Preview serialization is deliberately deferred: typing in the inspector stays
+     responsive while React coalesces large theme snapshots for the iframe. */
+  useEffect(() => {writeThemePreviewV26(deferredTheme); writeThemePreviewExtrasV26(deferredExtras);}, [deferredTheme, deferredExtras]);
   useEffect(() => {saveDraftRef.current = saveThemeDraft;}, [saveThemeDraft]);
-  useEffect(() => {if (!dirty) return; const timer = window.setTimeout(() => saveDraftRef.current(theme), 900); return () => window.clearTimeout(timer);}, [theme, dirty]);
+  useEffect(() => {if (!dirty) return; const timer = window.setTimeout(() => saveDraftRef.current(deferredTheme), 1600); return () => window.clearTimeout(timer);}, [deferredTheme, dirty]);
   useEffect(() => {document.body.classList.add('tf-theme-editor-open-v4924'); return () => document.body.classList.remove('tf-theme-editor-open-v4924');}, []);
   useEffect(() => {const message = (event: MessageEvent) => {if (event.origin !== window.location.origin || !['timeforge:preview-section-selected','timeforge:preview-block-selected'].includes(String(event.data?.type || ''))) return; const sectionId = String(event.data.sectionId || ''); const blockId = String(event.data.blockId || ''); const section = theme.templates[template].sections.find((item) => item.id === sectionId); if (!section) return; const block = blockId ? findBlock(section.blocks, blockId) : undefined; setSelection(block ? {kind: 'block', sectionId, blockId} : {kind: 'section', sectionId}); setExpanded((items) => ({...items, [sectionId]: true})); setSidebarOpen(true); setMode('sections');}; window.addEventListener('message', message); return () => window.removeEventListener('message', message);}, [theme, template]);
   useEffect(() => {const sectionId = selection.kind === 'virtual' ? '' : selection.sectionId; const blockId = selection.kind === 'block' ? selection.blockId : ''; iframeRef.current?.contentWindow?.postMessage({type: 'timeforge:editor-selection', sectionId, blockId, scroll: false}, window.location.origin);}, [selection, previewSrc]);
@@ -424,6 +429,14 @@ function ThemeEditorV19({close}: {close: () => void}) {
 export function OnlineStoreV19() {
   const [params, setParams] = useSearchParams();
   const editor = params.get('view') === 'editor';
+  const [editorReady,setEditorReady]=useState(false);
+  useEffect(()=>{
+    if(!editor){setEditorReady(false);return}
+    let second=0;
+    const first=window.requestAnimationFrame(()=>{second=window.requestAnimationFrame(()=>setEditorReady(true))});
+    return()=>{window.cancelAnimationFrame(first);if(second)window.cancelAnimationFrame(second)};
+  },[editor]);
   if (!editor) return <OnlineStoreV18/>;
+  if(!editorReady)return <div className="tf-theme-editor-launch-v4941" role="status" aria-live="polite"><span><Paintbrush/></span><div><b>Đang mở trình tùy chỉnh</b><small>Chuẩn bị storefront và bản nháp theme…</small></div><i/></div>;
   return <ThemeEditorV19 close={() => setParams({})}/>;
 }

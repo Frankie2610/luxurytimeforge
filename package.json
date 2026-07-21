@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.49.35-alpha.1",
+  "version": "0.49.41-alpha.1",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -10,7 +10,11 @@
     "typecheck": "tsc -b --pretty false",
     "css:audit": "node scripts/css-audit.mjs",
     "code:audit": "node scripts/dead-code-audit.mjs",
-    "audit:project": "tsc -b --pretty false && node scripts/css-audit.mjs && node scripts/dead-code-audit.mjs",
+    "responsive:check": "node scripts/check-responsive-grid.mjs",
+    "admin:css:check": "node scripts/check-admin-css.mjs",
+    "auth:session:check": "node scripts/check-auth-session.mjs",
+    "content:pages:check": "node scripts/check-content-pages.mjs",
+    "audit:project": "tsc -b --pretty false && node scripts/check-auth-session.mjs && node scripts/check-content-pages.mjs && node scripts/check-admin-css.mjs && node scripts/css-audit.mjs && node scripts/dead-code-audit.mjs",
     "build:report": "tsc -b && vite build && node scripts/bundle-report.mjs",
     "firebase:rules:generate": "node scripts/generate-firebase-rules.mjs",
     "firebase:rules:deploy": "node scripts/generate-firebase-rules.mjs && node scripts/check-firebase-rules.mjs && pnpm dlx firebase-tools deploy --only database",
@@ -59,7 +63,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury Timeforge Sprint 49.35: Firebase-authoritative storefront catalog with auth-safe Admin data loading.",
+  "description": "Luxury Timeforge Sprint 49.41: editable About page, non-blocking Theme Editor launch and polished content UI.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

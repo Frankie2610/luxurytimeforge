@@ -12,8 +12,7 @@ import {useAuth} from './auth';
 import{hasPermission,routePermission,roleLabels}from'./permissions';
 import {useReturns} from './returns-v13';
 import {AdminCommandPalette} from './admin-v9';
-import './v499-admin.css';
-import './v4917-admin-catalog.css';
+import './admin-v4938.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -36,7 +35,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/analytics':{title:'Phân tích',eyebrow:'Báo cáo',description:'Doanh thu, chuyển đổi và nguồn tạo đơn hàng.'},
   '/admin/discounts':{title:'Mã giảm giá',eyebrow:'Marketing',description:'Thiết lập ưu đãi, điều kiện và thời gian hiệu lực.'},
   '/admin/blogs':{title:'Bài viết',eyebrow:'Nội dung',description:'Tạo và quản lý nội dung cho TimeForge Journal.'},
-  '/admin/pages':{title:'Trang chính sách',eyebrow:'Nội dung',description:'Biên tập nội dung Bảo hành, Giao hàng và Đổi trả trên website khách.'},
+  '/admin/pages':{title:'Trang nội dung',eyebrow:'Nội dung',description:'Biên tập trang Giới thiệu, Bảo hành, Giao hàng và Đổi trả trên website khách.'},
   '/admin/activity':{title:'Nhật ký hoạt động',eyebrow:'Hệ thống',description:'Theo dõi những thay đổi quan trọng trong Admin.'},
   '/admin/import-export':{title:'Nhập / xuất dữ liệu',eyebrow:'Dữ liệu',description:'Đồng bộ catalog bằng Shopify CSV và xuất bản sao dữ liệu.'},
   '/admin/online-store':{title:'Cửa hàng online',eyebrow:'Kênh bán hàng',description:'Điều chỉnh template, section, block và giao diện hiển thị.',fullBleed:true},
@@ -87,7 +86,7 @@ export function AdminLayoutV16(){
     {label:'Marketing & nội dung',items:[
       {to:'/admin/discounts',label:'Mã giảm giá',icon:BadgePercent},
       {to:'/admin/blogs',label:'Bài viết',icon:BookOpen},
-      {to:'/admin/pages',label:'Trang chính sách',icon:FileText},
+      {to:'/admin/pages',label:'Trang nội dung',icon:FileText},
       {to:'/admin/analytics',label:'Phân tích',icon:BarChart3},
     ]},
     {label:'Kênh bán hàng',items:[{to:'/admin/online-store',label:'Cửa hàng online',icon:LayoutTemplate}]},
@@ -102,8 +101,6 @@ export function AdminLayoutV16(){
   const initials=(user?.name||user?.email||'A').trim().slice(0,1).toUpperCase();
   const liveData=dataSource==='firebase';
   const dataSourceLabel=dataSource==='loading'?'Đang tải Firebase':liveData?'Firebase live':dataSource==='local'?'Local':dataSource==='seed'?'Dữ liệu mẫu':dataSource==='local-fallback'?'Local fallback':'Mẫu fallback';
-  const standaloneThemeEditor=location.pathname==='/admin/online-store'&&new URLSearchParams(location.search).get('view')==='editor';
-  if(standaloneThemeEditor)return <><Outlet/><ToastBridge/></>;
   return <div className={`v16-admin-shell tf-admin-v499 ${collapsed?'is-sidebar-collapsed':''}`}>
     {open&&<button className="v16-admin-backdrop" aria-label="Đóng menu" onClick={()=>setOpen(false)}/>} 
     <aside className={`v16-admin-sidebar ${open?'is-open':''}`} aria-label="Điều hướng quản trị">

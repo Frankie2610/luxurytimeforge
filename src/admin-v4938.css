@@ -1,0 +1,14 @@
+/*
+  Sprint 49.38 — one deterministic Admin cascade.
+  Route modules must not import these files independently: lazy chunk load order
+  otherwise changes which equally-specific rule wins while navigating Admin.
+*/
+@import "./v499-admin.css";
+@import "./v4917-admin-catalog.css";
+@import "./v4921-admin-operations.css";
+@import "./v4922-admin-customers.css";
+@import "./v4923-admin-content.css";
+@import "./v4925-admin-resources.css";
+@import "./v4915-product-editor.css";
+@import "./v4917-team.css";
+@import "./v499-theme-editor.css";

@@ -56,6 +56,7 @@ export async function getFirebaseAuth(){
       if(!app)return null;
       const instance=auth.getAuth(app);
       await auth.setPersistence(instance,auth.browserLocalPersistence);
+      await instance.authStateReady();
       return instance;
     });
   }

@@ -1,3 +1,102 @@
+# Luxury Timeforge — Sprint 49.41
+
+Sprint 49.41 đưa trang Giới thiệu vào hệ thống nội dung Firebase, dựng lại giao diện `/pages/about` và sửa luồng mở Theme Editor bị đơ do thay cây Admin cùng lúc với việc dựng nhiều storefront iframe.
+
+Chi tiết triển khai: `docs/SPRINT49_41.md`.
+
+## Điểm chính của Sprint 49.41
+
+- `/admin/pages` quản lý đủ Giới thiệu, Bảo hành, Giao hàng và Đổi trả.
+- Nội dung Giới thiệu lưu tại `timeforge/contentPages/about` và hiển thị trực tiếp trên website khách.
+- `/pages/about` dùng layout editorial riêng, responsive và không nhận CSS story legacy.
+- Theme Editor mở qua loading frame hai nhịp, phủ cố định trên Admin shell thay vì tháo/remount toàn bộ shell.
+- Hai iframe preview ở trang Cửa hàng online được cô lập khỏi Firebase Auth và analytics.
+- Thêm regression check cho nội dung và luồng mở editor; typecheck, responsive và production build đều đạt.
+
+---
+
+# Luxury Timeforge — Sprint 49.40
+
+Sprint 49.40 sửa tận gốc việc Theme Editor có thể kéo phiên Firebase của Admin về màn hình đăng nhập, giảm tải nền của live preview và polish tiếp giao diện Admin/storefront mà không tạo thêm lớp CSS route.
+
+Chi tiết triển khai: `docs/SPRINT49_40.md`.
+
+## Điểm chính của Sprint 49.40
+
+- Iframe Theme Editor không còn khởi tạo Firebase Auth observer dùng chung persistence với cửa sổ Admin.
+- Observer nền không còn tự gọi `signOut` khi việc đọc quyền tạm thời thất bại.
+- Live preview không ghi analytics giả và giảm tần suất ghi draft Firebase.
+- Theme Editor, shell Admin, form/table và header storefront được cân lại khoảng cách, tương phản và focus state.
+- Product card ngoài viewport dùng `content-visibility` để giảm chi phí render danh sách dài.
+- Thêm regression check `auth:session:check`; typecheck, Admin CSS check và production build đều đạt.
+
+---
+
+# Luxury Timeforge — Sprint 49.39
+
+Sprint 49.39 polish lại hệ thống giao diện Admin theo hướng gọn, đồng nhất và gần nhịp bố cục Shopify hơn, đồng thời giữ cascade Admin một entry đã ổn định ở Sprint 49.38.
+
+Chi tiết triển khai: `docs/SPRINT49_39.md`.
+
+## Điểm chính của Sprint 49.39
+
+- Sidebar và topbar gọn hơn, trạng thái active/hover rõ nhưng không nặng.
+- Page header giảm chiều cao và khoảng trắng; cỡ chữ tiêu đề cân bằng hơn với nội dung.
+- Card, form, button, table và focus state dùng chung token bo góc, border và shadow.
+- Checkbox/radio không còn bị selector input chung ép chiều cao 40 px.
+- Dashboard được polish lại toàn bộ: hero, KPI, card đơn hàng và hoạt động.
+- Responsive Admin được tinh chỉnh cho tablet/mobile; hỗ trợ `prefers-reduced-motion`.
+
+---
+
+# Luxury Timeforge — Sprint 49.38
+
+Sprint 49.38 gom toàn bộ stylesheet dành riêng cho Admin vào một entry có thứ tự cố định, loại tình trạng CSS đổi ưu tiên theo lịch sử chuyển trang lazy.
+
+Chi tiết triển khai: `docs/SPRINT49_38.md`.
+
+## Điểm chính của Sprint 49.38
+
+- `admin-v4938.css` là entry duy nhất sở hữu cascade Admin.
+- Các màn hình sản phẩm, kho, khách hàng, đơn hàng, nội dung, team và theme editor không còn tự import CSS Admin.
+- Bundle production chỉ tạo một chunk CSS Admin thay vì nhiều chunk route chèn nối tiếp.
+- Xóa 32 declaration đã chắc chắn bị rule cùng selector ở phía sau ghi đè.
+- Thêm `npm run admin:css:check` và đưa kiểm tra này vào `audit:project`.
+
+---
+
+# Luxury Timeforge — Sprint 49.37
+
+Sprint 49.37 sửa deep link sản phẩm từ Admin và ổn định phiên đăng nhập Firebase khi chuyển qua lại giữa các trang quản trị.
+
+Chi tiết triển khai: `docs/SPRINT49_37.md`.
+
+## Điểm chính của Sprint 49.37
+
+- Trang sản phẩm chờ catalog Firebase tải xong trước khi quyết định chuyển sang `/404`.
+- Handle sản phẩm được chuẩn hóa; URL cũ vẫn có thể đối chiếu bằng handle, ID hoặc SKU.
+- Firebase Authentication hoàn tất khôi phục local persistence trước khi giao phiên cho ứng dụng.
+- Việc đọc quyền Admin lỗi tạm thời được thử lại và không còn tự động đăng xuất phiên hợp lệ.
+- Cache phiên đã xác minh trong tab ngăn giao diện nhảy về trang đăng nhập khi mạng hoặc Rules chập chờn.
+
+---
+
+# Luxury Timeforge — Sprint 49.36
+
+Sprint 49.36 xóa rule legacy làm lưới sản phẩm sụp thành một cột dưới 420 px và gom breakpoint card sản phẩm vào stylesheet cuối cùng.
+
+Chi tiết triển khai: `docs/SPRINT49_36.md`.
+
+## Điểm chính của Sprint 49.36
+
+- Toàn bộ viewport 380–520 px hiển thị đúng hai card sản phẩm trên một hàng.
+- Dưới 380 px mới chuyển về một card mỗi hàng.
+- Xóa rule một cột cũ trong `sprint14.css` thay vì tiếp tục chồng thêm CSS.
+- Giảm kích thước nội dung card, media inset và gap để hai cột vừa từ 380 px.
+- Selector global `padding-block: var(--tf-r-section)` không tồn tại trong source hoặc bundle production.
+
+---
+
 # Luxury Timeforge — Sprint 49.35
 
 Sprint 49.35 chuyển catalog website khách sang Firebase source-of-truth, tách dữ liệu public khỏi các đường dẫn Admin cần đăng nhập và hiển thị đúng nguồn dữ liệu đang hoạt động.

@@ -1,7 +1,3 @@
-import './v4921-admin-operations.css';
-import './v4922-admin-customers.css';
-import './v4923-admin-content.css';
-import './v4925-admin-resources.css';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {
   createColumnHelper,

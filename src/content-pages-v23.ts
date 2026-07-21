@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react';
 import {firebaseClient} from './firebase';
 
-export type ManagedContentPageSlug='warranty'|'shipping'|'returns';
+export type ManagedContentPageSlug='about'|'warranty'|'shipping'|'returns';
 
 export interface ManagedContentSection{
   id:string;
@@ -25,6 +25,20 @@ export const CONTENT_PAGES_UPDATED='timeforge:content-pages-updated';
 const now=new Date().toISOString();
 
 export const defaultManagedContentPages:ManagedContentPage[]=[
+  {
+    slug:'about',
+    label:'Giới thiệu',
+    eyebrow:'CÂU CHUYỆN TIMEFORGE',
+    title:'TimeForge được xây quanh sự minh bạch.',
+    lead:'Luxury thật sự là một trải nghiệm nhất quán — từ lúc khám phá sản phẩm đến nhiều năm sau khi sở hữu.',
+    published:true,
+    updatedAt:now,
+    sections:[
+      {id:'about-curation',title:'Tuyển chọn có chủ đích',body:'TimeForge tuyển chọn đồng hồ theo thiết kế, chất lượng sử dụng và giá trị lâu dài. Mỗi sản phẩm được trình bày với thông tin cần thiết để quyết định mua hàng rõ ràng hơn.'},
+      {id:'about-transparency',title:'Thông tin minh bạch',body:'Hình ảnh, thông số, nguồn hàng và chính sách được trình bày nhất quán. Những điểm cần lưu ý được trao đổi trước khi hoàn tất giao dịch.'},
+      {id:'about-aftercare',title:'Đồng hành sau bán hàng',body:'Giá trị của một chiếc đồng hồ được tiếp nối bằng trải nghiệm rõ ràng trước, trong và sau khi sở hữu. TimeForge hỗ trợ bảo hành, chăm sóc và các nhu cầu phát sinh trong quá trình sử dụng.'},
+    ],
+  },
   {
     slug:'warranty',
     label:'Bảo hành',
@@ -69,7 +83,7 @@ export const defaultManagedContentPages:ManagedContentPage[]=[
   },
 ];
 
-const isSlug=(value:unknown):value is ManagedContentPageSlug=>value==='warranty'||value==='shipping'||value==='returns';
+const isSlug=(value:unknown):value is ManagedContentPageSlug=>value==='about'||value==='warranty'||value==='shipping'||value==='returns';
 
 function normalizePage(value:Partial<ManagedContentPage>,fallback:ManagedContentPage):ManagedContentPage{
   const sections=Array.isArray(value.sections)?value.sections.filter(Boolean).map((section,index)=>({

@@ -1,4 +1,3 @@
-import './v4921-admin-operations.css';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft, BadgeDollarSign, Box, Check, CheckCircle2, ChevronRight, CircleDollarSign,

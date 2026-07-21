@@ -30,6 +30,7 @@ function canonicalVariant(variant: Variant, productSku: string, index: number): 
 export function canonicalProduct(product: Product): Product {
   const sku = normalizeSku(product.sku || product.id);
   assertFirebaseSafeSku(sku);
+  const handle = slugify(product.handle || `${product.vendor}-${product.title}-${sku}`) || slugify(sku);
   const variants = (product.variants?.length ? product.variants : [{
     id: sku,
     title: 'Default Title',
@@ -44,13 +45,33 @@ export function canonicalProduct(product: Product): Product {
     ...product,
     id: sku,
     sku,
-    handle: product.handle || slugify(`${product.vendor}-${product.title}-${sku}`),
+    handle,
     images: [...new Set((product.images || []).map(item => item.trim()).filter(Boolean))],
     price: product.price || primary?.price || 0,
     compareAtPrice: product.compareAtPrice || primary?.compareAtPrice || 0,
     inventory: Number.isFinite(product.inventory) ? product.inventory : variants.reduce((sum, item) => sum + item.inventory, 0),
     variants,
   };
+}
+
+function routeValue(value: unknown): string {
+  const raw = String(value ?? '').trim();
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+export function findProductByRoute(products: Product[], value: unknown): Product | undefined {
+  const raw = routeValue(value);
+  const normalized = slugify(raw);
+  return products.find((product) =>
+    product.handle === raw ||
+    slugify(product.handle) === normalized ||
+    product.id === raw ||
+    product.sku === raw
+  );
 }
 
 export function productsFromFirebase(value: Product[] | Record<string, Product> | null | undefined): Product[] {

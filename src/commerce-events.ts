@@ -9,8 +9,12 @@ const SESSION_KEY='tf.v16.analytics-session';
 const safeStorage=(kind:'local'|'session')=>{try{return kind==='local'?window.localStorage:window.sessionStorage}catch{return undefined}};
 const uid=()=>`ses_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
 const device=():CommerceDevice=>window.innerWidth<=680?'mobile':window.innerWidth<=1100?'tablet':'desktop';
+export const isThemeEditorCommercePreview=()=>{
+ try{const params=new URLSearchParams(window.location.search);return window.self!==window.top&&params.get('theme_preview')==='1'&&params.get('tf_editor')==='1'}catch{return false}
+};
 const sourceFromReferrer=(value:string)=>{try{const host=new URL(value).hostname.toLowerCase();if(!host)return'direct';if(host.includes('facebook')||host.includes('fb.'))return'facebook';if(host.includes('instagram'))return'instagram';if(host.includes('tiktok'))return'tiktok';if(host.includes('google'))return'google';if(host.includes('zalo'))return'zalo';return host.replace(/^www\./,'')}catch{return'direct'}};
 export function captureCommerceAttribution():CommerceAttribution{
+ if(isThemeEditorCommercePreview())return{source:'theme-editor',medium:'preview',campaign:'',referrer:'',landingPage:`${window.location.pathname}${window.location.search}`,sessionId:'theme-preview',device:device()};
  const session=safeStorage('session');const local=safeStorage('local');
  const existing=session?.getItem(ATTR_KEY);if(existing){try{return JSON.parse(existing) as CommerceAttribution}catch{}}
  const params=new URLSearchParams(window.location.search);const ref=document.referrer||'';
@@ -25,6 +29,7 @@ export function captureCommerceAttribution():CommerceAttribution{
 }
 export function readCommerceEvents():CommerceEvent[]{try{const local=safeStorage('local');const raw=local?.getItem(KEY)||local?.getItem(LEGACY_KEY)||'[]';const parsed=JSON.parse(raw) as Array<Partial<CommerceEvent>>;return parsed.map(item=>({...item,attribution:item.attribution||captureCommerceAttribution(),path:item.path||'/'} as CommerceEvent))}catch{return[]}}
 export function trackCommerceEvent(name:CommerceEventName,payload:Omit<CommerceEvent,'id'|'name'|'createdAt'|'attribution'|'path'>={}){
+ if(isThemeEditorCommercePreview())return undefined;
  const local=safeStorage('local');const attribution=captureCommerceAttribution();const path=`${window.location.pathname}${window.location.search}`;const current=readCommerceEvents();const latest=current[0];
  if(latest&&latest.name===name&&latest.path===path&&Date.now()-new Date(latest.createdAt).getTime()<700)return latest;
  const next:CommerceEvent={id:`evt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,name,createdAt:new Date().toISOString(),path,attribution:{...attribution,device:device()},...payload};

@@ -1,15 +1,14 @@
-import './v4923-admin-content.css';
 import {useEffect,useMemo,useState} from 'react';
-import {ArrowDown,ArrowUp,Check,ExternalLink,FileText,Plus,Save,ShieldCheck,Trash2,Truck,Undo2} from 'lucide-react';
+import {ArrowDown,ArrowUp,BookOpen,Check,ExternalLink,FileText,Plus,Save,ShieldCheck,Trash2,Truck,Undo2} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {toast} from 'sonner';
 import {type ManagedContentPage,type ManagedContentPageSlug,useManagedContentPages} from './content-pages-v23';
 
-const iconFor=(slug:ManagedContentPageSlug)=>slug==='warranty'?<ShieldCheck/>:slug==='shipping'?<Truck/>:<Undo2/>;
+const iconFor=(slug:ManagedContentPageSlug)=>slug==='about'?<BookOpen/>:slug==='warranty'?<ShieldCheck/>:slug==='shipping'?<Truck/>:<Undo2/>;
 
 export function ContentPagesAdminV23(){
   const{pages,savePage}=useManagedContentPages();
-  const[selected,setSelected]=useState<ManagedContentPageSlug>('warranty');
+  const[selected,setSelected]=useState<ManagedContentPageSlug>('about');
   const current=useMemo(()=>pages.find(page=>page.slug===selected)||pages[0],[pages,selected]);
   const[draft,setDraft]=useState<ManagedContentPage>(()=>structuredClone(current));
   const[saving,setSaving]=useState(false);
@@ -35,13 +34,13 @@ export function ContentPagesAdminV23(){
 
   return <div className="tf4923-pages-admin">
     <section className="tf4923-pages-overview">
-      <div><span><FileText/>TRANG THÔNG TIN</span><h2>Biên tập chính sách sau bán hàng</h2><p>Nội dung đã lưu được dùng trực tiếp trên website khách. Mỗi trang có cấu trúc riêng, dễ đọc trên desktop và mobile.</p></div>
-      <div className="tf4923-pages-status"><b>{pages.filter(page=>page.published).length}/3</b><span>Trang đang hiển thị</span></div>
+      <div><span><FileText/>NỘI DUNG CỬA HÀNG</span><h2>Biên tập các trang thông tin</h2><p>Quản lý trang Giới thiệu và chính sách sau bán hàng. Nội dung lưu tại đây được dùng trực tiếp trên website khách.</p></div>
+      <div className="tf4923-pages-status"><b>{pages.filter(page=>page.published).length}/{pages.length}</b><span>Trang đang hiển thị</span></div>
     </section>
 
     <div className="tf4923-pages-workspace">
       <aside className="tf4923-pages-list" aria-label="Danh sách trang chính sách">
-        <header><span>NỘI DUNG CỬA HÀNG</span><h3>Trang chính sách</h3></header>
+        <header><span>NỘI DUNG CỬA HÀNG</span><h3>Trang thông tin</h3></header>
         {pages.map(page=><button key={page.slug} className={selected===page.slug?'is-active':''} onClick={()=>setSelected(page.slug)}>
           <i>{iconFor(page.slug)}</i><span><b>{page.label}</b><small>/pages/{page.slug}</small></span><em className={page.published?'is-live':''}>{page.published?'Đang hiện':'Đang ẩn'}</em>
         </button>)}

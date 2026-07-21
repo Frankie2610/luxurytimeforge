@@ -31,6 +31,8 @@
   box-shadow:none!important;
   transform:none!important;
   contain:layout style;
+  content-visibility:auto;
+  contain-intrinsic-size:auto 430px;
 }
 
 .tf-storefront-v4912 .tf-product-card-v4918:hover,
@@ -91,6 +93,7 @@
 .tf-storefront-v4912 .tf-product-media-v4918 .secondary-image{opacity:0}
 .tf-storefront-v4912 .tf-product-card-v4918:hover .primary-image{opacity:0}
 .tf-storefront-v4912 .tf-product-card-v4918:hover .secondary-image{opacity:1;transform:scale(1.015)}
+.tf-storefront-v4912 .tf-product-card-v4918:hover .primary-image:last-child{opacity:1;transform:scale(1.018)}
 
 .tf-storefront-v4912 .tf-product-badges-v4918{
   position:absolute;
@@ -151,6 +154,14 @@
   border-color:rgba(127,29,41,.38);
   background:#fff;
   color:#8a1f2d;
+}
+
+.tf-storefront-v4912 .tf-product-media-v4918>a:focus-visible,
+.tf-storefront-v4912 .tf-product-info-v4918>a:focus-visible,
+.tf-storefront-v4912 .tf-product-wish-v4918:focus-visible,
+.tf-storefront-v4912 .tf-product-quick-add-v4918:focus-visible{
+  outline:2px solid #8a1f2d;
+  outline-offset:3px;
 }
 
 .tf-storefront-v4912 .tf-product-wish-v4918 svg{width:17px;height:17px;stroke-width:2}
