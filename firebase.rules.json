@@ -1,39 +1,55 @@
 {
   "rules": {
     "timeforge": {
+      "adminMembers": {
+        ".read": "auth != null && false",
+        "$uid": {
+          ".read": "(auth != null && false) || (auth != null && auth.uid == $uid)",
+          ".write": "(auth != null && false) || (auth != null && auth.uid == $uid && !data.exists() && newData.child('uid').val() == auth.uid && newData.child('email').val() == auth.token.email && newData.child('status').val() == 'active' && newData.child('inviteId').isString() && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('status').val() == 'accepted' && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('acceptedBy').val() == auth.uid && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('email').val() == auth.token.email && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('role').val() == newData.child('role').val())",
+          ".validate": "!newData.exists() || (newData.hasChildren(['uid','email','name','role','status','updatedAt']) && newData.child('uid').val() == $uid && newData.child('email').isString() && newData.child('name').isString() && (newData.child('role').val() == 'owner' || newData.child('role').val() == 'admin' || newData.child('role').val() == 'manager' || newData.child('role').val() == 'staff' || newData.child('role').val() == 'content') && (newData.child('status').val() == 'active' || newData.child('status').val() == 'suspended'))"
+        }
+      },
+      "adminInvitations": {
+        ".read": "auth != null && false",
+        "$inviteId": {
+          ".read": "(auth != null && false) || (auth != null && auth.token.email != null && data.child('email').val() == auth.token.email)",
+          ".write": "(auth != null && false) || (auth != null && auth.token.email != null && data.exists() && data.child('status').val() == 'pending' && data.child('email').val() == auth.token.email && newData.child('id').val() == data.child('id').val() && newData.child('email').val() == data.child('email').val() && newData.child('name').val() == data.child('name').val() && newData.child('role').val() == data.child('role').val() && newData.child('invitedBy').val() == data.child('invitedBy').val() && newData.child('createdAt').val() == data.child('createdAt').val() && newData.child('expiresAt').val() == data.child('expiresAt').val() && newData.child('status').val() == 'accepted' && newData.child('acceptedBy').val() == auth.uid)",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','email','name','role','status','invitedBy','invitedByName','createdAt','expiresAt']) && newData.child('id').val() == $inviteId && newData.child('email').isString() && newData.child('name').isString() && (newData.child('role').val() == 'admin' || newData.child('role').val() == 'manager' || newData.child('role').val() == 'staff' || newData.child('role').val() == 'content') && (newData.child('status').val() == 'pending' || newData.child('status').val() == 'accepted' || newData.child('status').val() == 'cancelled' || newData.child('status').val() == 'expired'))"
+        }
+      },
       "products": {
         ".read": true,
         ".indexOn": ["vendor", "status", "handle", "published"],
         "$sku": {
-          ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')",
-          ".validate": "!newData.exists() || (newData.hasChildren(['id','sku','handle','title','status','published','images','price','inventory','variants','createdAt','updatedAt']) && newData.child('id').val() == $sku && newData.child('sku').val() == $sku && newData.child('title').isString() && newData.child('handle').isString() && newData.child('images').hasChildren() && newData.child('price').isNumber() && newData.child('inventory').isNumber())"
+          ".write": "auth != null && false",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','sku','handle','title','status','published','price','inventory','variants','createdAt','updatedAt']) && newData.child('id').val() == $sku && newData.child('sku').val() == $sku && newData.child('title').isString() && newData.child('handle').isString() && (!newData.child('images').exists() || newData.child('images').hasChildren()) && newData.child('price').isNumber() && newData.child('inventory').isNumber())"
         }
       },
-      "collections": {".read": true, ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
+      "collections": {".read": true, ".write": "auth != null && false"},
       "themes": {
-        "published": {".read": true, ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-        "draft": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-        "versions": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"}
+        "published": {".read": true, ".write": "auth != null && false"},
+        "draft": {".read": "auth != null && false", ".write": "auth != null && false"},
+        "versions": {".read": "auth != null && false", ".write": "auth != null && false"}
       },
-      "customers": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "orders": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "discounts": {".read": true, ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "inventoryAdjustments": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "activities": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "orderWorkflows": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "customerSegments": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "draftOrders": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "returnRequests": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
-      "settings": {"integrations": {".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')", ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"}},
-      "blogPosts": {".read": true, ".write": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')"},
+      "customers": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "orders": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "discounts": {".read": true, ".write": "auth != null && false"},
+      "inventoryAdjustments": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "activities": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "orderWorkflows": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "customerSegments": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "draftOrders": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "returnRequests": {".read": "auth != null && false", ".write": "auth != null && false"},
+      "settings": {"integrations": {".read": "auth != null && false", ".write": "auth != null && false"}},
+      "blogPosts": {".read": true, ".write": "auth != null && false"},
+      "contentPages": {".read": true, ".write": "auth != null && false"},
       "newsletterSubscribers": {
-        ".read": "auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')",
+        ".read": "auth != null && false",
         "$subscriberId": {
-          ".write": "(auth != null && auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || auth.token.email == 'giaquyenvan96@gmail.com')) || !data.exists()",
+          ".write": "(auth != null && false) || !data.exists()",
           ".validate": "newData.hasChildren(['id','email','source','status','createdAt','updatedAt']) && newData.child('id').val() == $subscriberId && newData.child('email').isString() && newData.child('email').val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/) && (newData.child('status').val() == 'active' || newData.child('status').val() == 'unsubscribed')"
         }
       }
     }
   }
 }
-

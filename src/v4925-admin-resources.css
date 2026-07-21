@@ -1,0 +1,11 @@
+/* Sprint 49.25 — isolated resource search layout. */
+.v10-index-toolbar:has(.tf4925-admin-search){min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px;background:#fbfcfb}
+.tf4925-admin-search{width:100%;min-width:0;height:40px;display:grid;grid-template-columns:17px minmax(0,1fr);align-items:center;gap:8px;padding:0 11px;overflow:hidden;border:1px solid #cfd6d1;border-radius:9px;background:#fff;color:#657068;box-shadow:0 2px 8px rgba(31,44,35,.035)}
+.tf4925-admin-search>svg{position:static;width:16px;height:16px;pointer-events:none}
+.tf4925-admin-search>input{position:static;width:100%;min-width:0;height:38px;margin:0;padding:0;border:0!important;background:transparent!important;color:#26302a;font:11px/38px Inter,system-ui,sans-serif;outline:0!important;box-shadow:none!important}
+.tf4925-admin-search>input::placeholder{color:#89918c;opacity:1}.tf4925-admin-search:focus-within{border-color:#6b8d77;box-shadow:0 0 0 3px rgba(72,116,87,.11)}
+.v13-admin-page .v13-toolbar{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px;background:#fbfcfb}
+.v13-admin-page .v13-toolbar>label{width:100%;min-width:0;height:40px;display:grid;grid-template-columns:17px minmax(0,1fr);align-items:center;gap:8px;padding:0 11px;overflow:hidden;border:1px solid #cfd6d1;border-radius:9px;background:#fff;box-shadow:0 2px 8px rgba(31,44,35,.035)}
+.v13-admin-page .v13-toolbar>label>svg{position:static;width:16px;height:16px}.v13-admin-page .v13-toolbar>label>input{position:static;width:100%;min-width:0;height:38px;margin:0;padding:0;border:0!important;background:transparent!important;font-size:11px;line-height:38px;outline:0!important;box-shadow:none!important}
+.v13-admin-page .v13-toolbar>label:focus-within{border-color:#6b8d77;box-shadow:0 0 0 3px rgba(72,116,87,.11)}
+@media(max-width:600px){.v10-index-toolbar:has(.tf4925-admin-search),.v13-admin-page .v13-toolbar{grid-template-columns:1fr;padding:8px}.tf4925-admin-search,.v13-admin-page .v13-toolbar>label{height:39px}.v10-index-toolbar:has(.tf4925-admin-search)>button,.v10-index-toolbar:has(.tf4925-admin-search)>.v10-filter-wrap,.v13-admin-page .v13-toolbar>.tf-button{width:100%;justify-content:center}}

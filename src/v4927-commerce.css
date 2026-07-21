@@ -1,0 +1,84 @@
+/* Sprint 49.27 — rebuilt order summary and PayOS result flow. */
+.tf4927-order-summary{
+  position:sticky;top:94px;isolation:isolate;overflow:hidden;padding:22px;
+  border:1px solid #dcd3c9;border-radius:20px;
+  background:linear-gradient(155deg,#fff 0%,#fff 62%,#faf6f1 100%);
+  box-shadow:0 20px 55px rgba(44,32,24,.09),0 2px 8px rgba(44,32,24,.035)
+}
+.tf4927-order-summary::before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#7c1d31,#b67454 52%,#d9c1a7)}
+.tf4927-order-summary__header{display:grid;gap:5px;padding:4px 0 17px;border-bottom:1px solid #e6dfd7}
+.tf4927-order-summary__header>small{color:#8d283b;font-size:8px;font-weight:950;letter-spacing:.15em}
+.tf4927-order-summary__header h2{margin:0;color:#211d1a;font-family:var(--tf4912-heading);font-size:clamp(22px,2.1vw,28px);font-weight:820;line-height:1.08;letter-spacing:-.032em}
+.tf4927-order-summary__header p{margin:0;color:#777067;font-size:9px;line-height:1.55}
+
+.tf4927-coupon{display:grid;gap:8px;padding:16px 0 14px}
+.tf4927-coupon>label{color:#302a26;font-size:8.5px;font-weight:900;letter-spacing:.035em;text-transform:uppercase}
+.tf4927-coupon>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.tf4927-coupon input{width:100%;min-width:0;height:44px;padding:0 13px;border:1px solid #d5ccc2;border-radius:11px;background:#fff;color:#211d1a;font-size:11px;font-weight:650;outline:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 4px 13px rgba(37,29,23,.035);transition:border-color .18s,box-shadow .18s}
+.tf4927-coupon input::placeholder{color:#958d83;opacity:1}
+.tf4927-coupon input:focus{border-color:#8f1f34;box-shadow:0 0 0 3px rgba(143,31,52,.105)}
+.tf-storefront-v4912 .tf4927-coupon-apply{min-width:88px;min-height:44px;padding:0 16px!important;border:1px solid #7f1d31!important;border-radius:11px!important;background:linear-gradient(135deg,#922a3e,#681426)!important;color:#fff!important;font-size:8.5px!important;font-weight:900!important;letter-spacing:.03em;box-shadow:0 8px 18px rgba(105,20,38,.19)!important}
+.tf-storefront-v4912 .tf4927-coupon-apply:hover:not(:disabled){border-color:#5b1120!important;background:linear-gradient(135deg,#a12f46,#76172b)!important;color:#fff!important;transform:translateY(-1px)}
+.tf-storefront-v4912 .tf4927-coupon-apply:focus-visible{outline:3px solid rgba(143,31,52,.18);outline-offset:2px}
+.tf4927-coupon>p{margin:0;font-size:8px;font-weight:800;line-height:1.4}.tf4927-coupon .is-success{color:#246443}.tf4927-coupon .is-error{color:#a22b32}
+
+.tf4927-summary-totals{display:grid;gap:11px;margin:0;padding:17px 0;border-block:1px solid #e5ddd5}
+.tf4927-summary-totals>div{display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0}
+.tf4927-summary-totals dt{color:#625b54;font-size:10px;font-weight:720}
+.tf4927-summary-totals dd{margin:0;color:#251f1b;font-size:11px;font-weight:880;text-align:right}
+.tf4927-summary-totals .is-discount :where(dt,dd){color:#246443}
+.tf4927-summary-totals .is-discount dt span{display:inline-flex;margin-left:5px;padding:3px 7px;border-radius:999px;background:#e7f4eb;font-size:7px;font-weight:900;letter-spacing:.05em}
+.tf4927-summary-totals .is-total{margin-top:2px;padding-top:15px;border-top:1px dashed #d9cfc4}
+.tf4927-summary-totals .is-total dt{display:flex;align-items:baseline;gap:5px;color:#211d1a;font-size:12px;font-weight:900}
+.tf4927-summary-totals .is-total dt small{color:#8e857c;font-size:7px;font-weight:850;letter-spacing:.08em}
+.tf4927-summary-totals .is-total dd{color:#9b2037;font-size:clamp(22px,2vw,28px);font-weight:950;line-height:1;letter-spacing:-.035em}
+
+.tf4927-checkout-cta{min-height:54px;margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) 18px;align-items:center;gap:12px;padding:10px 15px 10px 18px;border:1px solid #681426;border-radius:13px;background:linear-gradient(135deg,#982d42,#681426);color:#fff;box-shadow:0 14px 28px rgba(104,21,38,.22);transition:transform .18s,filter .18s,box-shadow .18s}
+.tf4927-checkout-cta>span{display:grid;gap:2px;font-size:9.5px;font-weight:920;letter-spacing:.015em}
+.tf4927-checkout-cta small{color:#f3dfe3;font-size:7px;font-weight:650}
+.tf4927-checkout-cta svg{width:17px;height:17px;transition:transform .18s}
+.tf4927-checkout-cta:hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:0 17px 32px rgba(104,21,38,.25)}
+.tf4927-checkout-cta:hover svg{transform:translateX(2px)}
+.tf4927-safe-label{display:flex;align-items:center;justify-content:center;gap:6px;margin:13px 0 9px;color:#756d65;font-size:7.5px;font-weight:820;letter-spacing:.035em;text-transform:uppercase}
+.tf4927-safe-label svg{width:12px;height:12px;color:#286144}
+
+.tf4927-payment-benefits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.tf4927-payment-benefits article{min-width:0;min-height:66px;display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:8px;padding:8px;border:1px solid #dfd7cf;border-radius:12px;background:rgba(255,255,255,.8);box-shadow:0 5px 14px rgba(43,33,25,.035)}
+.tf4927-payment-benefits i{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#f3e5e7;color:#85243a}
+.tf4927-payment-benefits article:nth-child(2) i{background:#e7f1eb;color:#286144}.tf4927-payment-benefits article:nth-child(3) i{background:#ece9e5;color:#3f3934}
+.tf4927-payment-benefits svg{width:16px;height:16px;stroke-width:1.8}
+.tf4927-payment-benefits span{min-width:0;display:grid;gap:2px}
+.tf4927-payment-benefits small{color:#958b81;font-size:6px;font-weight:950;letter-spacing:.09em}
+.tf4927-payment-benefits b{color:#3d3732;font-size:7px;font-weight:850;line-height:1.3}
+
+.tf4927-payos-page{width:min(100% - 28px,720px);min-height:calc(100svh - 160px);display:grid;place-items:center;margin:auto;padding:48px 0 80px}
+.tf4927-payos-card{width:100%;position:relative;overflow:hidden;display:grid;justify-items:center;padding:38px;border:1px solid #ddd4ca;border-radius:24px;background:radial-gradient(circle at 50% 0,rgba(144,38,59,.07),transparent 36%),#fff;box-shadow:0 28px 80px rgba(42,30,23,.11);text-align:center}
+.tf4927-payos-card::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#7b1c30,#bc7453 50%,#d8bea2)}
+.tf4927-payos-brand{display:flex;align-items:center;gap:10px;margin-bottom:25px;color:#29231f;font-size:10px;font-weight:950;letter-spacing:.1em}
+.tf4927-payos-brand b{color:#b8aea5;font-size:12px}.tf4927-payos-brand strong{color:#1666d8;font-size:13px;letter-spacing:-.03em}
+.tf4927-payos-icon{width:70px;height:70px;position:relative;display:grid;place-items:center;margin-bottom:17px;border-radius:22px;background:#f3e5e8;color:#8f1f36}
+.tf4927-payos-icon>svg{width:34px;height:34px;stroke-width:1.7}.tf4927-payos-card.is-paid .tf4927-payos-icon{background:#e6f3eb;color:#24704a}.tf4927-payos-card.is-checking .tf4927-payos-icon{background:#eef2f8;color:#3c5e8a}
+.tf4927-payos-icon>i{position:absolute;inset:-6px;border:1px solid rgba(60,94,138,.24);border-radius:27px;animation:tf4927-payos-pulse 1.5s ease-out infinite}
+@keyframes tf4927-payos-pulse{0%{opacity:.8;transform:scale(.88)}70%,100%{opacity:0;transform:scale(1.15)}}
+.tf4927-payos-card>small{color:#8e263a;font-size:8px;font-weight:950;letter-spacing:.16em}.tf4927-payos-card.is-paid>small{color:#24704a}
+.tf4927-payos-card h1{margin:7px 0 8px;color:#211d1a;font-family:var(--tf4912-heading);font-size:clamp(29px,5vw,45px);font-weight:820;line-height:1.08;letter-spacing:-.04em}
+.tf4927-payos-card>p{max-width:480px;margin:0;color:#746c64;font-size:11px;line-height:1.65}
+.tf4927-payos-receipt{width:min(100%,480px);display:grid;gap:10px;margin:25px 0 0;padding:19px;border:1px solid #e5ded6;border-radius:15px;background:#faf8f5;text-align:left}
+.tf4927-payos-receipt>div{display:flex;align-items:center;justify-content:space-between;gap:20px}.tf4927-payos-receipt dt{color:#7c746c;font-size:8.5px;font-weight:720}.tf4927-payos-receipt dd{margin:0;color:#2b2521;font-size:9px;font-weight:880;text-align:right}.tf4927-payos-receipt>div:nth-child(2) dd{color:#98243a;font-size:13px}
+.tf4927-payos-security{width:min(100%,480px);display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;margin-top:12px;padding:11px 13px;border-radius:12px;background:#edf5f0;color:#286144;text-align:left}
+.tf4927-payos-security>svg{width:20px;height:20px;margin:auto}.tf4927-payos-security>span{display:grid;gap:2px}.tf4927-payos-security b{font-size:8px}.tf4927-payos-security small{color:#60806e;font-size:7px;line-height:1.4}
+.tf4927-payos-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin-top:22px}
+.tf4927-payos-actions :where(a,button){min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;border:1px solid #d7cec4;border-radius:11px;background:#fff;color:#413a35;font:inherit;font-size:8px;font-weight:900;cursor:pointer}
+.tf4927-payos-actions .is-primary{border-color:#72172a;background:linear-gradient(135deg,#982d42,#681426);color:#fff;box-shadow:0 9px 20px rgba(104,21,38,.18)}
+.tf4927-payos-actions :where(a,button):hover{transform:translateY(-1px)}.tf4927-payos-actions button:disabled{cursor:wait;opacity:.7;transform:none}.tf4927-payos-actions svg{width:14px;height:14px}
+
+@media(max-width:980px){.tf4927-order-summary{position:static}}
+@media(max-width:680px){
+  .tf4927-order-summary{padding:15px;border-radius:15px}.tf4927-order-summary__header{gap:4px;padding:3px 0 13px}.tf4927-order-summary__header>small{font-size:7px}.tf4927-order-summary__header h2{font-size:21px}.tf4927-order-summary__header p{font-size:8px}
+  .tf4927-coupon{gap:7px;padding:13px 0 12px}.tf4927-coupon>label{font-size:7.5px}.tf4927-coupon>div{grid-template-columns:minmax(0,1fr) 82px;gap:7px}.tf4927-coupon input{height:42px;padding-inline:11px;font-size:10px}.tf-storefront-v4912 .tf4927-coupon-apply{min-width:82px;min-height:42px;padding-inline:10px!important;font-size:8px!important}
+  .tf4927-summary-totals{gap:9px;padding:14px 0}.tf4927-summary-totals dt,.tf4927-summary-totals dd{font-size:9.5px}.tf4927-summary-totals .is-total{padding-top:13px}.tf4927-summary-totals .is-total dt{font-size:11px}.tf4927-summary-totals .is-total dd{font-size:21px}
+  .tf4927-checkout-cta{min-height:50px;margin-top:13px;padding-inline:15px 12px}.tf4927-checkout-cta>span{font-size:8.5px}.tf4927-checkout-cta small{font-size:6.5px}.tf4927-safe-label{margin-block:11px 8px;font-size:7px}
+  .tf4927-payment-benefits{gap:5px}.tf4927-payment-benefits article{min-height:68px;grid-template-columns:1fr;justify-items:center;align-content:center;gap:5px;padding:7px 3px;text-align:center}.tf4927-payment-benefits i{width:31px;height:31px;border-radius:9px}.tf4927-payment-benefits svg{width:15px;height:15px}.tf4927-payment-benefits small{font-size:5.8px}.tf4927-payment-benefits b{font-size:6.5px;line-height:1.25}
+  .tf4927-payos-page{width:calc(100% - 20px);min-height:calc(100svh - 125px);padding:24px 0 50px}.tf4927-payos-card{padding:26px 17px;border-radius:18px}.tf4927-payos-brand{margin-bottom:20px;font-size:8px}.tf4927-payos-brand strong{font-size:11px}.tf4927-payos-icon{width:60px;height:60px;border-radius:19px}.tf4927-payos-icon>svg{width:29px;height:29px}.tf4927-payos-card>small{font-size:7px}.tf4927-payos-card h1{font-size:29px}.tf4927-payos-card>p{font-size:9px}.tf4927-payos-receipt{margin-top:20px;padding:14px}.tf4927-payos-receipt dt{font-size:7.5px}.tf4927-payos-receipt dd{font-size:8px}.tf4927-payos-security{grid-template-columns:28px minmax(0,1fr);padding:10px}.tf4927-payos-security b{font-size:7.2px}.tf4927-payos-security small{font-size:6.4px}.tf4927-payos-actions{width:100%;display:grid}.tf4927-payos-actions :where(a,button){width:100%}
+}
+@media(max-width:360px){.tf4927-coupon>div{grid-template-columns:1fr}.tf-storefront-v4912 .tf4927-coupon-apply{width:100%}.tf4927-payment-benefits b{font-size:6px}}

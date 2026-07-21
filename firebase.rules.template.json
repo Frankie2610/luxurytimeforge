@@ -1,35 +1,52 @@
 {
   "rules": {
     "timeforge": {
+      "adminMembers": {
+        ".read": "__OWNER_CONDITION__",
+        "$uid": {
+          ".read": "(__OWNER_CONDITION__) || (auth != null && auth.uid == $uid)",
+          ".write": "(__OWNER_CONDITION__) || (auth != null && auth.uid == $uid && !data.exists() && newData.child('uid').val() == auth.uid && newData.child('email').val() == auth.token.email && newData.child('status').val() == 'active' && newData.child('inviteId').isString() && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('status').val() == 'accepted' && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('acceptedBy').val() == auth.uid && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('email').val() == auth.token.email && root.child('timeforge/adminInvitations').child(newData.child('inviteId').val()).child('role').val() == newData.child('role').val())",
+          ".validate": "!newData.exists() || (newData.hasChildren(['uid','email','name','role','status','updatedAt']) && newData.child('uid').val() == $uid && newData.child('email').isString() && newData.child('name').isString() && (newData.child('role').val() == 'owner' || newData.child('role').val() == 'admin' || newData.child('role').val() == 'manager' || newData.child('role').val() == 'staff' || newData.child('role').val() == 'content') && (newData.child('status').val() == 'active' || newData.child('status').val() == 'suspended'))"
+        }
+      },
+      "adminInvitations": {
+        ".read": "__OWNER_CONDITION__",
+        "$inviteId": {
+          ".read": "(__OWNER_CONDITION__) || (auth != null && auth.token.email != null && data.child('email').val() == auth.token.email)",
+          ".write": "(__OWNER_CONDITION__) || (auth != null && auth.token.email != null && data.exists() && data.child('status').val() == 'pending' && data.child('email').val() == auth.token.email && newData.child('id').val() == data.child('id').val() && newData.child('email').val() == data.child('email').val() && newData.child('name').val() == data.child('name').val() && newData.child('role').val() == data.child('role').val() && newData.child('invitedBy').val() == data.child('invitedBy').val() && newData.child('createdAt').val() == data.child('createdAt').val() && newData.child('expiresAt').val() == data.child('expiresAt').val() && newData.child('status').val() == 'accepted' && newData.child('acceptedBy').val() == auth.uid)",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','email','name','role','status','invitedBy','invitedByName','createdAt','expiresAt']) && newData.child('id').val() == $inviteId && newData.child('email').isString() && newData.child('name').isString() && (newData.child('role').val() == 'admin' || newData.child('role').val() == 'manager' || newData.child('role').val() == 'staff' || newData.child('role').val() == 'content') && (newData.child('status').val() == 'pending' || newData.child('status').val() == 'accepted' || newData.child('status').val() == 'cancelled' || newData.child('status').val() == 'expired'))"
+        }
+      },
       "products": {
         ".read": true,
         ".indexOn": ["vendor", "status", "handle", "published"],
         "$sku": {
-          ".write": "__ADMIN_CONDITION__",
-          ".validate": "!newData.exists() || (newData.hasChildren(['id','sku','handle','title','status','published','images','price','inventory','variants','createdAt','updatedAt']) && newData.child('id').val() == $sku && newData.child('sku').val() == $sku && newData.child('title').isString() && newData.child('handle').isString() && newData.child('images').hasChildren() && newData.child('price').isNumber() && newData.child('inventory').isNumber())"
+          ".write": "__PRODUCTS_MANAGE_CONDITION__",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','sku','handle','title','status','published','price','inventory','variants','createdAt','updatedAt']) && newData.child('id').val() == $sku && newData.child('sku').val() == $sku && newData.child('title').isString() && newData.child('handle').isString() && (!newData.child('images').exists() || newData.child('images').hasChildren()) && newData.child('price').isNumber() && newData.child('inventory').isNumber())"
         }
       },
-      "collections": {".read": true, ".write": "__ADMIN_CONDITION__"},
+      "collections": {".read": true, ".write": "__PRODUCTS_MANAGE_CONDITION__"},
       "themes": {
-        "published": {".read": true, ".write": "__ADMIN_CONDITION__"},
-        "draft": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-        "versions": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"}
+        "published": {".read": true, ".write": "__STORE_MANAGE_CONDITION__"},
+        "draft": {".read": "__STORE_MANAGE_CONDITION__", ".write": "__STORE_MANAGE_CONDITION__"},
+        "versions": {".read": "__STORE_MANAGE_CONDITION__", ".write": "__STORE_MANAGE_CONDITION__"}
       },
-      "customers": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "orders": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "discounts": {".read": true, ".write": "__ADMIN_CONDITION__"},
-      "inventoryAdjustments": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "activities": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "orderWorkflows": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "customerSegments": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "draftOrders": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "returnRequests": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"},
-      "settings": {"integrations": {".read": "__ADMIN_CONDITION__", ".write": "__ADMIN_CONDITION__"}},
-      "blogPosts": {".read": true, ".write": "__ADMIN_CONDITION__"},
+      "customers": {".read": "__CUSTOMERS_CONDITION__", ".write": "__CUSTOMERS_MANAGE_CONDITION__"},
+      "orders": {".read": "__ORDERS_CONDITION__", ".write": "__ORDERS_MANAGE_CONDITION__"},
+      "discounts": {".read": true, ".write": "__MARKETING_MANAGE_CONDITION__"},
+      "inventoryAdjustments": {".read": "__PRODUCTS_CONDITION__", ".write": "__PRODUCTS_MANAGE_CONDITION__"},
+      "activities": {".read": "__ACTIVE_ADMIN_CONDITION__", ".write": "__ACTIVE_ADMIN_CONDITION__"},
+      "orderWorkflows": {".read": "__ORDERS_CONDITION__", ".write": "__ORDERS_MANAGE_CONDITION__"},
+      "customerSegments": {".read": "__CUSTOMERS_CONDITION__", ".write": "__CUSTOMERS_MANAGE_CONDITION__"},
+      "draftOrders": {".read": "__ORDERS_CONDITION__", ".write": "__ORDERS_MANAGE_CONDITION__"},
+      "returnRequests": {".read": "__ORDERS_CONDITION__", ".write": "__ORDERS_MANAGE_CONDITION__"},
+      "settings": {"integrations": {".read": "__SETTINGS_MANAGE_CONDITION__", ".write": "__SETTINGS_MANAGE_CONDITION__"}},
+      "blogPosts": {".read": true, ".write": "__CONTENT_MANAGE_CONDITION__"},
+      "contentPages": {".read": true, ".write": "__CONTENT_MANAGE_CONDITION__"},
       "newsletterSubscribers": {
-        ".read": "__ADMIN_CONDITION__",
+        ".read": "__MARKETING_MANAGE_CONDITION__",
         "$subscriberId": {
-          ".write": "(__ADMIN_CONDITION__) || !data.exists()",
+          ".write": "(__MARKETING_MANAGE_CONDITION__) || !data.exists()",
           ".validate": "newData.hasChildren(['id','email','source','status','createdAt','updatedAt']) && newData.child('id').val() == $subscriberId && newData.child('email').isString() && newData.child('email').val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/) && (newData.child('status').val() == 'active' || newData.child('status').val() == 'unsubscribed')"
         }
       }

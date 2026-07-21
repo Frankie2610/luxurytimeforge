@@ -6,7 +6,7 @@ export const defaultIntegrationSettings:IntegrationSettings={
   payment:{
     cod:true,
     bankTransfer:true,
-    online:false,
+    online:true,
     onlineProvider:'payos',
     createEndpoint:import.meta.env.VITE_PAYMENT_CREATE_ENDPOINT||'/api/payments/create',
     bankName:'Vietcombank',
@@ -61,7 +61,7 @@ export async function createOnlinePayment(order:Order):Promise<{checkoutUrl:stri
   if(!settings.payment.online)throw new Error('Thanh toán online chưa được bật trong Cài đặt tích hợp.');
   const endpoint=settings.payment.createEndpoint||import.meta.env.VITE_PAYMENT_CREATE_ENDPOINT;
   if(!endpoint)throw new Error('Chưa cấu hình payment create endpoint.');
-  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:order.id,orderNumber:order.number,amount:order.total,currency:order.currency,description:`Thanh toan ${order.number}`,returnUrl:`${location.origin}/order-confirmation/${order.id}?payment=success`,cancelUrl:`${location.origin}/checkout?payment=cancelled`})});
+  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:order.id,order})});
   const data=await response.json().catch(()=>({}));
   if(!response.ok||!data.checkoutUrl)throw new Error(data.message||'Không thể tạo liên kết thanh toán online.');
   return data;

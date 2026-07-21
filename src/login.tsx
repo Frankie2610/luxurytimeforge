@@ -17,7 +17,7 @@ export function AdminLogin(){
   const[notice,setNotice]=useState('');
   const[busy,setBusy]=useState<'email'|'google'|'reset'|'demo'|null>(null);
   const returnTo=useMemo(()=>((location.state as{from?:string}|null)?.from||sessionStorage.getItem(RETURN_KEY)||'/admin'),[location.state]);
-  if(user)return <Navigate to={returnTo} replace/>;
+  if(user?.access==='active')return <Navigate to={returnTo} replace/>;
   const done=()=>{sessionStorage.removeItem(RETURN_KEY);navigate(returnTo,{replace:true})};
   const run=async(type:typeof busy,task:()=>Promise<void>|void,success?:string)=>{setBusy(type);setError('');setNotice('');try{await task();if(success)setNotice(success);else done()}catch(reason){setError(reason instanceof Error?reason.message:'Không thể hoàn tất đăng nhập.')}finally{setBusy(null)}};
   const ready=firebaseEnabled&&accessConfigured;

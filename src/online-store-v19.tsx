@@ -3,7 +3,7 @@ import {
   GripVertical, History, Home, Image as ImageIcon, Laptop, LayoutPanelLeft,
   LayoutTemplate, Menu, Monitor, MoreHorizontal, Palette, PanelLeftClose,
   PanelLeftOpen, Plus, Redo2, Search, Settings2, ShoppingBag, Smartphone,
-  Sparkles, Tag, Trash2, Undo2, X, RefreshCw, Maximize2, UploadCloud,
+  Sparkles, Tag, Trash2, Undo2, X, RefreshCw, Maximize2,
   Images, MessageSquareQuote, CircleHelp, Timer, Type, Paintbrush, Layers3, Download, FileUp,
 } from 'lucide-react';
 import {
@@ -28,7 +28,6 @@ import type {
 import {readThemeExtrasV23, saveThemeExtrasV23, type ThemeExtrasV23} from './theme-extras-v23';
 import {ResourcePicker} from './resource-picker';
 import {writeThemePreviewExtrasV26, writeThemePreviewV26} from './theme-preview-v26';
-import {cloudinaryEnabled, uploadCloudinaryImage} from './cloudinary';
 import './v499-theme-editor.css';
 import {uid} from './utils';
 import {
@@ -83,7 +82,8 @@ const sectionDescriptions: Partial<Record<SectionType, string>> = {
 const sectionCategory = (type: SectionType) => ['products','bestSellers','productRecommendations','collectionGrid','collections'].includes(type) ? 'Sản phẩm' : ['hero','imageText','video','gallery','collectionBanner'].includes(type) ? 'Hình ảnh' : ['testimonials','faq','logoList','multicolumn','trust'].includes(type) ? 'Nội dung' : 'Tiện ích';
 
 function regenerateBlockIds(block: ThemeBlock): ThemeBlock {
-  return {...clone(block), id: uid('b'), children: block.children?.map(regenerateBlockIds)};
+  const next={...clone(block),id:uid('b')};
+  return block.children?{...next,children:block.children.map(regenerateBlockIds)}:next;
 }
 function findBlock(items: ThemeBlock[], id: string): ThemeBlock | undefined {
   for (const item of items) {if (item.id === id) return item; const nested = findBlock(item.children || [], id); if (nested) return nested;}
@@ -125,9 +125,6 @@ function moveBlock(items: ThemeBlock[], activeId: string, overId: string): Theme
 
 function SettingField({name, label, value, onChange}: {name: string; label?: string; value: string | number | boolean; onChange: (value: string | number | boolean) => void}) {
   const fieldLabel = label || labelSetting(name);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const fileRef = useRef<HTMLInputElement>(null);
   const selectOptions: Partial<Record<string, Array<[string, string]>>> = {
     alignment: [['left', 'Trái'], ['center', 'Giữa'], ['right', 'Phải']],
     colorScheme: [['light', 'Chữ tối'], ['dark', 'Chữ sáng']],
@@ -145,24 +142,13 @@ function SettingField({name, label, value, onChange}: {name: string; label?: str
   };
   const rangeConfig: Partial<Record<string, {min: number; max: number; step: number; suffix?: string}>> = {
     height: {min: 280, max: 900, step: 10, suffix: 'px'}, overlay: {min: 0, max: 90, step: 1, suffix: '%'},
-    columns: {min: 1, max: 6, step: 1}, limit: {min: 1, max: 24, step: 1}, pageSize: {min: 4, max: 48, step: 4},
+    columns: {min: 1, max: 6, step: 1}, limit: {min: 1, max: 24, step: 1}, pageSize: {min: 50, max: 100, step: 10},
     radius: {min: 0, max: 36, step: 1, suffix: 'px'}, cardRadius: {min: 0, max: 36, step: 1, suffix: 'px'},
     buttonRadius: {min: 0, max: 999, step: 1, suffix: 'px'}, contentWidth: {min: 960, max: 1680, step: 20, suffix: 'px'},
     sectionSpacing: {min: 32, max: 140, step: 4, suffix: 'px'}, headingScale: {min: 80, max: 125, step: 1, suffix: '%'},
     headingWeight: {min: 400, max: 700, step: 100}, bodyWeight: {min: 300, max: 600, step: 100},
   };
   const imageField = ['image', 'poster', 'logoImage'].includes(name);
-  const upload = async (file?: File) => {
-    if (!file) return;
-    if (!cloudinaryEnabled) {toast.error('Cloudinary chưa được cấu hình trong .env'); return;}
-    setUploading(true); setProgress(0);
-    try {
-      const result = await uploadCloudinaryImage(file, {folder: 'timeforge/theme', onProgress: setProgress});
-      onChange(result.secureUrl);
-      toast.success('Đã tải ảnh lên Cloudinary');
-    } catch (error) {toast.error(error instanceof Error ? error.message : 'Tải ảnh thất bại');}
-    finally {setUploading(false);}
-  };
   if (typeof value === 'boolean') return <label className="v19-switch"><span>{fieldLabel}</span><button type="button" role="switch" aria-checked={value} className={value ? 'on' : ''} onClick={() => onChange(!value)}><i/></button></label>;
   if (typeof value === 'number') {
     const config = rangeConfig[name];
@@ -173,7 +159,7 @@ function SettingField({name, label, value, onChange}: {name: string; label?: str
   if (name === 'endDate') return <label className="v19-field"><span>{fieldLabel}</span><input type="datetime-local" value={value} onChange={event => onChange(event.target.value)}/></label>;
   const long = value.length > 70 || ['text', 'description'].includes(name);
   if (name.toLowerCase().includes('color') || /^#[0-9a-f]{6}$/i.test(value)) return <label className="v19-field"><span>{fieldLabel}</span><div className="v19-color"><input type="color" value={value} onChange={event => onChange(event.target.value)}/><input value={value} onChange={event => onChange(event.target.value)}/></div></label>;
-  if (imageField) return <label className="v19-field v27-media-field"><span>{fieldLabel}</span>{value && <img src={value} alt=""/>}<div><input value={value} onChange={event => onChange(event.target.value)} placeholder="Cloudinary secure_url"/><input ref={fileRef} hidden type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={event => {void upload(event.target.files?.[0]); event.currentTarget.value = '';}}/><button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}><UploadCloud/>{uploading ? `Đang tải ${progress}%` : 'Tải lên Cloudinary'}</button></div></label>;
+  if (imageField) return <label className="v19-field v27-media-field"><span>{fieldLabel}</span>{value && <img src={value} alt="Xem trước ảnh CDN" loading="lazy" decoding="async"/>}<div><input type="url" inputMode="url" value={value} onChange={event => onChange(event.target.value)} placeholder="https://cdn.example.com/image.webp"/><small>Dán URL HTTPS từ CDN của cửa hàng.</small></div></label>;
   return <label className="v19-field"><span>{fieldLabel}</span>{long ? <textarea rows={4} value={value} onChange={event => onChange(event.target.value)}/> : <input value={value} onChange={event => onChange(event.target.value)}/>}</label>;
 }
 
@@ -291,6 +277,7 @@ function ThemeEditorV19({close}: {close: () => void}) {
   const previewRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const themeImportRef = useRef<HTMLInputElement>(null);
+  const saveDraftRef = useRef(saveThemeDraft);
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}));
   const current = theme.templates[template];
   const selectedSection = selection.kind === 'virtual' ? undefined : current.sections.find((section) => section.id === selection.sectionId);
@@ -349,7 +336,7 @@ function ThemeEditorV19({close}: {close: () => void}) {
     }
   };
   const addSection = (type: SectionType) => {const next = createSection(type); setSections([...current.sections, next]); setSelection({kind: 'section', sectionId: next.id}); setExpanded((items) => ({...items, [next.id]: true})); setSectionLibraryOpen(false); setSectionQuery('');};
-  const addBlock = (type: BlockType) => {if (!selectedSection) return; const next: ThemeBlock = {id: uid('b'), type, visible: true, settings: type === 'heading' ? {eyebrow: '', text: 'Tiêu đề mới'} : type === 'text' ? {text: 'Nội dung mới'} : type === 'button' ? {label: 'Xem thêm', link: '/collections', style: 'primary'} : type === 'group' ? {title: 'Nhóm nội dung', layout: 'stack'} : type === 'iconText' ? {icon: 'shield', title: 'Cam kết', text: 'Nội dung cam kết'} : type === 'accordion' ? {title: 'Câu hỏi', text: 'Nội dung trả lời', source: 'description', open: false} : type === 'image' ? {image: '', alt: 'Hình ảnh TimeForge'} : {}, children: type === 'group' ? [] : undefined}; patchSection(selectedSection.id, {blocks: [...selectedSection.blocks, next]}); setSelection({kind: 'block', sectionId: selectedSection.id, blockId: next.id});};
+  const addBlock = (type: BlockType) => {if (!selectedSection) return; const next: ThemeBlock = {id: uid('b'), type, visible: true, settings: type === 'heading' ? {eyebrow: '', text: 'Tiêu đề mới'} : type === 'text' ? {text: 'Nội dung mới'} : type === 'button' ? {label: 'Xem thêm', link: '/collections', style: 'primary'} : type === 'group' ? {title: 'Nhóm nội dung', layout: 'stack'} : type === 'iconText' ? {icon: 'shield', title: 'Cam kết', text: 'Nội dung cam kết'} : type === 'accordion' ? {title: 'Câu hỏi', text: 'Nội dung trả lời', source: 'description', open: false} : type === 'image' ? {image: '', alt: 'Hình ảnh TimeForge'} : {}, ...(type === 'group' ? {children: []} : {})}; patchSection(selectedSection.id, {blocks: [...selectedSection.blocks, next]}); setSelection({kind: 'block', sectionId: selectedSection.id, blockId: next.id});};
   const duplicateSection = (section: Section) => {const copy = clone(section); copy.id = uid('s'); copy.blocks = copy.blocks.map(regenerateBlockIds); const list = [...current.sections]; const index = list.findIndex((item) => item.id === section.id); list.splice(index + 1, 0, copy); setSections(list); setSelection({kind: 'section', sectionId: copy.id});};
   const deleteSection = (section: Section) => {if (current.sections.length <= 1) {toast.error('Template cần ít nhất một section'); return;} const next = current.sections.filter((item) => item.id !== section.id); setSections(next); setSelection({kind: 'section', sectionId: next[0].id});};
   const duplicateBlock = (sectionId: string, blockId: string) => {const section = current.sections.find((item) => item.id === sectionId); if (!section) return; const original = findBlock(section.blocks, blockId); const location = blockLocation(section.blocks, blockId); if (!original || !location) return; const copy = regenerateBlockIds(original); const next = insertBlock(section.blocks, location.parentId, location.index + 1, copy); patchSection(sectionId, {blocks: next}); setSelection({kind: 'block', sectionId, blockId: copy.id});};
@@ -358,7 +345,9 @@ function ThemeEditorV19({close}: {close: () => void}) {
   const blockDrag = (sectionId: string, {active, over}: DragEndEvent) => {if (!over || active.id === over.id) return; const section = current.sections.find((item) => item.id === sectionId); if (!section) return; patchSection(sectionId, {blocks: moveBlock(section.blocks, String(active.id), String(over.id))});};
 
   useEffect(() => {writeThemePreviewV26(theme); writeThemePreviewExtrasV26(extras);}, [theme, extras]);
-  useEffect(() => {const timer = window.setTimeout(() => saveThemeDraft(theme), 650); return () => window.clearTimeout(timer);}, [theme, saveThemeDraft]);
+  useEffect(() => {saveDraftRef.current = saveThemeDraft;}, [saveThemeDraft]);
+  useEffect(() => {if (!dirty) return; const timer = window.setTimeout(() => saveDraftRef.current(theme), 900); return () => window.clearTimeout(timer);}, [theme, dirty]);
+  useEffect(() => {document.body.classList.add('tf-theme-editor-open-v4924'); return () => document.body.classList.remove('tf-theme-editor-open-v4924');}, []);
   useEffect(() => {const message = (event: MessageEvent) => {if (event.origin !== window.location.origin || !['timeforge:preview-section-selected','timeforge:preview-block-selected'].includes(String(event.data?.type || ''))) return; const sectionId = String(event.data.sectionId || ''); const blockId = String(event.data.blockId || ''); const section = theme.templates[template].sections.find((item) => item.id === sectionId); if (!section) return; const block = blockId ? findBlock(section.blocks, blockId) : undefined; setSelection(block ? {kind: 'block', sectionId, blockId} : {kind: 'section', sectionId}); setExpanded((items) => ({...items, [sectionId]: true})); setSidebarOpen(true); setMode('sections');}; window.addEventListener('message', message); return () => window.removeEventListener('message', message);}, [theme, template]);
   useEffect(() => {const sectionId = selection.kind === 'virtual' ? '' : selection.sectionId; const blockId = selection.kind === 'block' ? selection.blockId : ''; iframeRef.current?.contentWindow?.postMessage({type: 'timeforge:editor-selection', sectionId, blockId, scroll: false}, window.location.origin);}, [selection, previewSrc]);
 

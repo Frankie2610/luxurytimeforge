@@ -25,3 +25,38 @@
 @keyframes tf-route-progress{0%{transform:translateX(-120%)}100%{transform:translateX(380%)}}
 @keyframes tf-route-spin{to{transform:rotate(360deg)}}
 @media(max-width:540px){.route-loading{padding:16px}.route-loading-brand img{width:52px;height:52px}.route-loading-brand b{font-size:9.5px}}
+
+/* Sprint 49.20 — admin boot skeleton; never flash the large storefront logo. */
+.tf-admin-boot{position:fixed;inset:0;z-index:3200;overflow:hidden;background:#f4f5f3;color:#273029}
+.tf-admin-boot-bar{position:absolute;inset:0 0 auto;height:3px;overflow:hidden;background:#dfe5e0}
+.tf-admin-boot-bar::after{content:"";display:block;width:36%;height:100%;background:linear-gradient(90deg,#2f6244,#91ad98);animation:tf-admin-boot-progress 1s ease-in-out infinite}
+.tf-admin-boot-shell{min-height:100vh;display:grid;grid-template-columns:232px minmax(0,1fr)}
+.tf-admin-boot-shell>aside{display:grid;align-content:start;gap:11px;padding:22px 17px;background:#202521}
+.tf-admin-boot-shell>aside i{display:block;height:34px;border-radius:8px;background:linear-gradient(90deg,#303832,#3b443d,#303832);background-size:220% 100%;animation:tf-admin-boot-shimmer 1.2s linear infinite}
+.tf-admin-boot-shell>aside i:first-child{width:72%;height:42px;margin-bottom:18px}
+.tf-admin-boot-shell>main{min-width:0;display:grid;grid-template-rows:58px 1fr}
+.tf-admin-boot-shell>main>header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 24px;border-bottom:1px solid #dde2de;background:#fff}
+.tf-admin-boot-shell>main>header i{display:block;width:min(420px,46vw);height:34px;border-radius:9px;background:#edf0ed}
+.tf-admin-boot-shell>main>header i:last-child{width:124px}
+.tf-admin-boot-shell>main>section{display:grid;align-content:start;gap:14px;padding:30px}
+.tf-admin-boot-shell>main>section>i{display:block;width:240px;height:32px;border-radius:8px;background:#e3e7e4}
+.tf-admin-boot-shell>main>section>i:nth-child(2){width:390px;height:18px}
+.tf-admin-boot-shell>main>section>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:8px}
+.tf-admin-boot-shell>main>section>div i{display:block;min-height:180px;border-radius:14px;background:linear-gradient(100deg,#e5e9e6,#f6f8f6,#e5e9e6);background-size:220% 100%;animation:tf-admin-boot-shimmer 1.2s linear infinite}
+@keyframes tf-admin-boot-progress{0%{transform:translateX(-120%)}100%{transform:translateX(380%)}}
+@keyframes tf-admin-boot-shimmer{to{background-position:-220% 0}}
+@media(max-width:760px){
+  .tf-admin-boot-shell{grid-template-columns:1fr}
+  .tf-admin-boot-shell>aside{display:none}
+  .tf-admin-boot-shell>main{grid-template-rows:54px 1fr}
+  .tf-admin-boot-shell>main>header{padding:0 12px}
+  .tf-admin-boot-shell>main>header i{width:42px}
+  .tf-admin-boot-shell>main>header i:last-child{width:92px}
+  .tf-admin-boot-shell>main>section{padding:20px 13px}
+  .tf-admin-boot-shell>main>section>i{width:54%;height:26px}
+  .tf-admin-boot-shell>main>section>i:nth-child(2){width:78%;height:14px}
+  .tf-admin-boot-shell>main>section>div{grid-template-columns:1fr;gap:10px}
+  .tf-admin-boot-shell>main>section>div i{min-height:112px}
+  .tf-admin-boot-shell>main>section>div i:nth-child(n+3){display:none}
+}
+@media(prefers-reduced-motion:reduce){.tf-admin-boot *{animation:none!important}}

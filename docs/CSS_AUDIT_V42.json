@@ -1,45 +1,85 @@
 {
-  "generatedAt": "2026-07-20T14:05:30.336Z",
-  "files": 26,
-  "sourceBytes": 777744,
-  "importantDeclarations": 1670,
-  "uniqueSelectors": 6025,
-  "duplicatedSelectors": 2017,
+  "generatedAt": "2026-07-21T13:51:49.158Z",
+  "files": 46,
+  "sourceBytes": 959591,
+  "importantDeclarations": 1788,
+  "uniqueSelectors": 7257,
+  "duplicatedSelectors": 2436,
   "productionCss": [
     {
-      "name": "legacy-fETz42zH.css",
-      "bytes": 262111
+      "name": "legacy-Do6_dGEQ.css",
+      "bytes": 239735
     },
     {
-      "name": "storefront-v10-DmAyBaOt.css",
-      "bytes": 163317
+      "name": "storefront-v10-DahMHt2I.css",
+      "bytes": 177296
     },
     {
-      "name": "admin-shell-v16-BSPWz-DV.css",
-      "bytes": 38608
+      "name": "admin-shell-v16-Cp8SshF_.css",
+      "bytes": 58325
     },
     {
-      "name": "checkout-v11-C868ZDAl.css",
-      "bytes": 30742
+      "name": "checkout-v11-D5wN-xVl.css",
+      "bytes": 32095
     },
     {
-      "name": "online-store-v19-BsWGximi.css",
-      "bytes": 17089
+      "name": "v4923-admin-content-DTb8cyla.css",
+      "bytes": 25980
     },
     {
-      "name": "index-CGVBlOBt.css",
-      "bytes": 14007
+      "name": "online-store-v19-B4zZ-IZq.css",
+      "bytes": 24443
     },
     {
-      "name": "login-M5nbCUnS.css",
-      "bytes": 6255
+      "name": "product-editor-v39-DakCESpe.css",
+      "bytes": 22494
+    },
+    {
+      "name": "blog-v18-CcxRd3cc.css",
+      "bytes": 19237
+    },
+    {
+      "name": "index-CyM-VYai.css",
+      "bytes": 17003
+    },
+    {
+      "name": "v4927-commerce-COnk4C0b.css",
+      "bytes": 11385
+    },
+    {
+      "name": "team-v20-Cqwc5CWz.css",
+      "bytes": 9785
+    },
+    {
+      "name": "login-BAUKEKHj.css",
+      "bytes": 5752
+    },
+    {
+      "name": "admin-operations-v10-CPva9djw.css",
+      "bytes": 4401
+    },
+    {
+      "name": "v4921-admin-operations--79sxxEi.css",
+      "bytes": 4218
+    },
+    {
+      "name": "admin-invite-BuN7DqL_.css",
+      "bytes": 3829
+    },
+    {
+      "name": "v4925-admin-resources-Bx5pPJhi.css",
+      "bytes": 2257
+    },
+    {
+      "name": "admin-CrXjeGKL.css",
+      "bytes": 387
     }
   ],
-  "productionCssBytes": 532129,
+  "productionCssBytes": 658622,
   "topDuplicates": [
     {
       "selector": "select",
-      "count": 26,
+      "count": 30,
       "files": [
         "src/base.css",
         "src/sprint16.css",
@@ -48,8 +88,26 @@
         "src/styles.css",
         "src/v4912-storefront.css",
         "src/v4913-storefront-compat.css",
+        "src/v4915-product-editor.css",
         "src/v499-admin.css",
         "src/v499-theme-editor.css"
+      ]
+    },
+    {
+      "selector": "to",
+      "count": 21,
+      "files": [
+        "src/app.css",
+        "src/auth.css",
+        "src/sprint11.css",
+        "src/sprint13.css",
+        "src/sprint22.css",
+        "src/styles.css",
+        "src/ui/ui.css",
+        "src/v4912-storefront.css",
+        "src/v4917-admin-invite.css",
+        "src/v4917-team.css",
+        "src/v4920-commerce-mobile.css"
       ]
     },
     {
@@ -60,24 +118,47 @@
       ]
     },
     {
-      "selector": "to",
-      "count": 17,
+      "selector": "@media(prefers-reduced-motion:reduce)",
+      "count": 16,
       "files": [
         "src/app.css",
         "src/auth.css",
-        "src/sprint11.css",
+        "src/base.css",
+        "src/sprint12.css",
         "src/sprint13.css",
-        "src/sprint22.css",
-        "src/styles.css",
+        "src/sprint15.css",
+        "src/sprint16.css",
         "src/ui/ui.css",
-        "src/v4912-storefront.css"
+        "src/v24-tokens.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4915-product-editor.css",
+        "src/v4920-commerce-mobile.css",
+        "src/v4923-storefront.css",
+        "src/v4925-storefront.css",
+        "src/v4933-collection.css"
       ]
     },
     {
-      "selector": ".tf-storefront-v4912 :is(.tf-selection-v4910",
-      "count": 17,
+      "selector": "@media(max-width:680px)",
+      "count": 16,
       "files": [
-        "src/v4912-storefront.css"
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/ui/ui.css",
+        "src/v4912-commerce.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-commerce-fixes.css",
+        "src/v4920-commerce-mobile.css",
+        "src/v4923-storefront.css",
+        "src/v4925-commerce.css",
+        "src/v4927-commerce.css",
+        "src/v4933-collection.css"
       ]
     },
     {
@@ -129,23 +210,8 @@
       ]
     },
     {
-      "selector": ".v18-journal-home",
-      "count": 14,
-      "files": [
-        "src/sprint18.css",
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912 .lux-header-inner",
-      "count": 14,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
       "selector": "input",
-      "count": 13,
+      "count": 14,
       "files": [
         "src/base.css",
         "src/sprint16.css",
@@ -154,8 +220,36 @@
         "src/v4912-commerce.css",
         "src/v4912-storefront.css",
         "src/v4913-storefront-compat.css",
+        "src/v4915-product-editor.css",
         "src/v499-admin.css",
         "src/v499-theme-editor.css"
+      ]
+    },
+    {
+      "selector": ".v18-journal-home",
+      "count": 14,
+      "files": [
+        "src/sprint18.css",
+        "src/v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": "textarea)",
+      "count": 14,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-product-editor.css",
+        "src/v499-admin.css",
+        "src/v499-theme-editor.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-header-inner",
+      "count": 14,
+      "files": [
+        "src/v4912-storefront.css"
       ]
     },
     {
@@ -168,15 +262,8 @@
       ]
     },
     {
-      "selector": ".v18-best-sellers",
-      "count": 13,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
       "selector": "@media(max-width:900px)",
-      "count": 12,
+      "count": 13,
       "files": [
         "src/sprint11.css",
         "src/sprint12.css",
@@ -185,8 +272,51 @@
         "src/sprint23.css",
         "src/styles.css",
         "src/v4913-storefront-compat.css",
-        "src/v499-admin.css",
-        "src/v499-theme-editor.css"
+        "src/v4923-storefront.css",
+        "src/v4933-collection.css",
+        "src/v499-admin.css"
+      ]
+    },
+    {
+      "selector": "span",
+      "count": 13,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4922-journal.css"
+      ]
+    },
+    {
+      "selector": "button)",
+      "count": 13,
+      "files": [
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4922-journal.css",
+        "src/v4923-storefront.css",
+        "src/v4927-commerce.css",
+        "src/v499-admin.css"
+      ]
+    },
+    {
+      "selector": ".v18-best-sellers",
+      "count": 13,
+      "files": [
+        "src/v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": "a",
+      "count": 12,
+      "files": [
+        "src/base.css",
+        "src/sprint16.css",
+        "src/sprint20.css",
+        "src/styles.css",
+        "src/v4912-storefront.css",
+        "src/v4923-storefront.css"
       ]
     },
     {
@@ -200,14 +330,13 @@
       ]
     },
     {
-      "selector": "textarea)",
+      "selector": "b",
       "count": 12,
       "files": [
-        "src/v4912-commerce.css",
+        "src/sprint21.css",
         "src/v4912-storefront.css",
         "src/v4913-storefront-compat.css",
-        "src/v499-admin.css",
-        "src/v499-theme-editor.css"
+        "src/v4922-journal.css"
       ]
     },
     {
@@ -251,17 +380,6 @@
       ]
     },
     {
-      "selector": "a",
-      "count": 11,
-      "files": [
-        "src/base.css",
-        "src/sprint16.css",
-        "src/sprint20.css",
-        "src/styles.css",
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
       "selector": ".lux-logo span",
       "count": 11,
       "files": [
@@ -269,17 +387,6 @@
         "src/sprint14.css",
         "src/sprint15.css",
         "src/sprint21.css"
-      ]
-    },
-    {
-      "selector": ".lux-content-page",
-      "count": 11,
-      "files": [
-        "src/sprint10.css",
-        "src/sprint14.css",
-        "src/sprint15.css",
-        "src/sprint21.css",
-        "src/v4912-storefront.css"
       ]
     },
     {
@@ -291,13 +398,14 @@
       ]
     },
     {
-      "selector": "span",
+      "selector": "small",
       "count": 11,
       "files": [
         "src/sprint16.css",
         "src/sprint21.css",
         "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
+        "src/v4913-storefront-compat.css",
+        "src/v4915-commerce-fixes.css"
       ]
     },
     {
@@ -327,22 +435,6 @@
       "selector": ".tf-storefront-v4912 .tf-pdp-price-v39 strong",
       "count": 11,
       "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": "@media(prefers-reduced-motion:reduce)",
-      "count": 10,
-      "files": [
-        "src/auth.css",
-        "src/base.css",
-        "src/sprint12.css",
-        "src/sprint13.css",
-        "src/sprint15.css",
-        "src/sprint16.css",
-        "src/ui/ui.css",
-        "src/v24-tokens.css",
-        "src/v4912-commerce.css",
         "src/v4912-storefront.css"
       ]
     },
@@ -377,19 +469,14 @@
       ]
     },
     {
-      "selector": "@media(max-width:680px)",
+      "selector": ".lux-content-page",
       "count": 10,
       "files": [
-        "src/sprint11.css",
-        "src/sprint12.css",
-        "src/sprint13.css",
+        "src/sprint10.css",
         "src/sprint14.css",
         "src/sprint15.css",
-        "src/sprint18.css",
-        "src/sprint23.css",
-        "src/ui/ui.css",
-        "src/v4912-commerce.css",
-        "src/v4913-storefront-compat.css"
+        "src/sprint21.css",
+        "src/v4912-storefront.css"
       ]
     },
     {
@@ -404,16 +491,6 @@
       ]
     },
     {
-      "selector": "small",
-      "count": 10,
-      "files": [
-        "src/sprint16.css",
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
-      ]
-    },
-    {
       "selector": ".v18-blog-grid-wrap",
       "count": 10,
       "files": [
@@ -422,21 +499,14 @@
       ]
     },
     {
-      "selector": "b",
+      "selector": "from",
       "count": 10,
       "files": [
-        "src/sprint21.css",
+        "src/sprint22.css",
+        "src/styles.css",
+        "src/ui/ui.css",
         "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
-      ]
-    },
-    {
-      "selector": "h4",
-      "count": 10,
-      "files": [
-        "src/v24-tokens.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
+        "src/v4920-commerce-mobile.css"
       ]
     }
   ]

@@ -4,14 +4,14 @@ import {
   AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowLeft, ArrowUp, Bold, Check,
   Code2, Eye, Heading2, ImagePlus, Italic, Link2, List, ListOrdered, Minus,
   Plus, Quote, Redo2, RemoveFormatting, Save, Strikethrough, Trash2, Underline,
-  Undo2, UploadCloud, X,
+  Undo2, X,
 } from 'lucide-react';
 import {toast} from 'sonner';
 import {useCommerce} from './context';
 import type {Metafield, Product, ProductOption, Variant} from './types';
-import {cloudinaryEnabled, uploadCloudinaryImages} from './cloudinary';
 import {money, slugify, strip, uid} from './utils';
 import {isFirebaseSafeSku, normalizeSku} from './product-data';
+import './v4915-product-editor.css';
 
 const blankProduct = (): Product => {
   const now = new Date().toISOString();
@@ -44,10 +44,7 @@ export function ProductEditorV39() {
   const [mode, setMode] = useState<'visual' | 'html' | 'preview'>('visual');
   const [tagInput, setTagInput] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const editorRef = useRef<HTMLDivElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const snapshotRef = useRef('');
 
   useEffect(() => {
@@ -58,6 +55,14 @@ export function ProductEditorV39() {
   useEffect(() => {
     if (mode === 'visual' && editorRef.current && editorRef.current.innerHTML !== product.descriptionHtml) editorRef.current.innerHTML = product.descriptionHtml || '<p><br></p>';
   }, [mode, product.id]);
+  useEffect(() => {
+    document.body.classList.add('tf-product-editor-route-v4915');
+    document.documentElement.classList.add('tf-product-editor-route-v4915');
+    return () => {
+      document.body.classList.remove('tf-product-editor-route-v4915');
+      document.documentElement.classList.remove('tf-product-editor-route-v4915');
+    };
+  }, []);
 
   const dirty = JSON.stringify(product) !== snapshotRef.current;
   const isNew = !source;
@@ -107,19 +112,14 @@ export function ProductEditorV39() {
     toast.success(isNew ? 'Đã tạo sản phẩm' : 'Đã lưu sản phẩm');
     if (isNew) navigate(`/admin/products/${next.id}`, {replace: true});
   };
-  const upload = async (files: FileList | null) => {
-    if (!files?.length) return;
-    if (!cloudinaryEnabled) {toast.error('Chưa cấu hình Cloudinary trong .env'); return;}
-    setUploading(true); setUploadProgress({});
-    try {
-      const uploaded = await uploadCloudinaryImages([...files], {
-        folder: `timeforge/products/${product.handle || product.id}`,
-        onFileProgress: (name, percent) => setUploadProgress((current) => ({...current, [name]: percent})),
-      });
-      patch('images', [...product.images, ...uploaded.map((item) => item.secureUrl)]);
-      toast.success(`Đã tải ${uploaded.length} hình ảnh`);
-    } catch (error) {toast.error(error instanceof Error ? error.message : 'Tải hình ảnh thất bại');}
-    finally {setUploading(false);}
+  const addImageUrls = () => {
+    const urls = imageUrl.split(/[\n,]+/).map((value) => value.trim()).filter(Boolean);
+    if (!urls.length) return;
+    const invalid = urls.find((value) => {try {const parsed = new URL(value); return !['http:', 'https:'].includes(parsed.protocol);} catch {return true;}});
+    if (invalid) {toast.error(`URL ảnh CDN không hợp lệ: ${invalid}`); return;}
+    patch('images', [...new Set([...product.images, ...urls])]);
+    setImageUrl('');
+    toast.success(`Đã thêm ${urls.length} URL ảnh CDN`);
   };
   const moveImage = (index: number, direction: -1 | 1) => {
     const target = index + direction;
@@ -133,7 +133,7 @@ export function ProductEditorV39() {
   const addMetafield = () => patch('metafields', [...(product.metafields || []), {id: uid('m'), namespace: 'custom', key: '', value: '', type: 'single_line_text_field'}]);
   const updateMetafield = (metafieldId: string, next: Partial<Metafield>) => patch('metafields', (product.metafields || []).map((metafield) => metafield.id === metafieldId ? {...metafield, ...next} : metafield));
 
-  return <div className="tf-product-editor-v39">
+  return <div className="tf-product-editor-v39 tf-product-editor-v4915">
     <header className="tf39-editor-header">
       <div className="tf39-editor-heading">
         <Link to="/admin/products" aria-label="Quay lại danh sách sản phẩm"><ArrowLeft /></Link>
@@ -191,11 +191,9 @@ export function ProductEditorV39() {
           </div>
         </Panel>
 
-        <Panel title="Media" description="Ảnh đầu tiên là ảnh đại diện. Có thể sắp xếp lại bằng nút lên/xuống." action={<button className="tf39-secondary-action" type="button" onClick={() => fileRef.current?.click()} disabled={uploading}><ImagePlus />{uploading ? 'Đang tải...' : 'Thêm hình ảnh'}</button>}>
-          <input ref={fileRef} hidden type="file" multiple accept="image/png,image/jpeg,image/webp,image/avif" onChange={(event) => {void upload(event.target.files); event.currentTarget.value = '';}} />
-          {uploading && <div className="tf39-upload-progress">{Object.entries(uploadProgress).map(([name, percent]) => <div key={name}><span>{name}</span><progress max="100" value={percent} /><b>{percent}%</b></div>)}</div>}
-          <div className="tf39-media-url"><input value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="Dán URL hình ảnh" /><button type="button" disabled={!imageUrl.trim()} onClick={() => {patch('images', [...product.images, imageUrl.trim()]); setImageUrl('');}}>Thêm URL</button></div>
-          {product.images.length ? <div className="tf39-media-grid">{product.images.map((image, index) => <article key={`${image}-${index}`}><img src={image} alt="" /><span>{index === 0 ? 'Ảnh đại diện' : `Ảnh ${index + 1}`}</span><div><button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0}><ArrowUp /></button><button type="button" onClick={() => moveImage(index, 1)} disabled={index === product.images.length - 1}><ArrowDown /></button><button type="button" onClick={() => patch('images', product.images.filter((_, imageIndex) => imageIndex !== index))}><Trash2 /></button></div></article>)}</div> : <button type="button" className="tf39-dropzone" onClick={() => fileRef.current?.click()} onDragOver={(event) => event.preventDefault()} onDrop={(event) => {event.preventDefault(); void upload(event.dataTransfer.files);}}><UploadCloud /><b>Thả hình ảnh vào đây</b><span>PNG, JPG, WEBP hoặc AVIF</span></button>}
+        <Panel title="Ảnh sản phẩm" description="Dùng URL CDN. Ảnh đầu tiên là ảnh đại diện và có thể sắp xếp bằng nút lên/xuống." action={<span className="tf39-cdn-badge"><ImagePlus />URL CDN</span>}>
+          <div className="tf39-media-url"><textarea rows={2} value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="Dán một hoặc nhiều URL CDN, cách nhau bằng dấu phẩy hoặc xuống dòng" /><button type="button" disabled={!imageUrl.trim()} onClick={addImageUrls}>Thêm ảnh</button></div>
+          {product.images.length ? <div className="tf39-media-grid">{product.images.map((image, index) => <article key={`${image}-${index}`}><img src={image} alt="" loading="lazy" decoding="async" /><span>{index === 0 ? 'Ảnh đại diện' : `Ảnh ${index + 1}`}</span><div><button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0}><ArrowUp /></button><button type="button" onClick={() => moveImage(index, 1)} disabled={index === product.images.length - 1}><ArrowDown /></button><button type="button" onClick={() => patch('images', product.images.filter((_, imageIndex) => imageIndex !== index))}><Trash2 /></button></div></article>)}</div> : <div className="tf39-dropzone tf39-cdn-empty"><ImagePlus /><b>Chưa có ảnh CDN</b><span>Dán URL phía trên để thêm ảnh sản phẩm.</span></div>}
         </Panel>
 
         <Panel title="Giá" description="Giá bán, giá so sánh và biên lợi nhuận dự kiến.">

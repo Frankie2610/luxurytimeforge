@@ -13,6 +13,7 @@ import{hasPermission,routePermission,roleLabels}from'./permissions';
 import {useReturns} from './returns-v13';
 import {AdminCommandPalette} from './admin-v9';
 import './v499-admin.css';
+import './v4917-admin-catalog.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -35,6 +36,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/analytics':{title:'Phân tích',eyebrow:'Báo cáo',description:'Doanh thu, chuyển đổi và nguồn tạo đơn hàng.'},
   '/admin/discounts':{title:'Mã giảm giá',eyebrow:'Marketing',description:'Thiết lập ưu đãi, điều kiện và thời gian hiệu lực.'},
   '/admin/blogs':{title:'Bài viết',eyebrow:'Nội dung',description:'Tạo và quản lý nội dung cho TimeForge Journal.'},
+  '/admin/pages':{title:'Trang chính sách',eyebrow:'Nội dung',description:'Biên tập nội dung Bảo hành, Giao hàng và Đổi trả trên website khách.'},
   '/admin/activity':{title:'Nhật ký hoạt động',eyebrow:'Hệ thống',description:'Theo dõi những thay đổi quan trọng trong Admin.'},
   '/admin/import-export':{title:'Nhập / xuất dữ liệu',eyebrow:'Dữ liệu',description:'Đồng bộ catalog bằng Shopify CSV và xuất bản sao dữ liệu.'},
   '/admin/online-store':{title:'Cửa hàng online',eyebrow:'Kênh bán hàng',description:'Điều chỉnh template, section, block và giao diện hiển thị.',fullBleed:true},
@@ -59,7 +61,7 @@ export function AdminLayoutV16(){
   const[collapsed,setCollapsed]=useState(()=>typeof window!=='undefined'&&window.localStorage.getItem('tf:admin-sidebar-collapsed')==='1');
   const location=useLocation();
   const navigate=useNavigate();
-  const{firebaseEnabled,orders,products}=useCommerce();
+  const{dataSource,orders,products}=useCommerce();
   const{items:returns}=useReturns();
   const{user,logout}=useAuth();
   const meta=routeMeta(location.pathname);
@@ -85,6 +87,7 @@ export function AdminLayoutV16(){
     {label:'Marketing & nội dung',items:[
       {to:'/admin/discounts',label:'Mã giảm giá',icon:BadgePercent},
       {to:'/admin/blogs',label:'Bài viết',icon:BookOpen},
+      {to:'/admin/pages',label:'Trang chính sách',icon:FileText},
       {to:'/admin/analytics',label:'Phân tích',icon:BarChart3},
     ]},
     {label:'Kênh bán hàng',items:[{to:'/admin/online-store',label:'Cửa hàng online',icon:LayoutTemplate}]},
@@ -97,6 +100,8 @@ export function AdminLayoutV16(){
   useEffect(()=>{window.localStorage.setItem('tf:admin-sidebar-collapsed',collapsed?'1':'0')},[collapsed]);
   useEffect(()=>{if(!open)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[open]);
   const initials=(user?.name||user?.email||'A').trim().slice(0,1).toUpperCase();
+  const liveData=dataSource==='firebase';
+  const dataSourceLabel=dataSource==='loading'?'Đang tải Firebase':liveData?'Firebase live':dataSource==='local'?'Local':dataSource==='seed'?'Dữ liệu mẫu':dataSource==='local-fallback'?'Local fallback':'Mẫu fallback';
   const standaloneThemeEditor=location.pathname==='/admin/online-store'&&new URLSearchParams(location.search).get('view')==='editor';
   if(standaloneThemeEditor)return <><Outlet/><ToastBridge/></>;
   return <div className={`v16-admin-shell tf-admin-v499 ${collapsed?'is-sidebar-collapsed':''}`}>
@@ -121,7 +126,7 @@ export function AdminLayoutV16(){
         <button className="v16-menu-button" onClick={()=>setOpen(true)} aria-label="Mở menu"><Menu/></button>
         <button className="v16-command-button" onClick={()=>window.dispatchEvent(new Event('timeforge:open-command'))}><Search/><span>Tìm kiếm trong TimeForge</span><kbd>Ctrl K</kbd></button>
         <div className="v16-topbar-actions">
-          <span className={`v16-data-state ${firebaseEnabled?'is-live':''}`}><i/>{firebaseEnabled?'Firebase':'Local'}</span>
+          <span className={`v16-data-state ${liveData?'is-live':''}`} title="Nguồn catalog hiện tại"><i/>{dataSourceLabel}</span>
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="secondary" size="sm" className="v16-create-button"><Plus/>Tạo mới<ChevronDown/></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onSelect={()=>navigate('/admin/products/new')}><Boxes/>Sản phẩm</DropdownMenuItem><DropdownMenuItem onSelect={()=>navigate('/admin/draft-orders/new')}><FileText/>Đơn hàng nháp</DropdownMenuItem><DropdownMenuItem onSelect={()=>navigate('/admin/discounts')}><BadgePercent/>Mã giảm giá</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
           <Link className="v16-view-store" to="/" target="_blank">Xem cửa hàng<ArrowUpRight/></Link>
           <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-icon-action v35-notification-trigger" aria-label="Thông báo"><Bell/>{(pendingOrders+pendingReturns+lowStock)>0&&<span>{Math.min(pendingOrders+pendingReturns+lowStock,99)}</span>}</button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v35-notification-menu"><div className="v35-notification-heading"><b>Thông báo</b><small>Các việc cần xử lý</small></div>{pendingOrders>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/orders')}><ShoppingBag/><span><b>{pendingOrders} đơn hàng đang mở</b><small>Kiểm tra thanh toán và xử lý đơn</small></span></DropdownMenuItem>}{pendingReturns>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/returns')}><RotateCcw/><span><b>{pendingReturns} yêu cầu hoàn trả</b><small>Đang chờ xét duyệt</small></span></DropdownMenuItem>}{lowStock>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/inventory')}><PackageSearch/><span><b>{lowStock} sản phẩm sắp hết</b><small>Cần bổ sung hoặc điều chỉnh tồn kho</small></span></DropdownMenuItem>}{pendingOrders+pendingReturns+lowStock===0&&<div className="v35-notification-empty"><Bell/><b>Không có việc gấp</b><small>Cửa hàng đang hoạt động ổn định.</small></div>}</DropdownMenuContent></DropdownMenu>

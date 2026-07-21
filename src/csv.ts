@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import type{ImportResult,Metafield,Product,ProductOption,Variant}from'./types';
 import{slugify,strip,uid}from'./utils';
 import{canonicalProduct,isFirebaseSafeSku,normalizeSku}from'./product-data';
+import{isFirebaseSafeObjectKey}from'./firebase-value';
 
 const num=(v:unknown)=>{const raw=String(v??'').trim();if(!raw)return 0;const normalized=raw.replace(/\s/g,'').replace(/(?<=\d)[.,](?=\d{3}(?:\D|$))/g,'').replace(',','.').replace(/[^0-9.-]/g,'');const n=Number(normalized);return Number.isFinite(n)?n:0};
 const bool=(v:unknown)=>['true','1','yes','y','co','có','active','published'].includes(String(v??'').trim().toLowerCase());
@@ -11,6 +12,9 @@ const aliases=(...values:string[])=>new Set(values.map(norm));
 const findValue=(row:Record<string,string>,names:Set<string>)=>{for(const[header,value]of Object.entries(row)){if(names.has(norm(header))&&clean(value))return clean(value)}return''};
 const splitList=(value:string)=>value.split(/[\n;,|]+/).map(item=>item.trim()).filter(Boolean);
 const looksLikeUrl=(value:string)=>/^https?:\/\//i.test(value)||/^\/\//.test(value);
+const unsafeFirebaseHeaders=(headers:string[])=>headers.filter(header=>!isFirebaseSafeObjectKey(header));
+const unsafeHeaderWarning=(headers:string[])=>{const unsafe=unsafeFirebaseHeaders(headers);return unsafe.length?`Firebase sẽ tự động bỏ qua ${unsafe.length} cột raw có tên chứa . # $ / [ ]; các trường sản phẩm chuẩn và URL ảnh vẫn được nhập.`:''};
+export const firebaseSafeRawRow=(row:Record<string,string>)=>Object.fromEntries(Object.entries(row).filter(([key])=>isFirebaseSafeObjectKey(key)));
 
 const SKU=aliases('SKU','Mã SKU','Ma SKU','Variant SKU','Product ID','Mã sản phẩm','Ma san pham','ID');
 const TITLE=aliases('Title','Tên sản phẩm','Ten san pham','Product Name','Tên đồng hồ','Ten dong ho','Description');
@@ -67,8 +71,10 @@ function specificationData(row:Record<string,string>):{html:string;metafields:Me
   };
 }
 
-function parseGenericRows(data:Record<string,string>[],publish:boolean):ImportResult{
+export function parseGenericRows(data:Record<string,string>[],publish:boolean):ImportResult{
   const warnings:string[]=[];
+  let missingImageCount=0;
+  const headerWarning=unsafeHeaderWarning(data.length?Object.keys(data[0]):[]);if(headerWarning)warnings.push(headerWarning);
   const groups=new Map<string,Record<string,string>[]>();
   data.forEach((row,index)=>{
     const sku=normalizeSku(findValue(row,SKU));
@@ -77,7 +83,7 @@ function parseGenericRows(data:Record<string,string>[],publish:boolean):ImportRe
     groups.set(sku,[...(groups.get(sku)||[]),row]);
   });
   let draftCount=0;
-  const products=[...groups.entries()].map(([sku,rows])=>{
+  const products=[...groups.entries()].flatMap(([sku,rows])=>{
     const row=rows[0];
     const title=findValue(row,TITLE)||sku;
     const vendor=findValue(row,VENDOR);
@@ -85,6 +91,7 @@ function parseGenericRows(data:Record<string,string>[],publish:boolean):ImportRe
     const descriptionHtml=/<[a-z][\s\S]*>/i.test(rawDescription)?rawDescription:rawDescription?`<p>${rawDescription}</p>`:'';
     const specs=specificationData(row);
     const images=[...new Set(rows.flatMap(rowImages))];
+    if(!images.length){missingImageCount++;return[]}
     const price=num(findValue(row,PRICE));
     const compareAtPrice=num(findValue(row,COMPARE));
     const inventory=num(findValue(row,INVENTORY));
@@ -92,7 +99,6 @@ function parseGenericRows(data:Record<string,string>[],publish:boolean):ImportRe
     const rawPublished=findValue(row,PUBLISHED);
     const active=publish||rawStatus==='active'||bool(rawPublished);
     if(!active)draftCount++;
-    if(!images.length)warnings.push(`SKU ${sku}: chưa tìm thấy URL hình ảnh.`);
     const variant:Variant={id:sku,title:'Default Title',sku,price,compareAtPrice,inventory,optionValues:{}};
     const product:Product={
       id:sku,sku,
@@ -114,16 +120,19 @@ function parseGenericRows(data:Record<string,string>[],publish:boolean):ImportRe
       seoTitle:findValue(row,SEO_TITLE)||`${title} | Luxury Timeforge`,
       seoDescription:findValue(row,SEO_DESCRIPTION)||strip(rawDescription).slice(0,155),
       variants:[variant],options:[],metafields:specs.metafields,
-      createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),rawShopify:row,
+      createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),rawShopify:firebaseSafeRawRow(row),
     };
-    return canonicalProduct(product);
+    return[canonicalProduct(product)];
   });
+  if(missingImageCount)warnings.push(`Đã bỏ qua ${missingImageCount} sản phẩm chưa có URL hình ảnh.`);
   return{products,headers:data.length?Object.keys(data[0]):[],rowCount:data.length,draftCount,warnings:[...new Set(warnings)]};
 }
 
-function parseShopifyRows(data:Record<string,string>[],headers:string[],publish:boolean):ImportResult{
+export function parseShopifyRows(data:Record<string,string>[],headers:string[],publish:boolean):ImportResult{
   const groups=new Map<string,Record<string,string>[]>();
   const warnings:string[]=[];
+  let missingImageCount=0;
+  const headerWarning=unsafeHeaderWarning(headers);if(headerWarning)warnings.push(headerWarning);
   data.forEach((row,index)=>{const handle=clean(row.Handle);const sku=normalizeSku(row['Variant SKU']);const key=handle||sku;if(!key){warnings.push(`Dòng ${index+2}: thiếu Handle và Variant SKU.`);return}groups.set(key,[...(groups.get(key)||[]),row])});
   let draftCount=0;
   const products=[...groups.entries()].flatMap(([groupKey,rows])=>{
@@ -136,6 +145,8 @@ function parseShopifyRows(data:Record<string,string>[],headers:string[],publish:
     const primarySku=normalizeSku(variants[0]?.sku||main['Variant SKU']);
     if(!primarySku){warnings.push(`Sản phẩm ${main.Title||groupKey}: bỏ qua vì thiếu SKU.`);return[]}
     if(!isFirebaseSafeSku(primarySku)){warnings.push(`SKU “${primarySku}” có ký tự Firebase không hỗ trợ.`);return[]}
+    const images=[...new Set(rows.flatMap(rowImages))];
+    if(!images.length){missingImageCount++;return[]}
     const original=(main.Status||'draft').toLowerCase();
     if(original!=='active'||!bool(main.Published))draftCount++;
     const active=publish||original==='active'&&bool(main.Published);
@@ -145,14 +156,15 @@ function parseShopifyRows(data:Record<string,string>[],headers:string[],publish:
       id:primarySku,sku:primarySku,handle:clean(main.Handle)||slugify(`${main.Vendor}-${main.Title}-${primarySku}`),title:main.Title||groupKey.replace(/-/g,' '),
       descriptionHtml:html,descriptionText:strip(html),vendor:main.Vendor||'',productType:main.Type||'',category:main['Product Category']||'',tags:splitList(main.Tags||''),
       status:active?'active':original==='archived'?'archived':'draft',published:active,
-      images:[...new Set(rows.flatMap(rowImages))],price:first?.price||num(main['Variant Price']),compareAtPrice:first?.compareAtPrice||num(main['Variant Compare At Price']),cost:num(main['Cost per item']),
+      images,price:first?.price||num(main['Variant Price']),compareAtPrice:first?.compareAtPrice||num(main['Variant Compare At Price']),cost:num(main['Cost per item']),
       barcode:main['Variant Barcode']||'',inventory:variants.reduce((sum,item)=>sum+item.inventory,0)||num(main['Variant Inventory Qty']),trackInventory:main['Variant Inventory Tracker']==='shopify',weight:num(main['Variant Grams']),weightUnit:main['Variant Weight Unit']||'g',
       seoTitle:main['SEO Title']||`${main.Title||groupKey} | Luxury Timeforge`,seoDescription:main['SEO Description']||strip(html).slice(0,155),options:optionList(rows),metafields:metafields(main),
       variants:variants.length?variants:[{id:primarySku,title:'Default Title',sku:primarySku,price:num(main['Variant Price']),compareAtPrice:num(main['Variant Compare At Price']),inventory:num(main['Variant Inventory Qty']),optionValues:{}}],
-      createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),rawShopify:main,
+      createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),rawShopify:firebaseSafeRawRow(main),
     };
     return[canonicalProduct(product)];
   });
+  if(missingImageCount)warnings.push(`Đã bỏ qua ${missingImageCount} sản phẩm chưa có URL hình ảnh.`);
   return{products,headers,rowCount:data.length,draftCount,warnings:[...new Set(warnings)]};
 }
 

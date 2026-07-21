@@ -1,5 +1,5 @@
 import {motion} from 'framer-motion';
-import {ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, CreditCard, Gift, LockKeyhole, Minus, PackageCheck, Plus, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, CreditCard, Gift, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
 import {useEffect, useMemo, useState, type FormEvent, type ReactNode} from 'react';
 import {Link, Navigate, useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import {useCommerce} from './context';
@@ -13,6 +13,10 @@ import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {Button} from './ui';
 import {sectionLabels} from './theme';
 import './v4912-commerce.css';
+import './v4915-commerce-fixes.css';
+import './v4920-commerce-mobile.css';
+import './v4925-commerce.css';
+import './v4927-commerce.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -60,12 +64,20 @@ function LuxuryCheckoutLogo() {
 }
 
 function SummaryRows({subtotal, shipping, discount, total}: {subtotal: number; shipping: number; discount: ReturnType<typeof useSummary>['discount']; total: number}) {
-  return <dl className="tf4912-totals">
+  return <dl className="tf4927-summary-totals">
     <div><dt>Tạm tính</dt><dd>{money(subtotal)}</dd></div>
     {discount?.valid && <div className="is-discount"><dt>Giảm giá <span>{discount.discount?.code}</span></dt><dd>–{money(discount.amount)}</dd></div>}
     <div><dt>Vận chuyển</dt><dd>{shipping <= 0 ? 'Miễn phí' : money(shipping)}</dd></div>
     <div className="is-total"><dt>Tổng cộng <small>VND</small></dt><dd>{money(total)}</dd></div>
   </dl>;
+}
+
+function PaymentBenefitsV4927() {
+  return <section className="tf4927-payment-benefits" aria-label="Phương thức và bảo mật thanh toán">
+    <article><i><Banknote/></i><span><small>COD</small><b>Thanh toán khi nhận</b></span></article>
+    <article><i><QrCode/></i><span><small>PAYOS</small><b>Quét QR ngân hàng</b></span></article>
+    <article><i><ShieldCheck/></i><span><small>SECURE</small><b>Xác minh an toàn</b></span></article>
+  </section>;
 }
 
 function ShippingProgress({subtotal}: {subtotal: number}) {
@@ -121,8 +133,8 @@ export function CartPageV11() {
       <div className="tf4912-cart-layout">
         <main className="tf4912-cart-main">
           <section className="tf4912-cart-lines" aria-label="Sản phẩm trong giỏ hàng">
-            {lines.map(({line, product, variant, unitPrice}) => <motion.article layout key={`${product.id}-${line.variantId}`} className="tf4912-cart-line">
-              <Link to={`/products/${product.handle}`} className="tf4912-cart-line-image"><CommerceProductImageV32 product={product} alt={product.title} size={360} priority/></Link>
+            {lines.map(({line, product, variant, unitPrice}, index) => <motion.article layout key={`${product.id}-${line.variantId}`} className="tf4912-cart-line">
+              <Link to={`/products/${product.handle}`} className="tf4912-cart-line-image"><CommerceProductImageV32 product={product} alt={product.title} size={360} priority={index < 2}/></Link>
               <div className="tf4912-cart-line-copy">
                 <small>{product.vendor || 'TIMEFORGE'}</small>
                 <Link to={`/products/${product.handle}`}>{product.title}</Link>
@@ -149,12 +161,13 @@ export function CartPageV11() {
           </section>}
         </main>
 
-        <aside className="tf4912-cart-summary">
-          <header><h2>Tóm tắt đơn hàng</h2><p>Kiểm tra ưu đãi và tổng tiền trước khi thanh toán.</p></header>
-          {showCoupon && <div className="tf4912-coupon"><label htmlFor="cart-discount-code">Mã ưu đãi</label><div><input id="cart-discount-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="Nhập mã giảm giá"/><Button type="button" variant="secondary" onClick={() => setApplied(code.trim())}>Áp dụng</Button></div>{applied && <p className={discount?.valid ? 'is-success' : 'is-error'}>{discount?.message || 'Mã giảm giá không hợp lệ.'}</p>}</div>}
+        <aside className="tf4927-order-summary">
+          <header className="tf4927-order-summary__header"><small>ĐƠN HÀNG CỦA BẠN</small><h2>Tóm tắt đơn hàng</h2><p>Kiểm tra ưu đãi và tổng tiền trước khi thanh toán.</p></header>
+          {showCoupon && <div className="tf4927-coupon"><label htmlFor="cart-discount-code">Mã ưu đãi</label><div><input id="cart-discount-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="Nhập mã giảm giá"/><Button type="button" variant="secondary" className="tf4927-coupon-apply" onClick={() => setApplied(code.trim())}>Áp dụng</Button></div>{applied && <p className={discount?.valid ? 'is-success' : 'is-error'}>{discount?.message || 'Mã giảm giá không hợp lệ.'}</p>}</div>}
           <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} total={total}/>
-          <Link className="tf4912-checkout-cta" to={`/checkout${applied ? `?discount=${encodeURIComponent(applied)}` : ''}`}>Thanh toán an toàn <ArrowRight/></Link>
-          <div className="tf4912-cart-payment-pills"><span><b>COD</b>Nhận hàng</span><span><b>BANK</b>Chuyển khoản</span><span><b>SECURE</b>Bảo mật</span></div>
+          <Link className="tf4927-checkout-cta" to={`/checkout${applied ? `?discount=${encodeURIComponent(applied)}` : ''}`}><span>Tiếp tục thanh toán<small>COD, chuyển khoản hoặc PayOS</small></span><ArrowRight/></Link>
+          <div className="tf4927-safe-label"><LockKeyhole/><span>Thanh toán an toàn</span></div>
+          <PaymentBenefitsV4927/>
         </aside>
       </div>
     </section>
@@ -177,6 +190,14 @@ export function CheckoutPageV11() {
   const [busy, setBusy] = useState(false);
   const integration = readIntegrationSettings();
   const [summaryOpen, setSummaryOpen] = useState(false);
+  useEffect(() => {
+    if (!summaryOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const close = (event: KeyboardEvent) => {if (event.key === 'Escape') setSummaryOpen(false);};
+    window.addEventListener('keydown', close);
+    return () => {document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', close);};
+  }, [summaryOpen]);
   const {lines, subtotal, shippingAfterDiscount, discount, total} = useSummary(payload.discountCode);
   useEffect(() => {trackCommerceEvent('checkout_started', {value: total});}, []);
   if (!cart.length) return <Navigate to="/cart" replace/>;
@@ -190,11 +211,11 @@ export function CheckoutPageV11() {
     try {
       const order = createOrder(payload);
       if (!order) throw new Error('Không thể tạo đơn hàng.');
-      trackCommerceEvent('checkout_completed', {orderId: order.id, value: order.total});
       if (order.paymentMethod === 'online') {
         const result = await startPayment(order);
         if (result.status === 'redirect' && result.checkoutUrl) {window.location.assign(result.checkoutUrl); return;}
       }
+      trackCommerceEvent('checkout_completed', {orderId: order.id, value: order.total});
       navigate(`/order-confirmation/${order.id}`, {replace: true});
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Không thể tạo đơn hàng.');
@@ -213,6 +234,7 @@ export function CheckoutPageV11() {
     <button type="button" className="tf4912-mobile-summary-toggle" onClick={() => setSummaryOpen((value) => !value)} aria-expanded={summaryOpen}>
       <span><ShoppingBag/>Tóm tắt đơn hàng</span><b>{money(total)}</b><ChevronDown className={summaryOpen ? 'is-open' : ''}/>
     </button>
+    {summaryOpen && <button type="button" className="tf4920-summary-backdrop" aria-label="Đóng tóm tắt đơn hàng" onClick={() => setSummaryOpen(false)}/>}
 
     <form className="tf4912-checkout-layout" onSubmit={submit}>
       <main className="tf4912-checkout-main">
@@ -242,7 +264,7 @@ export function CheckoutPageV11() {
           <div className="tf4912-payment-options">
             {integration.payment.cod && <label className={payload.paymentMethod === 'cod' ? 'is-active' : ''}><input type="radio" checked={payload.paymentMethod === 'cod'} onChange={() => setPayload({...payload, paymentMethod: 'cod'})}/><i><Truck/></i><span><b>Thanh toán khi nhận hàng</b><small>Xác nhận đơn trước khi giao.</small></span><Check/></label>}
             {integration.payment.bankTransfer && <label className={payload.paymentMethod === 'bank_transfer' ? 'is-active' : ''}><input type="radio" checked={payload.paymentMethod === 'bank_transfer'} onChange={() => setPayload({...payload, paymentMethod: 'bank_transfer'})}/><i><CreditCard/></i><span><b>Chuyển khoản ngân hàng</b><small>Thông tin chuyển khoản hiển thị sau khi đặt đơn.</small></span><Check/></label>}
-            {integration.payment.online && <label className={payload.paymentMethod === 'online' ? 'is-active' : ''}><input type="radio" checked={payload.paymentMethod === 'online'} onChange={() => setPayload({...payload, paymentMethod: 'online'})}/><i><LockKeyhole/></i><span><b>Thanh toán online</b><small>Chuyển sang cổng thanh toán bảo mật sau khi tạo đơn.</small></span><Check/></label>}
+            {integration.payment.online && <label className={payload.paymentMethod === 'online' ? 'is-active' : ''}><input type="radio" checked={payload.paymentMethod === 'online'} onChange={() => setPayload({...payload, paymentMethod: 'online'})}/><i><QrCode/></i><span><b>Quét QR ngân hàng qua PayOS</b><small>Mở cổng PayOS bảo mật và xác nhận tự động sau thanh toán.</small></span><Check/></label>}
           </div>
           <label className="tf4912-order-note"><span>Ghi chú đơn hàng</span><textarea value={payload.note} onChange={(event) => setPayload({...payload, note: event.target.value})} placeholder="Thời gian liên hệ, lời nhắn quà tặng..."/></label>
         </CheckoutSection>
@@ -254,7 +276,7 @@ export function CheckoutPageV11() {
 
       <aside className={`tf4912-checkout-aside ${summaryOpen ? 'is-open' : ''}`}>
         <section className="tf4912-checkout-summary">
-          <header><div><h2>Tóm tắt đơn hàng</h2><p>Kiểm tra sản phẩm trước khi hoàn tất.</p></div><span>{itemCount} sản phẩm</span></header>
+          <header><div><h2>Tóm tắt đơn hàng</h2><p>Kiểm tra sản phẩm trước khi hoàn tất.</p></div><span>{itemCount} sản phẩm</span><button type="button" className="tf4920-summary-close" onClick={() => setSummaryOpen(false)} aria-label="Đóng tóm tắt đơn hàng"><X/></button></header>
           <div className="tf4912-checkout-products">
             {lines.map(({line, product, variant, unitPrice}, index) => <motion.article key={`${product.id}-${line.variantId}`} initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} transition={{duration: .22, delay: index * .025}}>
               <Link to={`/products/${product.handle}`} className="tf4912-checkout-product-image"><CommerceProductImageV32 product={product} alt={product.title} size={260} priority={index < 3}/><span>{line.quantity}</span></Link>
@@ -262,7 +284,7 @@ export function CheckoutPageV11() {
               <strong>{money(unitPrice * line.quantity)}</strong>
             </motion.article>)}
           </div>
-          <div className="tf4912-summary-coupon"><label htmlFor="checkout-discount-code">Mã giảm giá</label><div><input id="checkout-discount-code" value={payload.discountCode} onChange={(event) => setPayload({...payload, discountCode: event.target.value.toUpperCase()})} placeholder="Nhập mã ưu đãi"/><Button type="button" variant="secondary" onClick={() => setPayload({...payload, discountCode: payload.discountCode.trim()})}>Áp dụng</Button></div></div>
+          <div className="tf4927-coupon"><label htmlFor="checkout-discount-code">Mã giảm giá</label><div><input id="checkout-discount-code" value={payload.discountCode} onChange={(event) => setPayload({...payload, discountCode: event.target.value.toUpperCase()})} placeholder="Nhập mã ưu đãi"/><Button type="button" variant="secondary" className="tf4927-coupon-apply" onClick={() => setPayload({...payload, discountCode: payload.discountCode.trim()})}>Áp dụng</Button></div></div>
           {payload.discountCode && <p className={discount?.valid ? 'tf4912-message is-success' : 'tf4912-message is-error'}>{discount?.message || 'Mã không hợp lệ.'}</p>}
           <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} total={total}/>
           <Button className="tf4912-place-order" size="lg" full disabled={busy}>{busy ? 'Đang tạo đơn hàng...' : `Đặt hàng · ${money(total)}`}</Button>

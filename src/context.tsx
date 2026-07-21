@@ -7,17 +7,22 @@ import{createThemeState,migrateTheme}from'./theme';
 import{uid}from'./utils';
 import{isThemePreviewV26,readThemePreviewV26,THEME_PREVIEW_KEY_V26,THEME_PREVIEW_UPDATED_V26}from'./theme-preview-v26';
 import{canonicalProduct,productFirebasePath,productsFromFirebase,productsToFirebaseRecord}from'./product-data';
+import{readIntegrationSettings}from'./integrations';
+import{useAuth}from'./auth';
 
 const K={p:'tf.react.products',c:'tf.react.collections',u:'tf.react.customers',cart:'tf.react.cart',theme:'tf.react.theme.v2',themeLegacy:'tf.react.theme',headers:'tf.react.headers',orders:'tf.react.orders',discounts:'tf.react.discounts',adjustments:'tf.react.inventory-adjustments',activities:'tf.react.activities',newsletter:'tf.react.newsletter-subscribers'};
 const load=<T,>(k:string,f:T)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r) as T:f}catch{return f}};
+const hasLocal=(k:string)=>{try{return localStorage.getItem(k)!==null}catch{return false}};
+const firebaseList=<T,>(value:T[]|Record<string,T>|null)=>Array.isArray(value)?value.filter(Boolean):value?Object.values(value).filter(Boolean):[];
 const loadTheme=()=>{const next=localStorage.getItem(K.theme);if(next){try{return migrateTheme(JSON.parse(next))}catch{}}const legacy=localStorage.getItem(K.themeLegacy);if(legacy){try{return migrateTheme(JSON.parse(legacy))}catch{}}return createThemeState()};
 const newsletterKey=(email:string)=>{let hash=2166136261;for(let i=0;i<email.length;i++){hash^=email.charCodeAt(i);hash=Math.imul(hash,16777619)}return`subscriber_${(hash>>>0).toString(36)}`};
 const orderNumber=()=>{const d=new Date(),stamp=`${String(d.getFullYear()).slice(-2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;return `TF-${stamp}-${Math.floor(1000+Math.random()*9000)}`};
 
+export type CommerceDataSource='loading'|'firebase'|'local'|'seed'|'local-fallback'|'seed-fallback';
 type V={
  products:Product[];collections:Collection[];customers:Customer[];newsletterSubscribers:NewsletterSubscriber[];cart:CartLine[];orders:Order[];discounts:Discount[];adjustments:InventoryAdjustment[];activities:Activity[];
- theme:Theme;draftTheme:Theme;themeState:ThemeState;headers:string[];firebaseEnabled:boolean;isLoading:boolean;
- setHeaders:(h:string[])=>void;saveProduct:(p:Product)=>void;deleteProducts:(ids:string[])=>void;replaceProducts:(p:Product[])=>void;mergeProducts:(p:Product[])=>void;
+ theme:Theme;draftTheme:Theme;themeState:ThemeState;headers:string[];firebaseEnabled:boolean;isLoading:boolean;dataSource:CommerceDataSource;dataError:string;
+ setHeaders:(h:string[])=>void;saveProduct:(p:Product)=>void;deleteProducts:(ids:string[])=>void;replaceProducts:(p:Product[])=>Promise<void>;mergeProducts:(p:Product[])=>Promise<void>;
  saveCollection:(c:Collection)=>void;deleteCollection:(id:string)=>void;saveCustomer:(u:Customer)=>void;
  subscribeNewsletter:(email:string,source?:string)=>'created'|'exists'|'reactivated'|'invalid';updateNewsletterSubscriber:(id:string,patch:Partial<NewsletterSubscriber>)=>void;deleteNewsletterSubscriber:(id:string)=>void;
  saveThemeDraft:(t:Theme)=>void;publishTheme:(t?:Theme,note?:string)=>void;restoreThemeVersion:(id:string)=>void;
@@ -30,6 +35,7 @@ type V={
 const C=createContext<V|null>(null);
 
 export function CommerceProvider({children}:{children:ReactNode}){
+ const{user,loading:authLoading}=useAuth();
  const[products,setProducts]=useState(()=>load(K.p,seed.products));
  const[collections,setCollections]=useState(()=>load(K.c,seed.collections));
  const[customers,setCustomers]=useState(()=>load(K.u,seed.customers));
@@ -43,6 +49,8 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const[previewTheme,setPreviewTheme]=useState<Theme|null>(()=>isThemePreviewV26()?readThemePreviewV26():null);
  const[headers,setHeaders]=useState<string[]>(()=>load(K.headers,[]));
  const[isLoading,setIsLoading]=useState(firebaseClient.enabled);
+ const[dataSource,setDataSource]=useState<CommerceDataSource>(()=>firebaseClient.enabled?'loading':hasLocal(K.p)?'local':'seed');
+ const[dataError,setDataError]=useState('');
 
  useEffect(()=>{if(!firebaseClient.enabled)localStorage.setItem(K.p,JSON.stringify(products))},[products]);
  useEffect(()=>localStorage.setItem(K.c,JSON.stringify(collections)),[collections]);
@@ -57,26 +65,68 @@ export function CommerceProvider({children}:{children:ReactNode}){
  useEffect(()=>{if(!isThemePreviewV26())return;const sync=()=>setPreviewTheme(readThemePreviewV26());const storage=(event:StorageEvent)=>{if(event.key===THEME_PREVIEW_KEY_V26)sync()};window.addEventListener('storage',storage);window.addEventListener(THEME_PREVIEW_UPDATED_V26,sync);return()=>{window.removeEventListener('storage',storage);window.removeEventListener(THEME_PREVIEW_UPDATED_V26,sync)}},[]);
  useEffect(()=>localStorage.setItem(K.headers,JSON.stringify(headers)),[headers]);
 
+ /* Public storefront data is loaded independently from protected Admin data.
+    A denied private read must never make the catalog fall back to stale local seed data. */
  useEffect(()=>{
   if(!firebaseClient.enabled){setIsLoading(false);return;}
   let active=true;
-  setIsLoading(true);
-  void Promise.all([
-   firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products'),firebaseClient.read<Collection[]>('timeforge/collections'),firebaseClient.read<Customer[]>('timeforge/customers'),firebaseClient.read<Record<string,NewsletterSubscriber>|NewsletterSubscriber[]>('timeforge/newsletterSubscribers'),
-   firebaseClient.read<Order[]>('timeforge/orders'),firebaseClient.read<Discount[]>('timeforge/discounts'),firebaseClient.read<InventoryAdjustment[]>('timeforge/inventoryAdjustments'),firebaseClient.read<Activity[]>('timeforge/activities'),
-   firebaseClient.read<Theme>('timeforge/themes/draft'),firebaseClient.read<Theme>('timeforge/themes/published'),firebaseClient.read<ThemeVersion[]>('timeforge/themes/versions')
-  ]).then(([p,c,u,subscribers,o,d,a,acts,draft,published,versions])=>{if(!active)return;const firebaseProducts=productsFromFirebase(p);if(firebaseProducts.length)setProducts(firebaseProducts);if(c?.length)setCollections(c);if(u?.length)setCustomers(u);if(subscribers)setNewsletterSubscribers(Array.isArray(subscribers)?subscribers.filter(Boolean):Object.values(subscribers));if(o)setOrders(o);if(d?.length)setDiscounts(d);if(a)setAdjustments(a);if(acts?.length)setActivities(acts);if(draft||published)setThemeState(cur=>({...cur,draft:draft||cur.draft,published:published||cur.published,versions:versions||cur.versions}))}).catch(()=>{}).finally(()=>{if(active)setIsLoading(false)});
+  setIsLoading(true);setDataSource('loading');setDataError('');
+  void Promise.allSettled([
+   firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products'),
+   firebaseClient.read<Collection[]|Record<string,Collection>>('timeforge/collections'),
+   firebaseClient.read<Discount[]|Record<string,Discount>>('timeforge/discounts'),
+   firebaseClient.read<Theme>('timeforge/themes/published')
+  ]).then(([productResult,collectionResult,discountResult,publishedResult])=>{
+   if(!active)return;
+   if(productResult.status==='fulfilled'){
+    setProducts(productsFromFirebase(productResult.value));
+    setDataSource('firebase');
+   }else{
+    const message=productResult.reason instanceof Error?productResult.reason.message:'Không thể đọc catalog Firebase.';
+    setDataError(message);setDataSource(hasLocal(K.p)?'local-fallback':'seed-fallback');
+    console.warn('[TimeForge] Catalog Firebase read failed; storefront is using fallback data.',productResult.reason);
+   }
+   if(collectionResult.status==='fulfilled')setCollections(firebaseList(collectionResult.value));
+   if(discountResult.status==='fulfilled')setDiscounts(firebaseList(discountResult.value));
+   if(publishedResult.status==='fulfilled'&&publishedResult.value)setThemeState(cur=>({...cur,published:publishedResult.value||cur.published}));
+  }).finally(()=>{if(active)setIsLoading(false)});
   return()=>{active=false};
  },[]);
 
- const sync=<T,>(path:string,v:T)=>{if(firebaseClient.enabled)void firebaseClient.write(path,v)};
- const syncProducts=(list:Product[])=>{if(firebaseClient.enabled)void firebaseClient.write('timeforge/products',productsToFirebaseRecord(list))};
+ /* Protected datasets wait for Firebase Authentication to restore its session.
+    Promise.allSettled keeps one optional/denied path from cancelling every other Admin read. */
+ useEffect(()=>{
+  if(!firebaseClient.enabled||authLoading||!user||user.access!=='active')return;
+  let active=true;
+  void Promise.allSettled([
+   firebaseClient.read<Customer[]|Record<string,Customer>>('timeforge/customers'),
+   firebaseClient.read<Record<string,NewsletterSubscriber>|NewsletterSubscriber[]>('timeforge/newsletterSubscribers'),
+   firebaseClient.read<Order[]|Record<string,Order>>('timeforge/orders'),
+   firebaseClient.read<InventoryAdjustment[]|Record<string,InventoryAdjustment>>('timeforge/inventoryAdjustments'),
+   firebaseClient.read<Activity[]|Record<string,Activity>>('timeforge/activities'),
+   firebaseClient.read<Theme>('timeforge/themes/draft'),
+   firebaseClient.read<ThemeVersion[]|Record<string,ThemeVersion>>('timeforge/themes/versions')
+  ]).then(([customerResult,subscriberResult,orderResult,adjustmentResult,activityResult,draftResult,versionResult])=>{
+   if(!active)return;
+   if(customerResult.status==='fulfilled')setCustomers(firebaseList(customerResult.value));
+   if(subscriberResult.status==='fulfilled')setNewsletterSubscribers(firebaseList(subscriberResult.value));
+   if(orderResult.status==='fulfilled')setOrders(firebaseList(orderResult.value));
+   if(adjustmentResult.status==='fulfilled')setAdjustments(firebaseList(adjustmentResult.value));
+   if(activityResult.status==='fulfilled')setActivities(firebaseList(activityResult.value));
+   if(draftResult.status==='fulfilled'||versionResult.status==='fulfilled')setThemeState(cur=>({...cur,draft:draftResult.status==='fulfilled'&&draftResult.value?draftResult.value:cur.draft,versions:versionResult.status==='fulfilled'?firebaseList(versionResult.value):cur.versions}));
+  });
+  return()=>{active=false};
+ },[authLoading,user?.uid,user?.access]);
+
+ const reportFirebaseError=(error:unknown)=>{const message=error instanceof Error?error.message:'Firebase không thể lưu dữ liệu.';console.warn(message);window.dispatchEvent(new CustomEvent('timeforge:toast',{detail:{message,tone:'danger'}}))};
+ const sync=<T,>(path:string,v:T)=>{if(firebaseClient.enabled)void firebaseClient.write(path,v).catch(reportFirebaseError)};
+ const syncProducts=(list:Product[])=>{if(firebaseClient.enabled)void firebaseClient.write('timeforge/products',productsToFirebaseRecord(list)).catch(reportFirebaseError)};
  const log=(entity:Activity['entity'],entityId:string,action:string,detail:string)=>setActivities(cur=>{const n=[{id:uid('activity'),entity,entityId,action,detail,createdAt:new Date().toISOString(),actor:'Admin'},...cur].slice(0,300);sync('timeforge/activities',n);return n});
 
- const saveProduct=(input:Product)=>setProducts(cur=>{const product=canonicalProduct(input);const previous=cur.find(item=>item.id===input.id||item.sku===product.sku);const exists=Boolean(previous);const next=exists?cur.map(item=>item===previous?product:item):[product,...cur];if(firebaseClient.enabled){void firebaseClient.write(productFirebasePath(product.sku),product);if(previous&&previous.sku!==product.sku)void firebaseClient.remove(productFirebasePath(previous.sku)).catch(()=>{})}log('product',product.id,exists?'Cập nhật sản phẩm':'Tạo sản phẩm',product.title);return next});
- const deleteProducts=(ids:string[])=>setProducts(cur=>{const removed=cur.filter(item=>ids.includes(item.id));const next=cur.filter(item=>!ids.includes(item.id));if(firebaseClient.enabled){const updates=Object.fromEntries(removed.map(product=>[productFirebasePath(product.sku),null]));if(Object.keys(updates).length)void firebaseClient.update(updates)}removed.forEach(product=>log('product',product.id,'Xóa sản phẩm',product.title));return next});
- const replaceProducts=(list:Product[])=>{const canonical=list.map(canonicalProduct);setProducts(canonical);syncProducts(canonical);log('product','bulk','Thay toàn bộ catalog',`${canonical.length} sản phẩm`)};
- const mergeProducts=(incoming:Product[])=>setProducts(cur=>{const next=[...cur];let updated=0,created=0;incoming.map(canonicalProduct).forEach(product=>{const index=next.findIndex(item=>item.sku===product.sku||item.handle===product.handle);if(index>=0){next[index]=product;updated++}else{next.unshift(product);created++}});syncProducts(next);log('product','import','Nhập CSV theo SKU',`${created} mới · ${updated} cập nhật`);return next});
+ const saveProduct=(input:Product)=>setProducts(cur=>{const product=canonicalProduct(input);const previous=cur.find(item=>item.id===input.id||item.sku===product.sku);const exists=Boolean(previous);const next=exists?cur.map(item=>item===previous?product:item):[product,...cur];if(firebaseClient.enabled){void firebaseClient.write(productFirebasePath(product.sku),product).catch(reportFirebaseError);if(previous&&previous.sku!==product.sku)void firebaseClient.remove(productFirebasePath(previous.sku)).catch(()=>{})}log('product',product.id,exists?'Cập nhật sản phẩm':'Tạo sản phẩm',product.title);return next});
+ const deleteProducts=(ids:string[])=>setProducts(cur=>{const removed=cur.filter(item=>ids.includes(item.id));const next=cur.filter(item=>!ids.includes(item.id));if(firebaseClient.enabled){const updates=Object.fromEntries(removed.map(product=>[productFirebasePath(product.sku),null]));if(Object.keys(updates).length)void firebaseClient.update(updates).catch(reportFirebaseError)}removed.forEach(product=>log('product',product.id,'Xóa sản phẩm',product.title));return next});
+ const replaceProducts=async(list:Product[])=>{const canonical=list.map(canonicalProduct);if(firebaseClient.enabled){const targetSkus=new Set(canonical.map(product=>product.sku));const updates:Record<string,unknown>=Object.fromEntries(canonical.map(product=>[productFirebasePath(product.sku),product]));products.filter(product=>!targetSkus.has(product.sku)).forEach(product=>{updates[productFirebasePath(product.sku)]=null});if(Object.keys(updates).length)await firebaseClient.updateBatches(updates)}setProducts(canonical);log('product','bulk','Thay toàn bộ catalog',`${canonical.length} sản phẩm`)};
+ const mergeProducts=async(incoming:Product[])=>{const canonical=incoming.map(canonicalProduct),next=[...products],updates:Record<string,unknown>={};let updated=0,created=0;canonical.forEach(product=>{const index=next.findIndex(item=>item.sku===product.sku||item.handle===product.handle);if(index>=0){const previous=next[index];next[index]=product;updated++;if(previous.sku!==product.sku)updates[productFirebasePath(previous.sku)]=null}else{next.unshift(product);created++}updates[productFirebasePath(product.sku)]=product});if(firebaseClient.enabled&&Object.keys(updates).length)await firebaseClient.updateBatches(updates);setProducts(next);log('product','import','Nhập CSV theo SKU',`${created} mới · ${updated} cập nhật`)};
  const saveCollection=(c:Collection)=>setCollections(cur=>{const exists=cur.some(x=>x.id===c.id),n=exists?cur.map(x=>x.id===c.id?c:x):[c,...cur];sync('timeforge/collections',n);log('collection',c.id,exists?'Cập nhật bộ sưu tập':'Tạo bộ sưu tập',c.title);return n});
  const deleteCollection=(id:string)=>setCollections(cur=>{const found=cur.find(x=>x.id===id),n=cur.filter(x=>x.id!==id);sync('timeforge/collections',n);if(found)log('collection',id,'Xóa bộ sưu tập',found.title);return n});
  const saveCustomer=(u:Customer)=>setCustomers(cur=>{const exists=cur.some(x=>x.id===u.id),n=exists?cur.map(x=>x.id===u.id?u:x):[u,...cur];sync('timeforge/customers',n);log('customer',u.id,exists?'Cập nhật khách hàng':'Tạo khách hàng',u.name);return n});
@@ -100,7 +150,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
   if(!lines.length)return null;
   const unavailable=lines.find(line=>{const p=products.find(x=>x.id===line.productId);const v=p?.variants.find(x=>x.id===line.variantId);return(v?.inventory??p?.inventory??0)<line.quantity});
   if(unavailable)throw new Error(`${unavailable.title} không đủ tồn kho.`);
-  const subtotal=lines.reduce((s,l)=>s+l.lineTotal,0),shippingAmount=subtotal>=1000000?0:50000,ev=payload.discountCode?evaluateDiscount(payload.discountCode,subtotal,shippingAmount):{valid:false,message:'',amount:0,shippingDiscount:0} as DiscountEvaluation;
+  const subtotal=lines.reduce((s,l)=>s+l.lineTotal,0),shippingThreshold=Math.max(0,readIntegrationSettings().shipping.freeShippingThreshold||1000000),shippingAmount=subtotal>=shippingThreshold?0:50000,ev=payload.discountCode?evaluateDiscount(payload.discountCode,subtotal,shippingAmount):{valid:false,message:'',amount:0,shippingDiscount:0} as DiscountEvaluation;
   const order:Order={id:uid('order'),number:orderNumber(),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),customerId:'',customerName:payload.customer.name,customerEmail:payload.customer.email,customerPhone:payload.customer.phone,shippingAddress:payload.shippingAddress,lines,subtotal,discountCode:ev.valid?ev.discount?.code||'':'',discountAmount:ev.amount,shippingAmount:Math.max(0,shippingAmount-ev.shippingDiscount),taxAmount:0,total:subtotal-ev.amount+Math.max(0,shippingAmount-ev.shippingDiscount),currency:'VND',status:'open',paymentStatus:'pending',fulfillmentStatus:'unfulfilled',paymentMethod:payload.paymentMethod,note:payload.note,source:'storefront'};
   const existing=customers.find(c=>(payload.customer.email&&c.email.toLowerCase()===payload.customer.email.toLowerCase())||(payload.customer.phone&&c.phone===payload.customer.phone));
   const customer:Customer=existing?{...existing,name:payload.customer.name,email:payload.customer.email,phone:payload.customer.phone,ordersCount:existing.ordersCount+1,totalSpent:existing.totalSpent+order.total,addresses:[...(existing.addresses||[]),{id:uid('address'),firstName:payload.customer.name.split(' ')[0]||'',lastName:payload.customer.name.split(' ').slice(1).join(' '),phone:payload.customer.phone,address1:payload.shippingAddress.address1,address2:payload.shippingAddress.address2,ward:payload.shippingAddress.ward,district:payload.shippingAddress.district,city:payload.shippingAddress.city,country:payload.shippingAddress.country,postalCode:payload.shippingAddress.postalCode,isDefault:!(existing.addresses?.length)}]}:{id:uid('customer'),name:payload.customer.name,email:payload.customer.email,phone:payload.customer.phone,ordersCount:1,totalSpent:order.total,tags:['Online'],createdAt:new Date().toISOString(),acceptsMarketing:false,addresses:[{id:uid('address'),firstName:payload.customer.name.split(' ')[0]||'',lastName:payload.customer.name.split(' ').slice(1).join(' '),phone:payload.customer.phone,address1:payload.shippingAddress.address1,address2:payload.shippingAddress.address2,ward:payload.shippingAddress.ward,district:payload.shippingAddress.district,city:payload.shippingAddress.city,country:payload.shippingAddress.country,postalCode:payload.shippingAddress.postalCode,isDefault:true}],notes:[]};
@@ -135,7 +185,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
 
  const reset=()=>{Object.values(K).forEach(k=>localStorage.removeItem(k));setProducts(seed.products);setCollections(seed.collections);setCustomers(seed.customers);setNewsletterSubscribers([]);setCart([]);setOrders(seedOrders);setDiscounts(seedDiscounts);setAdjustments(seedAdjustments);setActivities(seedActivities);setThemeState(createThemeState());setHeaders([])};
  const activeTheme=previewTheme||themeState.published;
- const value=useMemo(()=>({products,collections,customers,newsletterSubscribers,cart,orders,discounts,adjustments,activities,theme:activeTheme,draftTheme:themeState.draft,themeState,headers,firebaseEnabled:firebaseClient.enabled,isLoading,setHeaders,saveProduct,deleteProducts,replaceProducts,mergeProducts,saveCollection,deleteCollection,saveCustomer,subscribeNewsletter,updateNewsletterSubscriber,deleteNewsletterSubscriber,saveThemeDraft,publishTheme,restoreThemeVersion,addToCart,updateCart,clearCart:()=>setCart([]),evaluateDiscount,saveDiscount,deleteDiscount,createOrder,createAdminOrder,updateOrder,cancelOrder,adjustInventory,reset,collectionProducts}),[products,collections,customers,newsletterSubscribers,cart,orders,discounts,adjustments,activities,activeTheme,themeState,headers,isLoading]);
+ const value=useMemo(()=>({products,collections,customers,newsletterSubscribers,cart,orders,discounts,adjustments,activities,theme:activeTheme,draftTheme:themeState.draft,themeState,headers,firebaseEnabled:firebaseClient.enabled,isLoading,dataSource,dataError,setHeaders,saveProduct,deleteProducts,replaceProducts,mergeProducts,saveCollection,deleteCollection,saveCustomer,subscribeNewsletter,updateNewsletterSubscriber,deleteNewsletterSubscriber,saveThemeDraft,publishTheme,restoreThemeVersion,addToCart,updateCart,clearCart:()=>setCart([]),evaluateDiscount,saveDiscount,deleteDiscount,createOrder,createAdminOrder,updateOrder,cancelOrder,adjustInventory,reset,collectionProducts}),[products,collections,customers,newsletterSubscribers,cart,orders,discounts,adjustments,activities,activeTheme,themeState,headers,isLoading,dataSource,dataError]);
  return <C.Provider value={value}>{children}</C.Provider>
 }
 export const useCommerce=()=>{const c=useContext(C);if(!c)throw new Error('CommerceProvider missing');return c};

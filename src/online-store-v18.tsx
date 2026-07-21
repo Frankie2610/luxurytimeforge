@@ -36,8 +36,8 @@ export function OnlineStoreV18(){
 
     <section className="tf39-os-theme-card">
       <div className="tf39-os-preview-stage">
-        <div className="tf39-os-desktop-frame"><div className="tf39-os-browser-bar"><i/><i/><i/><span>timeforge.store</span></div><iframe title="Bản xem trước cửa hàng trên máy tính" src="/" tabIndex={-1}/></div>
-        <div className="tf39-os-mobile-frame"><div className="tf39-os-mobile-notch"/><iframe title="Bản xem trước cửa hàng trên điện thoại" src="/" tabIndex={-1}/></div>
+        <div className="tf39-os-desktop-frame"><div className="tf39-os-browser-bar"><i/><i/><i/><span>timeforge.store</span></div><iframe title="Bản xem trước cửa hàng trên máy tính" src="/" tabIndex={-1} loading="lazy"/></div>
+        <div className="tf39-os-mobile-frame"><div className="tf39-os-mobile-notch"/><iframe title="Bản xem trước cửa hàng trên điện thoại" src="/" tabIndex={-1} loading="lazy"/></div>
       </div>
       <footer className="tf39-os-theme-footer"><div><div className="tf39-os-theme-name"><h2>{published.name}</h2><span><CheckCircle2/>Đang hoạt động</span></div><p>Lưu gần nhất: {updated}</p><button><i/> {themeState.versions.length?`${themeState.versions.length} phiên bản đã lưu`:'Chưa có phiên bản cũ'} <ChevronDown/></button></div><div className="tf39-os-theme-cta"><DropdownMenu><DropdownMenuTrigger asChild><Button variant="icon"><MoreHorizontal/></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onSelect={()=>navigator.clipboard?.writeText(JSON.stringify(published,null,2))}><Copy/>Sao chép dữ liệu</DropdownMenuItem><DropdownMenuItem onSelect={()=>window.open('/','_blank')}><ExternalLink/>Xem cửa hàng</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={openEditor}><Paintbrush/>Chỉnh sửa theme</Button></div></footer>
     </section>

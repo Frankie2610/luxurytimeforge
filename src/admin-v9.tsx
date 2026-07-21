@@ -4,7 +4,7 @@ import {Archive,Check,ChevronDown,Copy,Download,Eye,FileUp,Filter,MoreHorizontal
 import {useCommerce} from './context';
 import type {Product,Status} from './types';
 import {money,slugify,uid} from './utils';
-import {AdminResourceFrame,AdminResourceIntro,AdminResourceSurface} from './admin-ui-v25';
+import {AdminResourceFrame,AdminResourceSurface} from './admin-ui-v25';
 
 const VIEW_KEY='tf.admin.product-views.v1';
 type StockFilter='all'|'in_stock'|'low_stock'|'out_of_stock';
@@ -51,9 +51,12 @@ export function ProductsV9(){
  const saveView=()=>{const name=viewName.trim();if(!name)return;const next={...view,id:uid('view'),name};setCustomViews(x=>[...x,next]);setView(next);setSaveOpen(false);setViewName('')};
  const resetFilters=()=>setView({...defaultView,id:view.id,name:view.name});
  const views=[...builtInViews,...customViews];
- return <AdminResourceFrame className="stack products-v9">
-  <AdminResourceIntro eyebrow="Danh mục" title="Danh sách sản phẩm" description="Tìm kiếm, lọc, nhập dữ liệu và quản lý trạng thái catalog." actions={<><Link className="btn secondary" to="/admin/import-export"><FileUp/>Nhập CSV</Link><Link className="btn secondary" to="/admin/import-export"><Download/>Xuất CSV</Link><Link className="btn primary" to="/admin/products/new"><Plus/>Thêm sản phẩm</Link></>}/>
-  <AdminResourceSurface className="card v9-index-card">
+ return <AdminResourceFrame className="tf4917-catalog-page tf4917-products-page">
+  <section className="tf4917-catalog-toolbar">
+   <div className="tf4917-catalog-toolbar-copy"><span>CATALOG SẢN PHẨM</span><b>Quản lý dữ liệu bán hàng</b><small>{products.length} sản phẩm · tìm kiếm, lọc và cập nhật trong một màn hình.</small></div>
+   <div className="tf4917-catalog-actions"><Link className="tf4917-action secondary" to="/admin/import-export"><FileUp/>Nhập CSV</Link><Link className="tf4917-action secondary" to="/admin/import-export"><Download/>Xuất CSV</Link><Link className="tf4917-action primary" to="/admin/products/new"><Plus/>Thêm sản phẩm</Link></div>
+  </section>
+  <AdminResourceSurface className="tf4917-catalog-surface v9-index-card">
    <div className="v9-viewbar"><div className="v9-views" role="tablist">{views.map(v=><button key={v.id} className={view.id===v.id?'active':''} onClick={()=>{setView(v);setSelected([])}}>{v.name}{v.id.startsWith('view_')&&<span onClick={e=>{e.stopPropagation();setCustomViews(x=>x.filter(a=>a.id!==v.id));if(view.id===v.id)setView(defaultView)}}><X/></span>}</button>)}<button className="v9-add-view" onClick={()=>setSaveOpen(true)}><Plus/>Lưu chế độ xem</button></div><button className="v9-sort-mini" title="Sắp xếp"><ChevronDown/></button></div>
    <div className="v9-index-tools">
     <label className="v9-search"><Search/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Tìm kiếm sản phẩm"/><kbd>/</kbd></label>
