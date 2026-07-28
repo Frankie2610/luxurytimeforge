@@ -7,7 +7,7 @@ JSON.parse(text);
 const problems=[];
 if(/__[A-Z_]+__/.test(text))problems.push('còn placeholder chưa được thay thế');
 if(text.includes('auth != null && false'))problems.push('vẫn là bản deny-by-default chưa generate theo email chủ sở hữu');
-for(const required of ['adminMembers','adminInvitations','products','orders','collections','themes','blogPosts','contentPages']){
+for(const required of ['adminMembers','adminInvitations','products','orders','collections','productGroups','themes','blogPosts','contentPages']){
   if(!text.includes(`"${required}"`))problems.push(`thiếu node ${required}`);
 }
 if(problems.length){

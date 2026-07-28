@@ -17,6 +17,9 @@ import './v4915-commerce-fixes.css';
 import './v4920-commerce-mobile.css';
 import './v4925-commerce.css';
 import './v4927-commerce.css';
+import './v502-commerce-polish.css';
+import './v503-commerce-polish.css';
+import './v504-commerce.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {

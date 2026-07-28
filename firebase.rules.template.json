@@ -26,6 +26,7 @@
         }
       },
       "collections": {".read": true, ".write": "__PRODUCTS_MANAGE_CONDITION__"},
+      "productGroups": {".read": true, ".write": "__PRODUCTS_MANAGE_CONDITION__"},
       "themes": {
         "published": {".read": true, ".write": "__STORE_MANAGE_CONDITION__"},
         "draft": {".read": "__STORE_MANAGE_CONDITION__", ".write": "__STORE_MANAGE_CONDITION__"},

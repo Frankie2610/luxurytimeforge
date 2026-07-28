@@ -1,4 +1,5 @@
 import './v4922-journal.css';
+import './v50-journal-polish.css';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {AlignLeft, ArrowLeft, ArrowRight, BookOpen, Clock3, Code2, Edit3, ExternalLink, FileText, MoreHorizontal, Plus, Search, Sparkles, Trash2} from 'lucide-react';
 import {useMemo, useState} from 'react';

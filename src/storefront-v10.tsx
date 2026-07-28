@@ -37,7 +37,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import {useCommerce} from './context';
-import type {Collection, Product, Section, ThemeBlock} from './types';
+import type {Collection, Product, ProductGroup, ProductGroupItem, Section, ThemeBlock} from './types';
 import {discount, money} from './utils';
 import {optimizedImage, productImage, SmartImage} from './image-utils';
 import {Accordion, Button, Dialog, DialogContent} from './ui';
@@ -51,6 +51,14 @@ import {sectionLabels, blockLabels} from './theme';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
+import {
+  buildProductFacetOptions,
+  emptyProductFilterSelection,
+  PRODUCT_FILTER_DEFINITIONS,
+  readProductFilterValues,
+  type ProductFilterKey,
+  type ProductFilterOption,
+} from './product-filter-data';
 import './legacy.css';
 import './v4913-storefront-compat.css';
 import './v4912-storefront.css';
@@ -61,6 +69,10 @@ import './v4924-storefront.css';
 import './v4925-storefront.css';
 import './v4933-collection.css';
 import './v4936-mobile-product-grid.css';
+import './v50-storefront-polish.css';
+import './v502-storefront-contrast.css';
+import './v503-storefront-filter.css';
+import './v504-storefront-final.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -92,6 +104,12 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
   const count = cart.reduce((sum, item) => sum + item.quantity, 0);
   const activeCollections = collections.filter((item) => item.status === 'active').slice(0, 4);
   const activeVendors = [...new Set(products.filter((item) => item.status === 'active' && item.published).map((item) => item.vendor).filter(Boolean))].slice(0, 8);
+  const announcementText = /(miễn phí giao hàng|giảm giá đến 50%)/i.test(theme.settings.announcement)
+    ? 'Giảm giá đến 50% · Miễn phí giao hàng cho đơn từ 5.000.000₫'
+    : theme.settings.announcement;
+  const compactAnnouncementText = /(miễn phí giao hàng|giảm giá đến 50%)/i.test(theme.settings.announcement)
+    ? 'Giảm đến 50% · Freeship đơn từ 5 triệu'
+    : theme.settings.announcement;
   const submitSearch = (event: FormEvent) => {
     event.preventDefault();
     if (!query.trim()) return;
@@ -105,8 +123,8 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
       {theme.settings.showAnnouncement && (
         <div className="lux-announcement">
           <Sparkles />
-          <span>{theme.settings.announcement}</span>
-          <span className="lux-announcement-side">Giao hàng bảo hiểm toàn quốc</span>
+          <span className="lux-announcement-copy lux-announcement-copy--full">{announcementText}</span>
+          <span className="lux-announcement-copy lux-announcement-copy--compact">{compactAnnouncementText}</span>
         </div>
       )}
       <header className={`lux-header ${theme.settings.stickyHeader ? 'is-sticky' : ''}`}>
@@ -361,6 +379,7 @@ export function StoreLayoutV10() {
     return () => {window.removeEventListener(THEME_EXTRAS_EVENT, sync); window.removeEventListener(THEME_PREVIEW_UPDATED_V26, sync); window.removeEventListener('storage', sync);};
   }, [previewMode]);
   const settings = theme.settings;
+  const showStandaloneCountdown = extras.showCountdown && !settings.showAnnouncement;
   const requestCart = () => extras.cartDrawer ? setCartOpen(true) : navigate('/cart');
   return (
     <div
@@ -385,10 +404,10 @@ export function StoreLayoutV10() {
       } as React.CSSProperties}
     >
       {previewMode && <ThemePreviewBridgeV26 />}
-      {extras.showCountdown && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
+      {showStandaloneCountdown && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
       <LuxuryHeader openCart={requestCart} />
       <main><div className="tf-route-view-v4910" key={`${location.pathname}${location.search}`}><Outlet context={{openCart: requestCart}} /></div></main>
-      {extras.footerVisible && <LuxuryFooter />}
+      {(extras.footerVisible || location.pathname === '/checkout') && <LuxuryFooter />}
       {extras.cartDrawer && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
       {extras.newsletterPopup && !newsletterDismissed && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
       {extras.privacyBanner && !privacyDismissed && <aside className="v23-privacy-banner"><div><ShieldCheck/><span><b>Quyền riêng tư</b><small>Dữ liệu được sử dụng để vận hành cửa hàng và xử lý đơn hàng.</small></span></div><button onClick={() => setPrivacyDismissed(true)}>Đồng ý</button></aside>}
@@ -397,12 +416,14 @@ export function StoreLayoutV10() {
 }
 
 export function LuxuryProductCard({product, priority = false}: {product: Product; priority?: boolean}) {
-  const {addToCart} = useCommerce();
+  const {addToCart, productGroups, products} = useCommerce();
   const [wished, setWished] = useState(false);
   const [secondaryRequested, setSecondaryRequested] = useState(false);
   const sale = discount(product.price, product.compareAtPrice);
   const primary = productImage(product);
   const secondary = productImage(product, 1);
+  const family = productGroups.find((group)=>group.status==='active'&&(group.items.some((item)=>item.productId===product.id||item.sku===product.sku)||(group.skuPrefix&&product.sku.toUpperCase().startsWith(group.skuPrefix.toUpperCase()))));
+  const familyItems = family ? resolveProductGroupItems(family, products).filter(({product: itemProduct})=>itemProduct?.status==='active'&&itemProduct.published) : [];
   return (
     <article className="tf-product-card-v4918" onPointerEnter={(event) => {if (event.pointerType === 'mouse' || event.pointerType === 'pen') setSecondaryRequested(true);}} onFocus={() => setSecondaryRequested(true)}>
       <div className="tf-product-media-v4918">
@@ -424,6 +445,7 @@ export function LuxuryProductCard({product, priority = false}: {product: Product
       <div className="tf-product-info-v4918">
         <small className="tf-product-brand-v4918">{product.vendor || 'TIMEFORGE'}</small>
         <Link to={`/products/${product.handle}`}>{product.title}</Link>
+        {family&&familyItems.length>1&&<ProductFamilyCardSwatches group={family} items={familyItems} current={product}/>}
         <div className={`tf-product-price-v4918 ${product.compareAtPrice > product.price ? 'is-sale' : ''}`}><strong>{money(product.price)}</strong>{product.compareAtPrice > product.price && <del>{money(product.compareAtPrice)}</del>}</div>
       </div>
     </article>
@@ -525,38 +547,145 @@ export function HomeV10() {
   return <div className="lux-home">{sections.map(renderSection)}</div>;
 }
 
+const COLLECTION_PRICE_BANDS = [
+  {value: 'under20', label: 'Dưới 20 triệu', matches: (price: number) => price < 20_000_000},
+  {value: '20to50', label: '20 – 50 triệu', matches: (price: number) => price >= 20_000_000 && price < 50_000_000},
+  {value: '50to100', label: '50 – 100 triệu', matches: (price: number) => price >= 50_000_000 && price < 100_000_000},
+  {value: 'over100', label: 'Trên 100 triệu', matches: (price: number) => price >= 100_000_000},
+];
+
+const COLLECTION_SORT_LABELS: Record<string, string> = {
+  featured: 'Nổi bật',
+  relevant: 'Phù hợp nhất',
+  best: 'Bán chạy nhất',
+  name: 'Tên A–Z',
+  nameDesc: 'Tên Z–A',
+  low: 'Giá thấp đến cao',
+  high: 'Giá cao đến thấp',
+  old: 'Ngày cũ đến mới',
+  new: 'Ngày mới đến cũ',
+};
+
+function CollectionFilterSection({
+  id,
+  label,
+  options,
+  selected,
+  expanded,
+  onToggleExpanded,
+  onToggle,
+}: {
+  id: string;
+  label: string;
+  options: ProductFilterOption[];
+  selected: string[];
+  expanded: boolean;
+  onToggleExpanded: (id: string) => void;
+  onToggle: (value: string) => void;
+}) {
+  return <section className={`tf503-filter-section ${expanded ? 'is-open' : ''}`}>
+    <button type="button" className="tf503-filter-section-head" onClick={() => onToggleExpanded(id)} aria-expanded={expanded}>
+      <span>{label}{selected.length > 0 && <b>{selected.length}</b>}</span>
+      <Plus aria-hidden="true"/>
+    </button>
+    {expanded && <div className="tf503-filter-options">
+      {options.length ? options.map((option) => <label key={option.value} className={selected.includes(option.value) ? 'is-selected' : ''}>
+        <input type="checkbox" checked={selected.includes(option.value)} onChange={() => onToggle(option.value)} />
+        <i><Check/></i>
+        <span>{option.value}</span>
+        <small>{option.count}</small>
+      </label>) : <p>Chưa có dữ liệu cho hạng mục này.</p>}
+    </div>}
+  </section>;
+}
+
 function CollectionFilters({
   open,
   close,
+  resultCount,
   vendors,
-  vendor,
-  setVendor,
+  selectedVendors,
+  toggleVendor,
+  facetOptions,
+  priceOptions,
+  selectedFilters,
+  toggleFilter,
   stockOnly,
   setStockOnly,
-  priceBand,
-  setPriceBand,
+  priceBands,
+  togglePriceBand,
+  clearFilters,
 }: {
   open: boolean;
   close: () => void;
-  vendors: string[];
-  vendor: string;
-  setVendor: (value: string) => void;
+  resultCount: number;
+  vendors: ProductFilterOption[];
+  selectedVendors: string[];
+  toggleVendor: (value: string) => void;
+  facetOptions: Record<ProductFilterKey, ProductFilterOption[]>;
+  priceOptions: ProductFilterOption[];
+  selectedFilters: Record<ProductFilterKey, string[]>;
+  toggleFilter: (key: ProductFilterKey, value: string) => void;
   stockOnly: boolean;
   setStockOnly: (value: boolean) => void;
-  priceBand: string;
-  setPriceBand: (value: string) => void;
+  priceBands: string[];
+  togglePriceBand: (value: string) => void;
+  clearFilters: () => void;
 }) {
+  const [expanded, setExpanded] = useState<string[]>(['vendor', 'gender', 'price']);
+  const selectedCount = selectedVendors.length
+    + priceBands.length
+    + Object.values(selectedFilters).reduce((sum, items) => sum + items.length, 0)
+    + Number(stockOnly);
+  const toggleExpanded = (id: string) => setExpanded((current) => current.includes(id)
+    ? current.filter((item) => item !== id)
+    : [...current, id]);
   return (
     <Dialog open={open} onOpenChange={(next) => {if (!next) close();}}>
-      <DialogContent className="tf4925-filter-dialog" overlayClassName="tf4925-filter-overlay" description="Lọc sản phẩm theo thương hiệu, khoảng giá và tình trạng tồn kho.">
-        <aside className="tf4925-filter-drawer">
-          <header><span className="tf4925-filter-title-icon"><Filter/></span><div><h2>Bộ lọc</h2><p>Thu hẹp kết quả theo nhu cầu của bạn.</p></div></header>
-          <div className="tf4925-filter-scroll">
-            <section><h3>Thương hiệu</h3><label><input type="radio" checked={!vendor} onChange={() => setVendor('')} /><span>Tất cả thương hiệu</span></label>{vendors.map((item) => <label key={item}><input type="radio" checked={vendor === item} onChange={() => setVendor(item)} /><span>{item}</span></label>)}</section>
-            <section><h3>Khoảng giá</h3>{[['', 'Tất cả mức giá'], ['under10', 'Dưới 10 triệu'], ['10to30', '10–30 triệu'], ['over30', 'Trên 30 triệu']].map(([value, label]) => <label key={value}><input type="radio" checked={priceBand === value} onChange={() => setPriceBand(value)} /><span>{label}</span></label>)}</section>
-            <section><h3>Tình trạng</h3><label><input type="checkbox" checked={stockOnly} onChange={(event) => setStockOnly(event.target.checked)} /><span>Chỉ hiển thị sản phẩm còn hàng</span></label></section>
+      <DialogContent className="tf4925-filter-dialog tf503-filter-dialog" overlayClassName="tf4925-filter-overlay tf503-filter-overlay" description="Lọc sản phẩm theo thương hiệu, giá, thông số và tình trạng tồn kho.">
+        <aside className="tf4925-filter-drawer tf503-filter-drawer">
+          <header>
+            <span className="tf503-filter-eyebrow">TINH CHỈNH KẾT QUẢ</span>
+            <div><h2>Bộ lọc</h2>{selectedCount > 0 && <b>{selectedCount} đã chọn</b>}</div>
+            <p><strong>{resultCount}</strong> sản phẩm phù hợp</p>
+          </header>
+          <div className="tf4925-filter-scroll tf503-filter-scroll">
+            <CollectionFilterSection id="vendor" label="Thương hiệu" options={vendors} selected={selectedVendors} expanded={expanded.includes('vendor')} onToggleExpanded={toggleExpanded} onToggle={toggleVendor}/>
+            <CollectionFilterSection id="gender" label="Giới tính" options={facetOptions.gender} selected={selectedFilters.gender} expanded={expanded.includes('gender')} onToggleExpanded={toggleExpanded} onToggle={(value) => toggleFilter('gender', value)}/>
+            <CollectionFilterSection
+              id="price"
+              label="Giá"
+              options={priceOptions}
+              selected={priceBands.map((value) => COLLECTION_PRICE_BANDS.find((band) => band.value === value)?.label || value)}
+              expanded={expanded.includes('price')}
+              onToggleExpanded={toggleExpanded}
+              onToggle={(label) => {
+                const value = COLLECTION_PRICE_BANDS.find((band) => band.label === label)?.value;
+                if (value) togglePriceBand(value);
+              }}
+            />
+            {PRODUCT_FILTER_DEFINITIONS.filter((definition) => definition.id !== 'gender').map((definition) => <CollectionFilterSection
+              key={definition.id}
+              id={definition.id}
+              label={definition.label}
+              options={facetOptions[definition.id]}
+              selected={selectedFilters[definition.id]}
+              expanded={expanded.includes(definition.id)}
+              onToggleExpanded={toggleExpanded}
+              onToggle={(value) => toggleFilter(definition.id, value)}
+            />)}
+            <div className="tf503-stock-section">
+              <label className={stockOnly ? 'is-selected' : ''}>
+                <input type="checkbox" checked={stockOnly} onChange={(event) => setStockOnly(event.target.checked)} />
+                <i><Check/></i>
+                <span><b>Chỉ hiện sản phẩm còn hàng</b><small>Sẵn sàng giao hoặc đặt giữ hàng</small></span>
+              </label>
+            </div>
           </div>
-          <footer><Button type="button" variant="secondary" onClick={() => {setVendor(''); setPriceBand(''); setStockOnly(false);}}>Xóa bộ lọc</Button><Button type="button" onClick={close}>Xem kết quả</Button></footer>
+          <footer>
+            <Button type="button" variant="secondary" onClick={clearFilters} disabled={!selectedCount}>Xóa tất cả</Button>
+            <Button type="button" onClick={close}>Xem {resultCount} sản phẩm</Button>
+          </footer>
         </aside>
       </DialogContent>
     </Dialog>
@@ -580,34 +709,70 @@ export function CollectionPageV10() {
   const gridSection = collectionTemplate.sections.find((section) => section.type === 'collectionGrid');
   const configuredPageSize = Number(gridSection?.settings.pageSize ?? 50);
   const pageSize = Number.isFinite(configuredPageSize) ? Math.max(50, Math.min(100, configuredPageSize)) : 50;
-  const [vendor, setVendor] = useState('');
+  const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
   const [stockOnly, setStockOnly] = useState(false);
-  const [priceBand, setPriceBand] = useState('');
+  const [priceBands, setPriceBands] = useState<string[]>([]);
+  const [selectedFilters, setSelectedFilters] = useState<Record<ProductFilterKey, string[]>>(emptyProductFilterSelection);
   const [sort, setSort] = useState('featured');
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const vendors = [...new Set(source.map((item) => item.vendor).filter(Boolean))];
+  const facetOptions = useMemo(() => buildProductFacetOptions(source), [source]);
+  const vendors = useMemo(() => {
+    const counts = new Map<string, number>();
+    source.forEach((item) => {if (item.vendor) counts.set(item.vendor, (counts.get(item.vendor) || 0) + 1);});
+    return [...counts.entries()]
+      .map(([value, count]) => ({value, count}))
+      .sort((a, b) => a.value.localeCompare(b.value, 'vi'));
+  }, [source]);
+  const priceOptions = useMemo(() => COLLECTION_PRICE_BANDS.map((band) => ({
+    value: band.label,
+    count: source.filter((item) => band.matches(item.price)).length,
+  })), [source]);
+  const toggleVendor = (value: string) => setSelectedVendors((current) => current.includes(value)
+    ? current.filter((item) => item !== value)
+    : [...current, value]);
+  const togglePriceBand = (value: string) => setPriceBands((current) => current.includes(value)
+    ? current.filter((item) => item !== value)
+    : [...current, value]);
+  const toggleProductFilter = (key: ProductFilterKey, value: string) => setSelectedFilters((current) => ({
+    ...current,
+    [key]: current[key].includes(value) ? current[key].filter((item) => item !== value) : [...current[key], value],
+  }));
+  const clearFilters = () => {
+    setSelectedVendors([]);
+    setPriceBands([]);
+    setSelectedFilters(emptyProductFilterSelection());
+    setStockOnly(false);
+  };
   const filtered = useMemo(() => {
     let result = source.filter((item) => {
-      if (vendor && item.vendor !== vendor) return false;
+      if (selectedVendors.length && !selectedVendors.includes(item.vendor)) return false;
       if (stockOnly && item.inventory <= 0) return false;
-      if (priceBand === 'under10' && item.price >= 10_000_000) return false;
-      if (priceBand === '10to30' && (item.price < 10_000_000 || item.price > 30_000_000)) return false;
-      if (priceBand === 'over30' && item.price <= 30_000_000) return false;
+      if (priceBands.length && !COLLECTION_PRICE_BANDS.some((band) => priceBands.includes(band.value) && band.matches(item.price))) return false;
+      if (!PRODUCT_FILTER_DEFINITIONS.every((definition) => {
+        const selected = selectedFilters[definition.id];
+        return !selected.length || readProductFilterValues(item, definition.id).some((value) => selected.includes(value));
+      })) return false;
       return true;
     });
     if (sort === 'low') result = [...result].sort((a, b) => a.price - b.price);
     if (sort === 'high') result = [...result].sort((a, b) => b.price - a.price);
     if (sort === 'name') result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    if (sort === 'nameDesc') result = [...result].sort((a, b) => b.title.localeCompare(a.title));
     if (sort === 'new') result = [...result].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    if (sort === 'old') result = [...result].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     return result;
-  }, [source, vendor, stockOnly, priceBand, sort]);
+  }, [source, selectedVendors, stockOnly, priceBands, selectedFilters, sort]);
   const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize));
   const visible=useMemo(()=>filtered.slice((page-1)*pageSize,page*pageSize),[filtered,page,pageSize]);
   const pageStart=filtered.length?(page-1)*pageSize+1:0;
   const pageEnd=Math.min(page*pageSize,filtered.length);
   const pageItems=useMemo(()=>compactCollectionPages(page,pageCount),[page,pageCount]);
-  useEffect(()=>setPage(1),[handle,vendor,stockOnly,priceBand,sort,pageSize]);
+  const activeFilterCount = selectedVendors.length
+    + priceBands.length
+    + Object.values(selectedFilters).reduce((sum, items) => sum + items.length, 0)
+    + Number(stockOnly);
+  useEffect(()=>setPage(1),[handle,selectedVendors,stockOnly,priceBands,selectedFilters,sort,pageSize]);
   useEffect(()=>setPage(current=>Math.min(current,pageCount)),[pageCount]);
   const goToPage=(next:number)=>{
     setPage(Math.min(pageCount,Math.max(1,next)));
@@ -629,17 +794,39 @@ export function CollectionPageV10() {
       {gridSection?.visible !== false && <>
       <section data-theme-section-id={gridSection?.id} data-theme-section-label={gridSection ? sectionLabels[gridSection.type] : 'Danh sách sản phẩm'} className="tf4933-collection-toolbar">
         <div className="tf4933-collection-toolbar-main">
-          {gridSection?.settings.showFilter !== false && <button className="tf4933-collection-filter" onClick={() => setFiltersOpen(true)}><Filter/><span><small>Tùy chỉnh kết quả</small><b>Bộ lọc</b></span></button>}
-          {gridSection?.settings.showCount !== false && <div className="tf4933-collection-count" aria-live="polite"><strong>{filtered.length}</strong><span><b>Sản phẩm</b><small>{pageStart}–{pageEnd} đang hiển thị</small></span></div>}
-          {gridSection?.settings.showSort !== false && <label className="tf4933-collection-sort"><span><small>Sắp xếp</small><b>{sort === 'new' ? 'Mới nhất' : sort === 'low' ? 'Giá tăng dần' : sort === 'high' ? 'Giá giảm dần' : sort === 'name' ? 'Tên A–Z' : 'Nổi bật'}</b></span><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sắp xếp sản phẩm"><option value="featured">Nổi bật</option><option value="new">Mới nhất</option><option value="low">Giá tăng dần</option><option value="high">Giá giảm dần</option><option value="name">Tên A–Z</option></select><ChevronDown/></label>}
+          {gridSection?.settings.showFilter !== false && <button className="tf4933-collection-filter" onClick={() => setFiltersOpen(true)}><Filter/><span><small>Tùy chỉnh kết quả</small><b>Bộ lọc{activeFilterCount > 0 && <em>{activeFilterCount}</em>}</b></span></button>}
+          {gridSection?.settings.showCount !== false && <div className="tf4933-collection-count" aria-live="polite"><strong>{filtered.length}</strong><span><b>Sản phẩm</b><small>Đang hiển thị {pageStart}–{pageEnd}</small></span></div>}
+          {gridSection?.settings.showSort !== false && <label className="tf4933-collection-sort"><span><small>Sắp xếp</small><b>{COLLECTION_SORT_LABELS[sort]}</b></span><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sắp xếp sản phẩm"><option value="featured">Nổi bật</option><option value="relevant">Phù hợp nhất</option><option value="best">Bán chạy nhất</option><option value="name">Tên A–Z</option><option value="nameDesc">Tên Z–A</option><option value="low">Giá thấp đến cao</option><option value="high">Giá cao đến thấp</option><option value="old">Ngày cũ đến mới</option><option value="new">Ngày mới đến cũ</option></select><ChevronDown/></label>}
         </div>
-        {(vendor||stockOnly||priceBand)&&<div className="tf4933-active-filters">{vendor && <span>{vendor}<button onClick={() => setVendor('')} aria-label={`Xóa bộ lọc ${vendor}`}><X /></button></span>}{stockOnly && <span>Còn hàng<button onClick={() => setStockOnly(false)} aria-label="Xóa bộ lọc còn hàng"><X /></button></span>}{priceBand && <span>Khoảng giá<button onClick={() => setPriceBand('')} aria-label="Xóa bộ lọc khoảng giá"><X /></button></span>}<button className="tf4933-clear-filters" onClick={() => {setVendor('');setStockOnly(false);setPriceBand('');}}>Xóa tất cả</button></div>}
+        {activeFilterCount > 0 && <div className="tf4933-active-filters">
+          {selectedVendors.map((value) => <span key={`vendor-${value}`}>Thương hiệu: {value}<button onClick={() => toggleVendor(value)} aria-label={`Xóa bộ lọc ${value}`}><X /></button></span>)}
+          {priceBands.map((value) => {const label = COLLECTION_PRICE_BANDS.find((band) => band.value === value)?.label || value; return <span key={`price-${value}`}>Giá: {label}<button onClick={() => togglePriceBand(value)} aria-label={`Xóa bộ lọc giá ${label}`}><X /></button></span>;})}
+          {PRODUCT_FILTER_DEFINITIONS.flatMap((definition) => selectedFilters[definition.id].map((value) => <span key={`${definition.id}-${value}`}>{definition.label}: {value}<button onClick={() => toggleProductFilter(definition.id, value)} aria-label={`Xóa bộ lọc ${value}`}><X /></button></span>))}
+          {stockOnly && <span>Còn hàng<button onClick={() => setStockOnly(false)} aria-label="Xóa bộ lọc còn hàng"><X /></button></span>}
+          <button className="tf4933-clear-filters" onClick={clearFilters}>Xóa tất cả</button>
+        </div>}
       </section>
       <section className="lux-section lux-collection-results">
-        {visible.length ? <div className={`lux-product-grid v23-columns-${Number(gridSection?.settings.columns || 4)}`}>{visible.map((product) => <LuxuryProductCard key={product.id} product={product} />)}</div> : <div className="lux-no-results"><Search /><h2>Chưa tìm thấy sản phẩm phù hợp</h2><p>Thử xóa bớt bộ lọc để xem thêm lựa chọn.</p><button onClick={() => {setVendor(''); setStockOnly(false); setPriceBand('');}}>Xóa tất cả bộ lọc</button></div>}
+        {visible.length ? <div className={`lux-product-grid v23-columns-${Number(gridSection?.settings.columns || 4)}`}>{visible.map((product) => <LuxuryProductCard key={product.id} product={product} />)}</div> : <div className="lux-no-results"><Search /><h2>Chưa tìm thấy sản phẩm phù hợp</h2><p>Thử xóa bớt bộ lọc để xem thêm lựa chọn.</p><button onClick={clearFilters}>Xóa tất cả bộ lọc</button></div>}
         {filtered.length>pageSize&&<nav className="tf4933-pagination" aria-label="Phân trang sản phẩm"><button className="tf4933-page-nav" type="button" disabled={page===1} onClick={()=>goToPage(page-1)}><ChevronLeft/><span>Trang trước</span></button><div className="tf4933-page-numbers">{pageItems.map((item,index)=>item==='gap'?<span className="tf4933-page-gap" key={`gap-${index}`} aria-hidden="true">…</span>:<button type="button" key={item} className={item===page?'is-active':''} aria-current={item===page?'page':undefined} aria-label={`Trang ${item}`} onClick={()=>goToPage(item)}>{item}</button>)}</div><button className="tf4933-page-nav" type="button" disabled={page===pageCount} onClick={()=>goToPage(page+1)}><span>Trang sau</span><ChevronRight/></button></nav>}
       </section>
-      {gridSection?.settings.showFilter !== false && <CollectionFilters open={filtersOpen} close={() => setFiltersOpen(false)} vendors={vendors} vendor={vendor} setVendor={setVendor} stockOnly={stockOnly} setStockOnly={setStockOnly} priceBand={priceBand} setPriceBand={setPriceBand} />}
+      {gridSection?.settings.showFilter !== false && <CollectionFilters
+        open={filtersOpen}
+        close={() => setFiltersOpen(false)}
+        resultCount={filtered.length}
+        vendors={vendors}
+        selectedVendors={selectedVendors}
+        toggleVendor={toggleVendor}
+        facetOptions={facetOptions}
+        priceOptions={priceOptions}
+        selectedFilters={selectedFilters}
+        toggleFilter={toggleProductFilter}
+        stockOnly={stockOnly}
+        setStockOnly={setStockOnly}
+        priceBands={priceBands}
+        togglePriceBand={togglePriceBand}
+        clearFilters={clearFilters}
+      />}
       </>}
       {collectionTemplate.sections.filter((section) => isSharedThemeSectionV27(section)).map((section) => <ThemeSectionV27 key={section.id} section={section}/>)}
     </div>
@@ -687,17 +874,20 @@ const addCalendarDays = (date: Date, days: number) => {
 };
 const shortDate = (date: Date) => `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
 
+const extendedWarranty=(vendor:string)=>/(versace|ferragamo)/i.test(vendor);
+
 function ProductGalleryPolicies({vendor}: {vendor: string}) {
+  const warrantyYears=extendedWarranty(vendor)?4:2;
   const items = [
     {icon: <Sparkles />, title: 'Về thương hiệu', accent: vendor || 'TIMEFORGE', body: `${vendor || 'TimeForge'} được TimeForge tuyển chọn với thông tin sản phẩm, nguồn hàng và chính sách hậu mãi rõ ràng.`},
     {icon: <Check />, title: 'Hình thức thanh toán', body: 'Hỗ trợ chuyển khoản, thanh toán khi nhận hàng và các phương thức linh hoạt theo cấu hình cửa hàng.'},
     {icon: <PackageCheck />, title: 'Chính sách giao hàng', body: 'Đơn hàng được xác nhận, đóng gói an toàn và cập nhật trạng thái trong suốt quá trình vận chuyển.'},
-    {icon: <ShieldCheck />, title: 'Bảo hành và đổi trả', body: 'Điều kiện bảo hành, đổi trả được áp dụng theo từng sản phẩm và xác nhận trước khi giao hàng.'},
+    {icon: <ShieldCheck />, title: 'Bảo hành và đổi trả', body: `${vendor||'Sản phẩm'} được áp dụng bảo hành ${warrantyYears} năm theo chính sách TimeForge và thương hiệu.`},
   ];
   return <section className="tf-pdp491-gallery-accordions" aria-label="Thông tin mua hàng">
     {items.map((item, index) => <details key={item.title}>
       <summary><span className="tf-pdp491-accordion-icon">{item.icon}</span><span className="tf-pdp491-accordion-title">{item.title}{item.accent && <b>{item.accent}</b>}</span><i aria-hidden="true" /></summary>
-      <div className="tf-pdp491-accordion-body"><p>{item.body}</p>{index === 1 && <ul><li>Thanh toán khi nhận hàng theo khu vực hỗ trợ.</li><li>Chuyển khoản ngân hàng và xác nhận tự động.</li><li>Hỗ trợ trả góp khi phương thức được kích hoạt.</li></ul>}</div>
+      <div className="tf-pdp491-accordion-body"><p>{item.body}</p>{index === 1 && <ul><li>Thanh toán khi nhận hàng theo khu vực hỗ trợ.</li><li>Chuyển khoản ngân hàng và xác nhận tự động.</li><li>Hỗ trợ trả góp khi phương thức được kích hoạt.</li></ul>}{index===3&&<ul><li>{extendedWarranty(vendor)?'Versace và Ferragamo: 2 năm quốc tế cộng 2 năm hỗ trợ tại Việt Nam.':'Các thương hiệu còn lại: bảo hành 2 năm tại Việt Nam hoặc theo bảo hành quốc tế đi kèm.'}</li><li>Miễn phí thay pin trong thời hạn bảo hành.</li><li>Dây đeo, phụ kiện và hư hỏng do sử dụng không đúng hướng dẫn không thuộc phạm vi bảo hành.</li></ul>}</div>
     </details>)}
   </section>;
 }
@@ -720,9 +910,57 @@ function ProductDeliveryEstimate() {
   </section>;
 }
 
+type ResolvedGroupItem={item:ProductGroupItem;product?:Product};
+const resolveProductGroupItems=(group:ProductGroup,products:Product[]):ResolvedGroupItem[]=>{
+  const mapped=group.items.map((item)=>({item,product:products.find((product)=>product.id===item.productId||product.sku.toUpperCase()===item.sku.toUpperCase())}));
+  const seen=new Set(mapped.map(({item})=>item.sku.toUpperCase()).filter(Boolean));
+  const automatic=products
+    .filter((product)=>group.skuPrefix&&product.sku.toUpperCase().startsWith(group.skuPrefix.toUpperCase())&&!seen.has(product.sku.toUpperCase()))
+    .map((product,index)=>({product,item:{id:`auto-${product.id}`,productId:product.id,sku:product.sku,name:product.title,color:readProductFilterValues(product,'bandColor')[0]||readProductFilterValues(product,'caseColor')[0]||'',size:readProductFilterValues(product,'faceSize')[0]||'',image:product.images[0]||'',sortOrder:mapped.length+index}}));
+  return [...mapped,...automatic].sort((a,b)=>a.item.sortOrder-b.item.sortOrder);
+};
+
+const swatchColor=(value:string)=>{
+  const normalized=value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLowerCase();
+  if(normalized.includes('rose')||normalized.includes('hong'))return'#c99586';
+  if(normalized.includes('navy')||normalized.includes('xanh dam'))return'#183756';
+  if(normalized.includes('xanh'))return'#527569';
+  if(normalized.includes('den'))return'#242424';
+  if(normalized.includes('nau'))return'#765443';
+  if(normalized.includes('bac')||normalized.includes('silver'))return'#c4c7c8';
+  if(normalized.includes('vang'))return'#c9a75d';
+  if(normalized.includes('trang'))return'#f5f3ee';
+  if(normalized.includes('do'))return'#9f2930';
+  return'#a9aaa5';
+};
+
+function ProductFamilyCardSwatches({group,items,current}:{group:ProductGroup;items:ResolvedGroupItem[];current:Product}){
+  return <div className="tf504-card-swatches" aria-label={`${group.name}: ${items.length} phiên bản`}>
+    <span>{items.length} màu</span>
+    <div>{items.slice(0,5).map(({item,product})=>{
+      const active=product?.id===current.id||item.productId===current.id||item.sku===current.sku;
+      return product?<Link key={item.id} className={active?'is-active':''} to={`/products/${product.handle}`} title={item.color||product.title} aria-label={item.color||product.title} style={{'--tf-swatch':swatchColor(item.color)} as React.CSSProperties}/>:null;
+    })}{items.length>5&&<small>+{items.length-5}</small>}</div>
+  </div>;
+}
+
+function ProductFamilySelector({group,products,current}:{group:ProductGroup;products:Product[];current:Product}){
+  const items=resolveProductGroupItems(group,products).filter(({product})=>product?.status==='active'&&product.published);
+  if(items.length<2)return null;
+  const currentItem=items.find(({item,product})=>product?.id===current.id||item.productId===current.id||item.sku===current.sku);
+  return <section className="tf504-family-selector" aria-label={`Các phiên bản thuộc ${group.name}`}>
+    <header><div><small>MÀU SẮC</small><p><b>Màu sắc:</b> {currentItem?.item.color||current.title}</p></div><span>{items.length} phiên bản</span></header>
+    <div>{items.map(({item,product})=>{
+      const active=product?.id===current.id||item.productId===current.id||item.sku===current.sku;
+      const content=<><span className="tf504-family-image">{(item.image||product?.images[0])?<img src={optimizedImage(item.image||product?.images[0]||'',240,240)} alt="" loading="lazy"/>:<Clock3/>}{active&&<Check/>}</span><span><b>{item.color||product?.title||item.name}</b><small>{item.size||item.sku}</small>{product&&<strong>{money(product.price)}</strong>}</span></>;
+      return product?<Link key={item.id} className={active?'is-active':''} to={`/products/${product.handle}`} aria-current={active?'page':undefined}>{content}</Link>:<span key={item.id} className="is-unavailable" title="SKU chưa có trong catalog">{content}</span>;
+    })}</div>
+  </section>;
+}
+
 export function ProductPageV10() {
   const {handle} = useParams();
-  const {products, addToCart, theme, isLoading} = useCommerce();
+  const {products, productGroups, addToCart, theme, isLoading} = useCommerce();
   const {openCart} = useOutletContext<{openCart: () => void}>();
   const product = findProductByRoute(products, handle);
   const [imageIndex, setImageIndex] = useState(0);
@@ -739,7 +977,7 @@ export function ProductPageV10() {
   useEffect(() => { if (product?.id) trackCommerceEvent('product_view',{productId:product.id,value:product.price}); }, [product?.id]);
 
   const parsedContent = useMemo(() => product ? productContent(product, product.variants[0]?.sku || product.sku) : {paragraphs: [], specs: []}, [product]);
-  if (!product && isLoading) return <main className="tf-product-route-loading" aria-live="polite" aria-busy="true"><span>Đang tải sản phẩm…</span></main>;
+  if (!product && isLoading) return <div className="route-loading tf-product-route-loading" aria-label="Đang tải đầy đủ dữ liệu sản phẩm" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><i/><b>Đang chuẩn bị sản phẩm</b></div></div>;
   if (!product) return <Navigate to="/404" replace />;
 
   const images = product.images.length ? product.images : ['https://placehold.co/1200x1200/f0eee8/25231f?text=TimeForge'];
@@ -747,6 +985,8 @@ export function ProductPageV10() {
   const price = variant?.price ?? product.price;
   const compareAt = variant?.compareAtPrice ?? product.compareAtPrice;
   const inventory = variant?.inventory ?? product.inventory;
+  const productGroup=productGroups.find((group)=>group.status==='active'&&(group.items.some((item)=>item.productId===product.id||item.sku.toUpperCase()===product.sku.toUpperCase())||(group.skuPrefix&&product.sku.toUpperCase().startsWith(group.skuPrefix.toUpperCase()))));
+  const warrantyYears=extendedWarranty(product.vendor)?4:2;
   const productTemplate = theme.templates.product;
   const productMain = productTemplate.sections.find((section) => section.type === 'productMain');
   const trustSection = productTemplate.sections.find((section) => section.type === 'trust');
@@ -755,7 +995,7 @@ export function ProductPageV10() {
   const priceBlock = getBlock(productMain, 'price');
   const variantBlock = getBlock(productMain, 'variantPicker');
   const quantityBlock = getBlock(productMain, 'quantity');
-  const buyBlock = getBlock(productMain, 'buyButtons');
+  const buyBlock = getBlock(productMain, 'buyButtons') || ({id:'runtime-buy-buttons',type:'buyButtons',visible:true,settings:{showAddToCart:true,showBuyNow:true,showWishlist:true}} satisfies ThemeBlock);
   const descriptionBlock = getBlocks(productMain, 'accordion').find((item) => item.settings.source === 'description');
   const showProductMain = productMain?.visible !== false;
   const relatedLimit = Number(recommendationSection?.settings.limit || 4);
@@ -800,8 +1040,10 @@ export function ProductPageV10() {
             <div className="tf-pdp491-benefits" aria-label="Quyền lợi mua hàng">
               <div><Truck/><span><b>Miễn phí giao hàng</b><small>Giao hàng toàn quốc, HCM hỗ trợ hỏa tốc</small></span></div>
               <div><Check/><span><b>Thanh toán linh hoạt</b><small>COD, chuyển khoản và trả góp theo cấu hình</small></span></div>
-              <div><ShieldCheck/><span><b>Bảo hành chính hãng</b><small>Áp dụng theo chính sách của từng thương hiệu</small></span></div>
+              <div><ShieldCheck/><span><b>Bảo hành {warrantyYears} năm</b><small>Miễn phí thay pin trong thời hạn bảo hành</small></span></div>
             </div>
+
+            {productGroup&&<ProductFamilySelector group={productGroup} products={products} current={product}/>}
 
             {variantBlock && product.variants.length > 1 && <div className="tf-pdp491-variants" {...themeBlockProps(variantBlock)}><div><b>Phiên bản</b><span>{variant?.title}</span></div><div>{product.variants.map((item) => <button key={item.id} className={variantId === item.id ? 'is-active' : ''} onClick={() => setVariantId(item.id)}>{item.title}</button>)}</div></div>}
 

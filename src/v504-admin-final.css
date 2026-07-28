@@ -1,0 +1,40 @@
+/* V50.4 — final Admin consistency layer. */
+.tf-admin-v499{--a504-green:#274631;--a504-paper:#f6f2ed;--a504-line:#ddd5ce}
+.tf-admin-v499 .v16-admin-page:not(.is-fullbleed){background:linear-gradient(180deg,#f7f4f0,#f2eee9)}
+.tf-admin-v499 .v16-page-header{padding:0 2px 18px;border-bottom:1px solid var(--a504-line)}
+.tf-admin-v499 .v16-page-header h1{font-size:clamp(28px,2.7vw,38px);line-height:1.15}
+.tf-admin-v499 .v16-page-header>svg{width:30px;height:30px;padding:7px;border:1px solid #d8d0c8;border-radius:9px;background:#fff;color:#726960}
+.tf-admin-v499 .v16-admin-content .card{border-color:var(--a504-line);border-radius:13px;box-shadow:0 10px 28px rgba(47,38,31,.045)}
+.tf-admin-v499 .v16-admin-content :where(button,.btn){letter-spacing:0}
+.tf-admin-v499 .v16-admin-nav a{font-size:12px}.tf-admin-v499 .v16-admin-nav section>p{font-size:9px}
+
+/* Metafields are working data, so keep labels and values at one stable scale. */
+.tf-product-editor-v4915 .tf503-metafield-panel{border-radius:13px;box-shadow:0 10px 26px rgba(39,70,49,.05)}
+.tf-product-editor-v4915 .tf503-metafield-panel>header{padding-block:15px}
+.tf-product-editor-v4915 .tf503-metafield-panel>header h2{font-size:16px}
+.tf-product-editor-v4915 .tf503-metafield-panel>header p{font-size:11px;line-height:1.45}
+.tf503-metafield-status b{font-size:15px}.tf503-metafield-status small{font-size:11px}
+.tf503-metafield-presets{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tf503-metafield-presets>button{min-height:40px;padding:8px 10px;font-size:11px}
+.tf503-metafields>article>header small{font-size:9px}.tf503-metafields>article>header b{font-size:12px}
+.tf503-metafield-grid>label>span{font-size:10px}
+.tf-product-editor-v4915 .tf503-metafield-grid :is(input,select){min-height:40px;font-size:12px}
+.tf503-metafields>article>p{font-size:10px}
+
+/* Theme customizer: predictable type hierarchy in all three panes. */
+.tf-admin-v499 :where(.tf4941-theme-tree,.tf4941-theme-inspector,.tf4941-theme-toolbar){font-size:12px}
+.tf-admin-v499 :where(.tf4941-theme-tree,.tf4941-theme-inspector) h2{font-size:16px;line-height:1.25}
+.tf-admin-v499 :where(.tf4941-theme-tree,.tf4941-theme-inspector) :where(label,button,input,select,textarea){font-size:12px}
+.tf-admin-v499 .tf-theme-editor-launch-v4941{color:#2f362f;background:linear-gradient(180deg,#f9f7f4,#eee9e3)}
+.tf-admin-v499 .tf-theme-editor-launch-v4941 b{font-size:16px}.tf-admin-v499 .tf-theme-editor-launch-v4941 small{font-size:12px}
+
+@media(max-width:900px){
+  .tf-admin-v499 .v16-page-header h1{font-size:29px}.tf-admin-v499 .v16-page-header p{font-size:13px;line-height:1.5}
+  .tf503-metafield-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .tf-admin-v499 .v16-admin-page:not(.is-fullbleed){padding:16px 12px}
+  .tf-admin-v499 .v16-page-header h1{font-size:26px}.tf-admin-v499 .v16-page-header>svg{display:none}
+  .tf503-metafield-status small{font-size:10px}.tf503-metafield-presets>button{font-size:10px}
+  .tf503-metafields>article>header b{font-size:11px}
+}

@@ -11,6 +11,17 @@ import {useCommerce} from './context';
 import type {Metafield, Product, ProductOption, Variant} from './types';
 import {money, slugify, strip, uid} from './utils';
 import {isFirebaseSafeSku, normalizeSku} from './product-data';
+import {PRODUCT_FILTER_DEFINITIONS, type ProductFilterDefinition} from './product-filter-data';
+import './v503-admin-metafields.css';
+
+const normalizeMetafieldKey = (value: string) => value.trim().toLocaleLowerCase('vi-VN').replace(/[\s.-]+/g, '_');
+const filterDefinitionForKey = (key: string) => PRODUCT_FILTER_DEFINITIONS.find((definition) =>
+  [definition.key, ...definition.aliases].map(normalizeMetafieldKey).includes(normalizeMetafieldKey(key)));
+const filterDefinitionForMetafield = (field: Pick<Metafield,'namespace'|'key'>) => {
+  const definition=filterDefinitionForKey(field.key);
+  if(definition?.id==='gender'&&normalizeMetafieldKey(field.namespace)!=='custom')return undefined;
+  return definition;
+};
 
 const blankProduct = (): Product => {
   const now = new Date().toISOString();
@@ -129,8 +140,36 @@ export function ProductEditorV39() {
   };
   const addOption = () => patch('options', [...(product.options || []), {id: uid('o'), name: 'Tùy chọn', values: ['Giá trị']}]);
   const updateOption = (optionId: string, next: Partial<ProductOption>) => patch('options', (product.options || []).map((option) => option.id === optionId ? {...option, ...next} : option));
-  const addMetafield = () => patch('metafields', [...(product.metafields || []), {id: uid('m'), namespace: 'custom', key: '', value: '', type: 'single_line_text_field'}]);
+  const addMetafield = (definition?: ProductFilterDefinition) => {
+    if (definition && (product.metafields || []).some((field) => filterDefinitionForMetafield(field)?.id === definition.id)) {
+      toast.info(`${definition.label} đã có trong metafields`);
+      return;
+    }
+    patch('metafields', [...(product.metafields || []), {
+      id: uid('m'),
+      namespace: 'custom',
+      key: definition?.key || '',
+      value: '',
+      type: 'single_line_text_field',
+    }]);
+  };
+  const addMissingFilterMetafields = () => {
+    const existing = new Set((product.metafields || []).flatMap((field) => {
+      const definition = filterDefinitionForMetafield(field);
+      return definition ? [definition.id] : [];
+    }));
+    const additions = PRODUCT_FILTER_DEFINITIONS
+      .filter((definition) => !existing.has(definition.id))
+      .map((definition) => ({id: uid('m'), namespace: 'custom', key: definition.key, value: '', type: 'single_line_text_field'}));
+    if (!additions.length) {toast.info('Đã có đủ trường lọc'); return;}
+    patch('metafields', [...(product.metafields || []), ...additions]);
+    toast.success(`Đã tạo ${additions.length} trường lọc`);
+  };
   const updateMetafield = (metafieldId: string, next: Partial<Metafield>) => patch('metafields', (product.metafields || []).map((metafield) => metafield.id === metafieldId ? {...metafield, ...next} : metafield));
+  const configuredFilterIds = new Set((product.metafields || []).flatMap((field) => {
+    const definition = filterDefinitionForMetafield(field);
+    return definition && field.value.trim() ? [definition.id] : [];
+  }));
 
   return <div className="tf-product-editor-v39 tf-product-editor-v4915">
     <header className="tf39-editor-header">
@@ -221,7 +260,48 @@ export function ProductEditorV39() {
         <Panel title="Trạng thái"><Field label="Trạng thái sản phẩm"><select value={product.status} onChange={(event) => patch('status', event.target.value as Product['status'])}><option value="active">Đang hoạt động</option><option value="draft">Bản nháp</option><option value="archived">Lưu trữ</option></select></Field><div className={`tf39-status-note is-${product.status}`}><i /><span><b>{product.status === 'active' ? 'Hiển thị trên cửa hàng' : product.status === 'draft' ? 'Chưa công khai' : 'Đã lưu trữ'}</b><small>Thay đổi có hiệu lực sau khi lưu.</small></span></div></Panel>
         <Panel title="Tổ chức sản phẩm"><div className="tf39-field-stack"><Field label="Danh mục"><input value={product.category} onChange={(event) => patch('category', event.target.value)} /></Field><Field label="Loại sản phẩm"><input value={product.productType} onChange={(event) => patch('productType', event.target.value)} /></Field><Field label="Nhà cung cấp / thương hiệu"><input value={product.vendor} onChange={(event) => patch('vendor', event.target.value)} /></Field><Field label="Tags"><div className="tf39-tag-input"><div>{product.tags.map((tag) => <button type="button" key={tag} onClick={() => patch('tags', product.tags.filter((item) => item !== tag))}>{tag}<X /></button>)}</div><input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => {if ((event.key === 'Enter' || event.key === ',') && tagInput.trim()) {event.preventDefault(); patch('tags', [...new Set([...product.tags, tagInput.trim()])]); setTagInput('');}}} placeholder="Nhập tag và Enter" /></div></Field><Field label="Bộ sưu tập"><div className="tf39-collection-list">{collectionNames.length ? collectionNames.map((name) => <span key={name}>{name}</span>) : <small>Gán từ trang Bộ sưu tập.</small>}</div></Field></div></Panel>
         <Panel title="Vận chuyển"><div className="tf39-form-grid two"><Field label="Khối lượng"><input type="number" value={product.weight} onChange={(event) => patch('weight', Number(event.target.value))} /></Field><Field label="Đơn vị"><select value={product.weightUnit} onChange={(event) => patch('weightUnit', event.target.value)}><option value="g">g</option><option value="kg">kg</option></select></Field></div></Panel>
-        <Panel title="Metafields" description="Dữ liệu mở rộng theo namespace.key." action={<button className="tf39-icon-action" type="button" onClick={addMetafield}><Plus /></button>}><div className="tf39-metafields">{(product.metafields || []).map((metafield) => <article key={metafield.id}><input value={metafield.namespace} onChange={(event) => updateMetafield(metafield.id, {namespace: event.target.value})} placeholder="namespace" /><input value={metafield.key} onChange={(event) => updateMetafield(metafield.id, {key: event.target.value})} placeholder="key" /><textarea rows={2} value={metafield.value} onChange={(event) => updateMetafield(metafield.id, {value: event.target.value})} placeholder="Giá trị" /><button type="button" onClick={() => patch('metafields', (product.metafields || []).filter((item) => item.id !== metafield.id))}><Trash2 /></button></article>)}{!(product.metafields || []).length && <p className="tf39-empty-inline">Chưa có metafield.</p>}</div></Panel>
+        <Panel
+          title="Metafields bộ lọc"
+          description="Dữ liệu tại đây tạo các hạng mục lọc trên trang bộ sưu tập."
+          className="tf503-metafield-panel"
+          action={<button className="tf39-icon-action" type="button" onClick={() => addMetafield()} aria-label="Thêm metafield tùy chỉnh"><Plus /></button>}
+        >
+          <div className="tf503-metafield-status">
+            <span><b>{configuredFilterIds.size}/{PRODUCT_FILTER_DEFINITIONS.length}</b><small>trường lọc đã có dữ liệu</small></span>
+            <button type="button" onClick={addMissingFilterMetafields}>Tạo trường còn thiếu</button>
+          </div>
+          <div className="tf503-metafield-presets" aria-label="Mẫu metafield bộ lọc">
+            {PRODUCT_FILTER_DEFINITIONS.map((definition) => {
+              const exists = (product.metafields || []).some((field) => filterDefinitionForMetafield(field)?.id === definition.id);
+              return <button type="button" key={definition.id} className={exists ? 'is-added' : ''} onClick={() => addMetafield(definition)}>
+                {exists ? <Check/> : <Plus/>}<span>{definition.label}</span>
+              </button>;
+            })}
+          </div>
+          <datalist id="tf503-metafield-keys">
+            {PRODUCT_FILTER_DEFINITIONS.map((definition) => <option key={definition.id} value={definition.key}>{definition.label}</option>)}
+          </datalist>
+          <div className="tf39-metafields tf503-metafields">
+            {(product.metafields || []).map((metafield) => {
+              const definition = filterDefinitionForMetafield(metafield);
+              const listId = `tf503-values-${metafield.id}`;
+              return <article key={metafield.id} className={definition ? 'is-filter-field' : ''}>
+                <header>
+                  <span><small>{definition ? 'BỘ LỌC STOREFRONT' : 'DỮ LIỆU TÙY CHỈNH'}</small><b>{definition?.label || metafield.key || 'Metafield mới'}</b></span>
+                  <button type="button" onClick={() => patch('metafields', (product.metafields || []).filter((item) => item.id !== metafield.id))} aria-label={`Xóa ${definition?.label || 'metafield'}`}><Trash2 /></button>
+                </header>
+                <div className="tf503-metafield-grid">
+                  <label><span>Namespace</span><input value={metafield.namespace} onChange={(event) => updateMetafield(metafield.id, {namespace: event.target.value})} placeholder="custom" /></label>
+                  <label><span>Khóa dữ liệu</span><input list="tf503-metafield-keys" value={metafield.key} onChange={(event) => updateMetafield(metafield.id, {key: event.target.value})} placeholder="Ví dụ: facesize" /></label>
+                  <label className="is-full"><span>Giá trị</span><input list={definition ? listId : undefined} value={metafield.value} onChange={(event) => updateMetafield(metafield.id, {value: event.target.value})} placeholder={definition?.examples.join(', ') || 'Nhập giá trị'} /></label>
+                  <label className="is-full"><span>Kiểu dữ liệu</span><select value={metafield.type} onChange={(event) => updateMetafield(metafield.id, {type: event.target.value})}><option value="single_line_text_field">Văn bản một dòng</option><option value="list.single_line_text_field">Danh sách văn bản</option><option value="number_integer">Số nguyên</option><option value="number_decimal">Số thập phân</option></select></label>
+                </div>
+                {definition && <><datalist id={listId}>{definition.examples.map((value) => <option value={value} key={value}/>)}</datalist><p>{definition.hint}</p></>}
+              </article>;
+            })}
+            {!(product.metafields || []).length && <p className="tf39-empty-inline">Chưa có metafield. Chọn một mẫu phía trên để tạo nhanh.</p>}
+          </div>
+        </Panel>
       </aside>
     </div>
   </div>;

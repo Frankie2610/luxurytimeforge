@@ -29,7 +29,7 @@ try{rules=await readFile(resolve('firebase.rules.json'),'utf8');JSON.parse(rules
 if(rules){
   if(rules.includes('auth != null && false'))problems.push('firebase.rules.json vẫn là bản deny-by-default.');
   if(owner&&!rules.toLowerCase().includes(owner))problems.push(`Rules chưa chứa email chủ sở hữu ${owner}.`);
-  for(const node of ['adminMembers','adminInvitations','themes','customers','orders'])if(!rules.includes(`"${node}"`))problems.push(`Rules thiếu node ${node}.`);
+  for(const node of ['adminMembers','adminInvitations','products','productGroups','themes','customers','orders'])if(!rules.includes(`"${node}"`))problems.push(`Rules thiếu node ${node}.`);
 }
 
 try{

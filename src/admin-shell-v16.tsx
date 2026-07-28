@@ -3,7 +3,7 @@ import {useEffect,useMemo,useState,type ComponentType} from 'react';
 import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
   Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,
-  BookOpen,CircleUserRound,FileText,FileUp,Home,LayoutTemplate,Menu,PackageSearch,Plus,
+  BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Menu,PackageSearch,Plus,
   PanelLeftClose,PanelLeftOpen,RotateCcw,Search,Settings,ShoppingBag,Tags,Users,UserRoundSearch,Wrench,X,
 } from 'lucide-react';
 import {toast as sonnerToast} from 'sonner';
@@ -13,6 +13,8 @@ import{hasPermission,routePermission,roleLabels}from'./permissions';
 import {useReturns} from './returns-v13';
 import {AdminCommandPalette} from './admin-v9';
 import './admin-v4938.css';
+import './v50-admin-polish.css';
+import './v504-admin-final.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -29,6 +31,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/draft-orders':{title:'Đơn hàng nháp',eyebrow:'Vận hành',description:'Tạo báo giá hoặc đơn hàng thay khách hàng.'},
   '/admin/products':{title:'Sản phẩm',eyebrow:'Danh mục',description:'Quản lý sản phẩm, trạng thái, giá bán và tồn kho.'},
   '/admin/collections':{title:'Bộ sưu tập',eyebrow:'Danh mục',description:'Sắp xếp sản phẩm theo chiến dịch và nhóm hiển thị.'},
+  '/admin/product-groups':{title:'Nhóm BST theo SKU',eyebrow:'Danh mục',description:'Nhập file và nhóm các phiên bản cùng dòng theo tiền tố SKU.'},
   '/admin/inventory':{title:'Hàng tồn kho',eyebrow:'Vận hành',description:'Theo dõi số lượng, cảnh báo và lịch sử điều chỉnh.'},
   '/admin/customers':{title:'Khách hàng',eyebrow:'Khách hàng',description:'Hồ sơ, lịch sử mua và giá trị vòng đời khách hàng.'},
   '/admin/customer-segments':{title:'Phân khúc khách hàng',eyebrow:'Khách hàng',description:'Tạo nhóm động phục vụ chăm sóc và marketing.'},
@@ -77,6 +80,7 @@ export function AdminLayoutV16(){
     {label:'Sản phẩm',items:[
       {to:'/admin/products',label:'Sản phẩm',icon:Boxes},
       {to:'/admin/collections',label:'Bộ sưu tập',icon:Tags},
+      {to:'/admin/product-groups',label:'Nhóm BST theo SKU',icon:Layers3},
       {to:'/admin/inventory',label:'Hàng tồn kho',icon:PackageSearch,count:lowStock},
     ]},
     {label:'Khách hàng',items:[

@@ -142,7 +142,7 @@ export const createSection = (type: SectionType): Section => {
 };
 
 const defaultSettings: Theme['settings'] = {
-  storeName: 'Luxury Timeforge', announcement: 'Miễn phí giao hàng toàn quốc cho đơn từ 5.000.000₫', accent: '#7a3f25',
+  storeName: 'Luxury Timeforge', announcement: 'Giảm giá đến 50% · Miễn phí giao hàng cho đơn từ 5.000.000₫', accent: '#7a3f25',
   background: '#f7f4ef', surface: '#ffffff', text: '#171513', muted: '#746f69', textOnDark: '#f8f5ef', radius: 18,
   cardRadius: 18, buttonRadius: 999, contentWidth: 1360, sectionSpacing: 88, headingScale: 100, headingWeight: 600,
   bodyWeight: 400, headingFont: 'Cormorant Garamond', bodyFont: 'Inter', motion: 'subtle', logoText: 'LUXURY TIMEFORGE', logoImage: '',

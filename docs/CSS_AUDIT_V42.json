@@ -1,42 +1,54 @@
 {
-  "generatedAt": "2026-07-21T17:46:42.580Z",
-  "files": 48,
-  "sourceBytes": 969617,
-  "importantDeclarations": 1808,
-  "uniqueSelectors": 7313,
-  "duplicatedSelectors": 2451,
+  "generatedAt": "2026-07-28T10:21:52.950Z",
+  "files": 61,
+  "sourceBytes": 1137127,
+  "importantDeclarations": 1877,
+  "uniqueSelectors": 8008,
+  "duplicatedSelectors": 2811,
   "productionCss": [
     {
-      "name": "legacy-vuyNh5yH.css",
-      "bytes": 239925
+      "name": "storefront-v10-evnYqSgF.css",
+      "bytes": 246551
     },
     {
-      "name": "storefront-v10-DZCLvU90.css",
-      "bytes": 179600
+      "name": "legacy-yhtfewsx.css",
+      "bytes": 235237
     },
     {
-      "name": "admin-shell-v16-8fSJ1Rvb.css",
-      "bytes": 158336
+      "name": "admin-shell-v16-CW24SPFk.css",
+      "bytes": 167897
     },
     {
-      "name": "checkout-v11-D5wN-xVl.css",
-      "bytes": 32095
+      "name": "checkout-v11-reL5tJxO.css",
+      "bytes": 54174
     },
     {
-      "name": "blog-v18-CcxRd3cc.css",
-      "bytes": 19237
+      "name": "blog-v18-BiKk08VZ.css",
+      "bytes": 26941
     },
     {
       "name": "index-CyM-VYai.css",
       "bytes": 17003
     },
     {
+      "name": "online-store-v19-LQMWsvYh.css",
+      "bytes": 14696
+    },
+    {
       "name": "v4927-commerce-COnk4C0b.css",
       "bytes": 11385
     },
     {
+      "name": "product-groups-admin-v504-D9kIfFN4.css",
+      "bytes": 10508
+    },
+    {
       "name": "login-BAUKEKHj.css",
       "bytes": 5752
+    },
+    {
+      "name": "product-editor-v39-Dskf_fFH.css",
+      "bytes": 4474
     },
     {
       "name": "admin-invite-BuN7DqL_.css",
@@ -47,13 +59,14 @@
       "bytes": 387
     }
   ],
-  "productionCssBytes": 667549,
+  "productionCssBytes": 798834,
   "topDuplicates": [
     {
       "selector": "select",
-      "count": 32,
+      "count": 45,
       "files": [
         "src/base.css",
+        "src/sprint15.css",
         "src/sprint16.css",
         "src/sprint20.css",
         "src/sprint21.css",
@@ -62,20 +75,57 @@
         "src/v4913-storefront-compat.css",
         "src/v4915-product-editor.css",
         "src/v499-admin.css",
-        "src/v499-theme-editor.css"
+        "src/v499-theme-editor.css",
+        "src/v50-admin-polish.css",
+        "src/v50-storefront-polish.css",
+        "src/v50-theme-editor.css",
+        "src/v504-admin-final.css"
       ]
     },
     {
       "selector": ".tf-storefront-v4912 .lux-product-grid",
-      "count": 23,
+      "count": 26,
       "files": [
         "src/v4912-storefront.css",
-        "src/v4936-mobile-product-grid.css"
+        "src/v4936-mobile-product-grid.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "input",
+      "count": 25,
+      "files": [
+        "src/base.css",
+        "src/sprint15.css",
+        "src/sprint16.css",
+        "src/sprint20.css",
+        "src/styles.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-product-editor.css",
+        "src/v499-admin.css",
+        "src/v499-theme-editor.css",
+        "src/v50-admin-polish.css",
+        "src/v50-storefront-polish.css",
+        "src/v50-theme-editor.css",
+        "src/v502-commerce-polish.css",
+        "src/v504-admin-final.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-header-inner",
+      "count": 24,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css",
+        "src/v504-storefront-final.css"
       ]
     },
     {
       "selector": "to",
-      "count": 21,
+      "count": 22,
       "files": [
         "src/app.css",
         "src/auth.css",
@@ -87,7 +137,59 @@
         "src/v4912-storefront.css",
         "src/v4917-admin-invite.css",
         "src/v4917-team.css",
-        "src/v4920-commerce-mobile.css"
+        "src/v4920-commerce-mobile.css",
+        "src/v499-theme-editor.css"
+      ]
+    },
+    {
+      "selector": "textarea)",
+      "count": 22,
+      "files": [
+        "src/sprint15.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-product-editor.css",
+        "src/v499-admin.css",
+        "src/v499-theme-editor.css",
+        "src/v50-admin-polish.css",
+        "src/v50-storefront-polish.css",
+        "src/v50-theme-editor.css",
+        "src/v502-commerce-polish.css",
+        "src/v504-admin-final.css"
+      ]
+    },
+    {
+      "selector": "@media(max-width:680px)",
+      "count": 19,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/ui/ui.css",
+        "src/v4912-commerce.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-commerce-fixes.css",
+        "src/v4920-commerce-mobile.css",
+        "src/v4923-storefront.css",
+        "src/v4925-commerce.css",
+        "src/v4927-commerce.css",
+        "src/v4933-collection.css",
+        "src/v504-commerce.css",
+        "src/v504-storefront-final.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912",
+      "count": 18,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v504-storefront-final.css"
       ]
     },
     {
@@ -114,32 +216,67 @@
       ]
     },
     {
-      "selector": "@media(max-width:680px)",
-      "count": 16,
+      "selector": "button",
+      "count": 17,
       "files": [
-        "src/sprint11.css",
-        "src/sprint12.css",
-        "src/sprint13.css",
-        "src/sprint14.css",
-        "src/sprint15.css",
-        "src/sprint18.css",
-        "src/sprint23.css",
-        "src/ui/ui.css",
+        "src/base.css",
+        "src/sprint20.css",
+        "src/styles.css",
         "src/v4912-commerce.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4915-commerce-fixes.css",
-        "src/v4920-commerce-mobile.css",
-        "src/v4923-storefront.css",
-        "src/v4925-commerce.css",
-        "src/v4927-commerce.css",
-        "src/v4933-collection.css"
+        "src/v4912-storefront.css",
+        "src/v499-admin.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-commerce-polish.css",
+        "src/v504-admin-final.css"
       ]
     },
     {
-      "selector": ".tf-storefront-v4912",
+      "selector": "h3",
+      "count": 17,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v24-tokens.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-journal-polish.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "h2",
       "count": 16,
       "files": [
-        "src/v4912-storefront.css"
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v24-tokens.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-journal-polish.css"
+      ]
+    },
+    {
+      "selector": "span",
+      "count": 16,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4922-journal.css",
+        "src/v50-journal-polish.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-hero-copy h1",
+      "count": 16,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css"
       ]
     },
     {
@@ -150,19 +287,18 @@
       ]
     },
     {
-      "selector": "input",
+      "selector": "a",
       "count": 15,
       "files": [
         "src/base.css",
         "src/sprint16.css",
         "src/sprint20.css",
         "src/styles.css",
-        "src/v4912-commerce.css",
         "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4915-product-editor.css",
-        "src/v499-admin.css",
-        "src/v499-theme-editor.css"
+        "src/v4923-storefront.css",
+        "src/v499-theme-editor.css",
+        "src/v50-admin-polish.css",
+        "src/v50-theme-editor.css"
       ]
     },
     {
@@ -176,27 +312,38 @@
       ]
     },
     {
-      "selector": "h2",
+      "selector": "@media(max-width:900px)",
       "count": 15,
       "files": [
-        "src/sprint16.css",
-        "src/sprint21.css",
-        "src/v24-tokens.css",
-        "src/v4912-commerce.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/styles.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4923-storefront.css",
+        "src/v4933-collection.css",
+        "src/v499-admin.css",
+        "src/v504-admin-final.css"
       ]
     },
     {
-      "selector": "h3",
+      "selector": ".tf-storefront-v4912 .lux-main-nav",
       "count": 15,
       "files": [
-        "src/sprint16.css",
-        "src/sprint21.css",
-        "src/v24-tokens.css",
-        "src/v4912-commerce.css",
         "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-main-nav a",
+      "count": 15,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css"
       ]
     },
     {
@@ -208,74 +355,95 @@
       ]
     },
     {
-      "selector": "textarea)",
+      "selector": "b",
       "count": 14,
       "files": [
-        "src/v4912-commerce.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4915-product-editor.css",
-        "src/v499-admin.css",
-        "src/v499-theme-editor.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912 .lux-header-inner",
-      "count": 14,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": "a",
-      "count": 13,
-      "files": [
-        "src/base.css",
-        "src/sprint16.css",
-        "src/sprint20.css",
-        "src/styles.css",
-        "src/v4912-storefront.css",
-        "src/v4923-storefront.css",
-        "src/v499-theme-editor.css"
-      ]
-    },
-    {
-      "selector": "@media(max-width:900px)",
-      "count": 13,
-      "files": [
-        "src/sprint11.css",
-        "src/sprint12.css",
-        "src/sprint13.css",
-        "src/sprint18.css",
-        "src/sprint23.css",
-        "src/styles.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4923-storefront.css",
-        "src/v4933-collection.css",
-        "src/v499-admin.css"
-      ]
-    },
-    {
-      "selector": "span",
-      "count": 13,
-      "files": [
-        "src/sprint16.css",
         "src/sprint21.css",
         "src/v4912-storefront.css",
         "src/v4913-storefront-compat.css",
-        "src/v4922-journal.css"
+        "src/v4922-journal.css",
+        "src/v50-journal-polish.css",
+        "src/v50-storefront-polish.css"
       ]
     },
     {
       "selector": "button)",
-      "count": 13,
+      "count": 14,
       "files": [
         "src/sprint21.css",
         "src/v4912-storefront.css",
         "src/v4922-journal.css",
         "src/v4923-storefront.css",
         "src/v4927-commerce.css",
-        "src/v499-admin.css"
+        "src/v499-admin.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "p",
+      "count": 13,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "small",
+      "count": 13,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-commerce-fixes.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "a)",
+      "count": 13,
+      "files": [
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "h4",
+      "count": 13,
+      "files": [
+        "src/v24-tokens.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-journal-polish.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-checkout-layout",
+      "count": 13,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css",
+        "src/v504-commerce.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-announcement",
+      "count": 13,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css",
+        "src/v504-storefront-final.css"
       ]
     },
     {
@@ -305,13 +473,43 @@
       ]
     },
     {
-      "selector": "b",
+      "selector": "@media(max-width:640px)",
       "count": 12,
       "files": [
-        "src/sprint21.css",
+        "src/styles.css",
+        "src/v4915-product-editor.css",
+        "src/v4917-admin-invite.css",
+        "src/v4923-admin-content.css",
+        "src/v499-admin.css",
+        "src/v499-theme-editor.css",
+        "src/v50-theme-editor.css"
+      ]
+    },
+    {
+      "selector": ":where(.tf4912-cart-route",
+      "count": 12,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v502-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-line",
+      "count": 12,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .tf-brand-rail-inner-v39",
+      "count": 12,
+      "files": [
         "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4922-journal.css"
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css"
       ]
     },
     {
@@ -342,18 +540,6 @@
       ]
     },
     {
-      "selector": "button",
-      "count": 11,
-      "files": [
-        "src/base.css",
-        "src/sprint20.css",
-        "src/styles.css",
-        "src/v4912-commerce.css",
-        "src/v4912-storefront.css",
-        "src/v499-admin.css"
-      ]
-    },
-    {
       "selector": "textarea",
       "count": 11,
       "files": [
@@ -364,126 +550,6 @@
         "src/styles.css",
         "src/v4912-storefront.css",
         "src/v499-theme-editor.css"
-      ]
-    },
-    {
-      "selector": ".lux-logo span",
-      "count": 11,
-      "files": [
-        "src/sprint10.css",
-        "src/sprint14.css",
-        "src/sprint15.css",
-        "src/sprint21.css"
-      ]
-    },
-    {
-      "selector": ".editor-side",
-      "count": 11,
-      "files": [
-        "src/sprint16.css",
-        "src/styles.css"
-      ]
-    },
-    {
-      "selector": "small",
-      "count": 11,
-      "files": [
-        "src/sprint16.css",
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4915-commerce-fixes.css"
-      ]
-    },
-    {
-      "selector": "a)",
-      "count": 11,
-      "files": [
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
-      ]
-    },
-    {
-      "selector": "@media(max-width:640px)",
-      "count": 11,
-      "files": [
-        "src/styles.css",
-        "src/v4915-product-editor.css",
-        "src/v4917-admin-invite.css",
-        "src/v4923-admin-content.css",
-        "src/v499-admin.css",
-        "src/v499-theme-editor.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912 :is(.lux-featured-products",
-      "count": 11,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912 .tf-pdp-title-pills-v39 span",
-      "count": 11,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912 .tf-pdp-price-v39 strong",
-      "count": 11,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": ".lux-main-photo",
-      "count": 10,
-      "files": [
-        "src/sprint10.css",
-        "src/sprint14.css",
-        "src/sprint15.css"
-      ]
-    },
-    {
-      "selector": ".lux-buy-panel",
-      "count": 10,
-      "files": [
-        "src/sprint10.css",
-        "src/sprint14.css",
-        "src/sprint15.css",
-        "src/sprint21.css"
-      ]
-    },
-    {
-      "selector": ".lux-content-page",
-      "count": 10,
-      "files": [
-        "src/sprint10.css",
-        "src/sprint14.css",
-        "src/sprint15.css",
-        "src/sprint21.css",
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": "p",
-      "count": 10,
-      "files": [
-        "src/sprint16.css",
-        "src/sprint21.css",
-        "src/v4912-commerce.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css"
-      ]
-    },
-    {
-      "selector": ".v18-blog-grid-wrap",
-      "count": 10,
-      "files": [
-        "src/sprint18.css",
-        "src/v4912-storefront.css"
       ]
     }
   ]

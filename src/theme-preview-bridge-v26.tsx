@@ -38,7 +38,12 @@ export function ThemePreviewBridgeV26() {
     };
     const submit = (event: Event) => event.preventDefault();
     const message = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin || event.data?.type !== 'timeforge:editor-selection') return;
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === 'timeforge:editor-outlines') {
+        document.documentElement.classList.toggle('tf-theme-preview-outlines-v50', Boolean(event.data.enabled));
+        return;
+      }
+      if (event.data?.type !== 'timeforge:editor-selection') return;
       if (event.data.sectionId) select(String(event.data.sectionId), String(event.data.blockId || ''), Boolean(event.data.scroll));
       else clear();
     };
@@ -47,7 +52,7 @@ export function ThemePreviewBridgeV26() {
     window.addEventListener('message', message);
     window.parent.postMessage({type: 'timeforge:preview-ready', path: `${location.pathname}${location.search}`}, window.location.origin);
     return () => {
-      document.documentElement.classList.remove('tf-theme-preview-document-v26', 'tf-theme-preview-document-v27');
+      document.documentElement.classList.remove('tf-theme-preview-document-v26', 'tf-theme-preview-document-v27', 'tf-theme-preview-outlines-v50');
       clear();
       document.removeEventListener('click', click, true);
       document.removeEventListener('submit', submit, true);

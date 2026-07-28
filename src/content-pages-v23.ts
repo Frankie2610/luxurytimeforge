@@ -44,13 +44,14 @@ export const defaultManagedContentPages:ManagedContentPage[]=[
     label:'Bảo hành',
     eyebrow:'BẢO HÀNH & CHĂM SÓC',
     title:'Hỗ trợ sử dụng bền lâu.',
-    lead:'Thông tin bảo hành được trình bày rõ theo từng thương hiệu và xác nhận cùng đơn hàng.',
+    lead:'Thời hạn, phạm vi và cách tiếp nhận bảo hành được xác nhận rõ theo từng thương hiệu cùng đơn hàng.',
     published:true,
     updatedAt:now,
     sections:[
-      {id:'warranty-coverage',title:'Phạm vi bảo hành',body:'Thời hạn và phạm vi áp dụng được xác định theo chính sách của từng thương hiệu, nguồn hàng và thông tin trên sản phẩm.'},
-      {id:'warranty-process',title:'Quy trình tiếp nhận',body:'Liên hệ TimeForge và cung cấp mã đơn hàng. Đội ngũ sẽ kiểm tra thông tin, hướng dẫn đóng gói và xác nhận nơi tiếp nhận phù hợp.'},
-      {id:'warranty-note',title:'Lưu ý khi sử dụng',body:'Các hao mòn tự nhiên, dây đeo, va đập, vào nước vượt mức công bố hoặc sử dụng không đúng hướng dẫn có thể nằm ngoài phạm vi bảo hành.'},
+      {id:'warranty-coverage',title:'Thời hạn bảo hành',body:'Versace và Ferragamo được hỗ trợ tối đa 4 năm, gồm 2 năm bảo hành toàn cầu và 2 năm hỗ trợ tại Việt Nam. Các thương hiệu còn lại áp dụng 2 năm tại Việt Nam hoặc theo bảo hành quốc tế đi kèm sản phẩm.'},
+      {id:'warranty-battery',title:'Pin và dây đeo',body:'TimeForge hỗ trợ thay pin miễn phí trong thời hạn bảo hành. Dây đeo có thể được hỗ trợ thay mới có tính phí; dây và phụ kiện là bộ phận hao mòn nên không thuộc phạm vi bảo hành tiêu chuẩn.'},
+      {id:'warranty-process',title:'Quy trình tiếp nhận',body:'Liên hệ TimeForge và cung cấp mã đơn hàng, hình ảnh tình trạng sản phẩm. Đội ngũ sẽ kiểm tra thông tin, hướng dẫn đóng gói và xác nhận nơi tiếp nhận trước khi khách gửi đồng hồ.'},
+      {id:'warranty-note',title:'Trường hợp ngoài bảo hành',body:'Hư hỏng do va đập, sử dụng sai hướng dẫn, tự ý sửa chữa hoặc tiếp xúc nước vượt mức chống nước công bố không thuộc phạm vi bảo hành. TimeForge sẽ kiểm tra và báo chi phí trước nếu có thể hỗ trợ sửa chữa.'},
     ],
   },
   {
