@@ -18,6 +18,7 @@ import {AdminResourceFrame,AdminResourceIntro,AdminResourceSurface} from './admi
 import {buildTrackingUrl,readIntegrationSettings} from './integrations';
 import './v515-order-payment.css';
 import './v521-ui-polish.css';
+import './v525-admin-orders.css';
 
 const fmt = (value: string) => new Date(value).toLocaleString('vi-VN', {dateStyle: 'medium', timeStyle: 'short'});
 const orderStatus: Record<Order['status'], string> = {open: 'Đang mở', confirmed: 'Đã xác nhận', completed: 'Hoàn tất', cancelled: 'Đã hủy'};

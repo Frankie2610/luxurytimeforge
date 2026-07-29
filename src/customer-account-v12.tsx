@@ -1,5 +1,6 @@
 import './legacy.css';
 import './v524-customer-account.css';
+import './v525-customer-order-detail.css';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft, ArrowRight, Check, ChevronRight, CircleUserRound, Clock3, Copy,
