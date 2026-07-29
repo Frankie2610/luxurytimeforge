@@ -36,12 +36,17 @@ for(const entry of String(env.VITE_ADMIN_ROLE_MAP||'').split(',').map(item=>item
 }
 
 const escapeRule=value=>value.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+const memberBase=`root.child('timeforge/adminMembers').child(auth.uid)`;
+const googleMemberGate=`(auth.token.firebase.sign_in_provider != 'google.com' || ${memberBase}.child('allowGoogleSignIn').val() == true)`;
 const envCondition=roles=>{
-  const emails=[...configuredRoles.entries()].filter(([,role])=>roles.includes(role)).map(([email])=>`auth.token.email == '${escapeRule(email)}'`);
+  const emails=[...configuredRoles.entries()].filter(([,role])=>roles.includes(role)).map(([email])=>{
+    const emailRule=`auth.token.email == '${escapeRule(email)}'`;
+    return email===ownerEmail?emailRule:`(${emailRule} && ${googleMemberGate})`;
+  });
   return emails.length?`(auth.token.email != null && (${emails.join(' || ')}))`:'false';
 };
-const memberBase=`root.child('timeforge/adminMembers').child(auth.uid)`;
-const memberActive=`${memberBase}.child('status').val() == 'active'`;
+const memberActive=`${memberBase}.child('status').val() == 'active' && ${googleMemberGate}`;
+
 const roleExpr=roles=>roles.map(role=>`${memberBase}.child('role').val() == '${role}'`).join(' || ');
 const condition=roles=>`auth != null && (${envCondition(roles)} || (${memberActive} && (${roleExpr(roles)})))`;
 const replacements={

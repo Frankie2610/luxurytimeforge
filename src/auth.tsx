@@ -1,7 +1,7 @@
 import{createContext,useCallback,useContext,useEffect,useMemo,useState,type ReactNode}from'react';
 import{Navigate,useLocation}from'react-router-dom';
 import{firebaseAppEnabled,firebaseClient,getFirebaseAuth,isFirebasePermissionError}from'./firebase';
-import{adminMemberPath,activeMember,type AdminMemberRecord}from'./admin-access';
+import{ADMIN_INVITATIONS_PATH,adminInvitationPath,adminMemberPath,activeMember,inviteExpired,normalizeEmail,type AdminInvitationRecord,type AdminMemberRecord}from'./admin-access';
 import{hasPermission,type Permission,type AdminRole}from'./permissions';
 
 type Role=AdminRole;
@@ -26,6 +26,7 @@ const DEMO_KEY='tf.react.admin-demo-session';
 const FIREBASE_SESSION_KEY='tf:admin:firebase-session';
 const RETURN_KEY='tf:admin:return-to';
 const AUTH_RETRY_DELAYS=[450,1200,2500];
+const AUTH_ERROR_KEY='tf:admin:auth-error';
 const demoEnabled=String(import.meta.env.VITE_ENABLE_DEMO_LOGIN||'').toLowerCase()==='true';
 const splitEmails=(value:unknown)=>String(value||'').split(',').map(item=>item.trim().toLowerCase()).filter(Boolean);
 const ownerEmail=String(import.meta.env.VITE_OWNER_EMAIL||'').trim().toLowerCase();
@@ -48,6 +49,16 @@ export const embeddedThemePreview=()=>{
   }catch{return false}
 };
 const validRole=(role:unknown):role is Role=>['owner','admin','manager','staff','content'].includes(String(role));
+type FirebaseAuthUser={uid:string;email?:string|null;displayName?:string|null;photoURL?:string|null;getIdTokenResult?:()=>Promise<{signInProvider?:string;claims?:Record<string,unknown>}>};
+const firebaseSignInProvider=async(firebaseUser:FirebaseAuthUser,providerHint='')=>{
+  if(providerHint)return providerHint;
+  try{
+    const token=await firebaseUser.getIdTokenResult?.();
+    const firebaseClaim=token?.claims?.firebase as{sign_in_provider?:unknown}|undefined;
+    return String(token?.signInProvider||firebaseClaim?.sign_in_provider||'');
+  }catch{return''}
+};
+const googleDeniedMessage='Admin chưa cho phép email này đăng nhập bằng Google. Hãy dùng email/mật khẩu hoặc liên hệ chủ cửa hàng.';
 const readFirebaseSession=():AdminSessionUser|null=>{
   if(typeof window==='undefined')return null;
   try{
@@ -87,13 +98,37 @@ export function AuthProvider({children}:{children:ReactNode}){
   const[user,setUser]=useState<AdminSessionUser|null>(()=>{if(previewFrame||!authRequired)return null;if(demoEnabled){try{const demo=JSON.parse(sessionStorage.getItem(DEMO_KEY)||'null');if(demo)return demo}catch{}}return readFirebaseSession()});
   const[loading,setLoading]=useState(firebaseAppEnabled&&!previewFrame&&authRequired);
 
-  const resolveFirebaseUser=useCallback(async(firebaseUser:{uid:string;email?:string|null;displayName?:string|null;photoURL?:string|null},allowPending=false):Promise<AdminSessionUser|null>=>{
-    const email=(firebaseUser.email||'').trim().toLowerCase();
-    if(configuredEmail(email))return{uid:firebaseUser.uid,email,name:firebaseUser.displayName||email.split('@')[0]||'Admin',photoURL:firebaseUser.photoURL||undefined,role:roleForConfiguredEmail(email),access:'active'};
+  const activateGoogleInvitation=useCallback(async(firebaseUser:FirebaseAuthUser):Promise<AdminSessionUser|null>=>{
+    const email=normalizeEmail(firebaseUser.email||'');
+    if(!email||!firebaseClient.enabled)return null;
+    const inviteMap=await firebaseClient.queryByChild<Record<string,AdminInvitationRecord>>(ADMIN_INVITATIONS_PATH,'email',email);
+    const invitations=Object.entries(inviteMap||{}).map(([id,value])=>({...value,id:value.id||id})).filter(invite=>normalizeEmail(invite.email)===email).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    const invite=invitations.find(item=>item.allowGoogleSignIn===true&&((item.status==='pending'&&!inviteExpired(item))||(item.status==='accepted'&&item.acceptedBy===firebaseUser.uid)));
+    if(!invite)return null;
+    const now=new Date().toISOString();
+    if(invite.status==='pending'){
+      await firebaseClient.write(adminInvitationPath(invite.id),{...invite,status:'accepted',acceptedAt:now,acceptedBy:firebaseUser.uid});
+    }
+    const member:AdminMemberRecord={uid:firebaseUser.uid,email,name:invite.name||firebaseUser.displayName||email.split('@')[0]||'Admin',role:invite.role,status:'active',inviteId:invite.id,invitedAt:invite.createdAt,acceptedAt:invite.acceptedAt||now,allowGoogleSignIn:true,updatedAt:now};
+    await firebaseClient.write(adminMemberPath(firebaseUser.uid),member);
+    return{uid:firebaseUser.uid,email,name:member.name,photoURL:firebaseUser.photoURL||undefined,role:member.role,access:'active'};
+  },[]);
+
+  const resolveFirebaseUser=useCallback(async(firebaseUser:FirebaseAuthUser,allowPending=false,providerHint=''):Promise<AdminSessionUser|null>=>{
+    const email=normalizeEmail(firebaseUser.email||'');
+    const provider=await firebaseSignInProvider(firebaseUser,providerHint);
+    if(configuredEmail(email)&&(provider!=='google.com'||email===ownerEmail))return{uid:firebaseUser.uid,email,name:firebaseUser.displayName||email.split('@')[0]||'Admin',photoURL:firebaseUser.photoURL||undefined,role:roleForConfiguredEmail(email),access:'active'};
     if(firebaseClient.enabled){
       try{
         const record=await firebaseClient.read<AdminMemberRecord>(adminMemberPath(firebaseUser.uid));
-        if(activeMember(record)&&record.email.toLowerCase()===email)return{uid:firebaseUser.uid,email,name:record.name||firebaseUser.displayName||email.split('@')[0]||'Admin',photoURL:firebaseUser.photoURL||undefined,role:record.role,access:'active'};
+        if(activeMember(record)&&record.email.toLowerCase()===email){
+          if(provider==='google.com'&&record.allowGoogleSignIn!==true)return null;
+          return{uid:firebaseUser.uid,email,name:record.name||firebaseUser.displayName||email.split('@')[0]||'Admin',photoURL:firebaseUser.photoURL||undefined,role:record.role,access:'active'};
+        }
+        if(provider==='google.com'){
+          const activated=await activateGoogleInvitation(firebaseUser);
+          if(activated)return activated;
+        }
       }catch(error){
         /* A stale rules deployment must not create an unhandled promise in the auth observer.
            The invite page may continue in pending mode and show its own actionable error. */
@@ -102,13 +137,14 @@ export function AuthProvider({children}:{children:ReactNode}){
     }
     if(allowPending&&email)return{uid:firebaseUser.uid,email,name:firebaseUser.displayName||email.split('@')[0]||'Thành viên được mời',photoURL:firebaseUser.photoURL||undefined,role:'staff',access:'pending'};
     return null;
-  },[]);
+  },[activateGoogleInvitation]);
 
   const refreshAccess=useCallback(async()=>{
     if(!firebaseAppEnabled)return null;
     const auth=await getFirebaseAuth();
     if(!auth?.currentUser){writeFirebaseSession(null);setUser(null);return null}
-    const next=await resolveFirebaseUser(auth.currentUser,inviteRoute());
+    const provider=await firebaseSignInProvider(auth.currentUser);
+    const next=await resolveFirebaseUser(auth.currentUser,inviteRoute(),provider);
     writeFirebaseSession(next);
     setUser(next);
     return next;
@@ -130,12 +166,17 @@ export function AuthProvider({children}:{children:ReactNode}){
       const sdk=await import('firebase/auth');
       const resolveObserved=async(firebaseUser:NonNullable<typeof auth.currentUser>,token:number,attempt=0):Promise<void>=>{
         if(!active||token!==revision)return;
+        const provider=await firebaseSignInProvider(firebaseUser);
         try{
-          const next=await resolveFirebaseUser(firebaseUser,inviteRoute());
+          const next=await resolveFirebaseUser(firebaseUser,inviteRoute(),provider);
           if(!active||token!==revision)return;
           if(!next&&!inviteRoute()){
             writeFirebaseSession(null);
             setUser(null);
+            if(provider==='google.com'){
+              sessionStorage.setItem(AUTH_ERROR_KEY,googleDeniedMessage);
+              window.dispatchEvent(new CustomEvent('timeforge:auth-error',{detail:{message:googleDeniedMessage}}));
+            }
             setLoading(false);
             return;
           }
@@ -151,7 +192,12 @@ export function AuthProvider({children}:{children:ReactNode}){
           }
           const cached=readFirebaseSession();
           const email=(firebaseUser.email||'').trim().toLowerCase();
-          if(cached&&cached.uid===firebaseUser.uid&&cached.email.toLowerCase()===email){
+          if(provider==='google.com'){
+            writeFirebaseSession(null);
+            setUser(null);
+            sessionStorage.setItem(AUTH_ERROR_KEY,googleDeniedMessage);
+            window.dispatchEvent(new CustomEvent('timeforge:auth-error',{detail:{message:googleDeniedMessage}}));
+          }else if(cached&&cached.uid===firebaseUser.uid&&cached.email.toLowerCase()===email){
             setUser(cached);
           }else{
             setUser(null);
@@ -183,12 +229,12 @@ export function AuthProvider({children}:{children:ReactNode}){
     writeFirebaseSession(null);setUser(next);sessionStorage.setItem(DEMO_KEY,JSON.stringify(next));
   };
 
-  const verifyCredential=async(firebaseUser:{uid:string;email?:string|null;displayName?:string|null;photoURL?:string|null})=>{
-    const next=await resolveFirebaseUser(firebaseUser,false);
+  const verifyCredential=async(firebaseUser:FirebaseAuthUser,providerHint='')=>{
+    const next=await resolveFirebaseUser(firebaseUser,false,providerHint);
     if(next){writeFirebaseSession(next);setUser(next);return}
     const auth=await getFirebaseAuth();
     if(auth){const sdk=await import('firebase/auth');await sdk.signOut(auth)}
-    throw new Error('Email này chưa được cấp quyền hoặc lời mời chưa được chấp nhận.');
+    throw new Error(providerHint==='google.com'?googleDeniedMessage:'Email này chưa được cấp quyền hoặc lời mời chưa được chấp nhận.');
   };
 
   const loginEmail=async(email:string,password:string)=>{
@@ -197,7 +243,7 @@ export function AuthProvider({children}:{children:ReactNode}){
       const auth=await getFirebaseAuth();if(!auth)throw new Error('Firebase Authentication chưa sẵn sàng.');
       const sdk=await import('firebase/auth');
       const credential=await sdk.signInWithEmailAndPassword(auth,email.trim(),password);
-      await verifyCredential(credential.user);
+      await verifyCredential(credential.user,'password');
     }catch(error){throw new Error(authMessage(error))}
   };
 
@@ -210,7 +256,7 @@ export function AuthProvider({children}:{children:ReactNode}){
       provider.setCustomParameters({prompt:'select_account'});
       try{
         const credential=await sdk.signInWithPopup(auth,provider);
-        await verifyCredential(credential.user);
+        await verifyCredential(credential.user,'google.com');
       }catch(error){
         const code=typeof error==='object'&&error&&'code'in error?String((error as{code?:unknown}).code||''):'';
         if(code==='auth/popup-blocked'){

@@ -99,6 +99,15 @@ export const firebaseClient={
       return snapshot.exists()?snapshot.val() as T:null;
     }catch(error){throw firebaseOperationError(error,'đọc',path)}
   },
+  async queryByChild<T>(path:string,child:string,equalValue:string|number|boolean|null){
+    const database=await db();if(!database)return null;
+    try{
+      const sdk=await import('firebase/database');
+      const request=sdk.query(sdk.ref(database,path),sdk.orderByChild(child),sdk.equalTo(equalValue));
+      const snapshot=await sdk.get(request);
+      return snapshot.exists()?snapshot.val() as T:null;
+    }catch(error){throw firebaseOperationError(error,'truy vấn',`${path}?orderBy=${child}`)}
+  },
   async write<T>(path:string,value:T){
     const database=await db();if(!database)return;
     try{

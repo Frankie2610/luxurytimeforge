@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.52.6",
+  "version": "0.52.7",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -31,7 +31,8 @@
     "v523:check": "node scripts/check-v523-product-admin-fix.mjs",
     "v524:check": "node scripts/check-v524-account-print.mjs",
     "v525:check": "node scripts/check-v525-order-detail-admin.mjs",
-    "v526:check": "node scripts/check-v526-account-returns.mjs"
+    "v526:check": "node scripts/check-v526-account-returns.mjs",
+    "v527:check": "node scripts/check-v527-google-access.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -74,7 +75,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury Timeforge V0.52.6: compact account-order imagery, larger profile/address typography, white-text order CTAs, and a fully polished customer return and exchange workflow.",
+  "description": "Luxury Timeforge V0.52.7: owner-controlled Google sign-in permissions for each invited and active Admin member, with secure Firebase Rules enforcement.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

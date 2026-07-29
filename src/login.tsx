@@ -1,10 +1,11 @@
 import'./auth.css';
-import{useMemo,useState}from'react';
+import{useEffect,useMemo,useState}from'react';
 import{ArrowLeft,Eye,EyeOff,KeyRound,LockKeyhole,Mail,ShieldCheck}from'lucide-react';
 import{Link,Navigate,useLocation,useNavigate}from'react-router-dom';
 import{useAuth}from'./auth';
 
 const RETURN_KEY='tf:admin:return-to';
+const AUTH_ERROR_KEY='tf:admin:auth-error';
 
 export function AdminLogin(){
   const{user,firebaseEnabled,accessConfigured,demoEnabled,loginDemo,loginEmail,loginGoogle,resetPassword}=useAuth();
@@ -13,9 +14,10 @@ export function AdminLogin(){
   const[email,setEmail]=useState('');
   const[password,setPassword]=useState('');
   const[showPassword,setShowPassword]=useState(false);
-  const[error,setError]=useState('');
+  const[error,setError]=useState(()=>{const value=sessionStorage.getItem(AUTH_ERROR_KEY)||'';sessionStorage.removeItem(AUTH_ERROR_KEY);return value});
   const[notice,setNotice]=useState('');
   const[busy,setBusy]=useState<'email'|'google'|'reset'|'demo'|null>(null);
+  useEffect(()=>{const listener=(event:Event)=>{const message=(event as CustomEvent<{message?:string}>).detail?.message;if(message)setError(message)};window.addEventListener('timeforge:auth-error',listener);return()=>window.removeEventListener('timeforge:auth-error',listener)},[]);
   const returnTo=useMemo(()=>((location.state as{from?:string}|null)?.from||sessionStorage.getItem(RETURN_KEY)||'/admin'),[location.state]);
   if(user?.access==='active')return <Navigate to={returnTo} replace/>;
   const done=()=>{sessionStorage.removeItem(RETURN_KEY);navigate(returnTo,{replace:true})};

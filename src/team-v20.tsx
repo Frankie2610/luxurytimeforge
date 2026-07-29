@@ -44,6 +44,7 @@ export function TeamPermissionsV20(){
   const[email,setEmail]=useState('');
   const[name,setName]=useState('');
   const[role,setRole]=useState<InviteRole>('admin');
+  const[allowGoogleSignIn,setAllowGoogleSignIn]=useState(false);
   const[loading,setLoading]=useState(true);
   const[sending,setSending]=useState(false);
   const[error,setError]=useState('');
@@ -92,7 +93,7 @@ export function TeamPermissionsV20(){
     const now=new Date();
     const record:AdminInvitationRecord={
       id:crypto.randomUUID(),email:normalized,name:name.trim()||normalized.split('@')[0],role,status:'pending',
-      invitedBy:user?.uid||'',invitedByName:user?.name||'Chủ cửa hàng',createdAt:now.toISOString(),expiresAt:new Date(now.getTime()+7*day).toISOString(),
+      invitedBy:user?.uid||'',invitedByName:user?.name||'Chủ cửa hàng',createdAt:now.toISOString(),expiresAt:new Date(now.getTime()+7*day).toISOString(),allowGoogleSignIn,
     };
     try{
       try{
@@ -106,7 +107,7 @@ export function TeamPermissionsV20(){
       try{
         const delivered=await sendEmailLink(record);
         await firebaseClient.write(adminInvitationPath(record.id),delivered);
-        setInvites(current=>[delivered,...current.filter(item=>item.id!==delivered.id)]);setLastRequested(delivered);setEmail('');setName('');setRole('admin');
+        setInvites(current=>[delivered,...current.filter(item=>item.id!==delivered.id)]);setLastRequested(delivered);setEmail('');setName('');setRole('admin');setAllowGoogleSignIn(false);
         emit(`Firebase đã tiếp nhận yêu cầu gửi tới ${record.email}.`);
       }catch(reason){
         const message=reason instanceof Error?reason.message:'Không thể gửi email lời mời.';
@@ -122,7 +123,7 @@ export function TeamPermissionsV20(){
   const resend=async(inviteRecord:AdminInvitationRecord)=>{
     setError('');setLastRequested(null);setDeliveryWarning(null);
     const now=new Date();
-    const next=cleanRecord({...inviteRecord,status:'pending' as const,createdAt:now.toISOString(),expiresAt:new Date(now.getTime()+7*day).toISOString(),acceptedAt:undefined,acceptedBy:undefined,cancelledAt:undefined,deliveryError:undefined});
+    const next=cleanRecord({...inviteRecord,allowGoogleSignIn:inviteRecord.allowGoogleSignIn===true,status:'pending' as const,createdAt:now.toISOString(),expiresAt:new Date(now.getTime()+7*day).toISOString(),acceptedAt:undefined,acceptedBy:undefined,cancelledAt:undefined,deliveryError:undefined});
     try{
       await firebaseClient.write(adminInvitationPath(next.id),next);
       setRulesBlocked(false);
@@ -148,20 +149,26 @@ export function TeamPermissionsV20(){
   };
 
   const cancel=async(inviteRecord:AdminInvitationRecord)=>{
-    const next={...inviteRecord,status:'cancelled' as const,cancelledAt:new Date().toISOString()};
+    const next={...inviteRecord,allowGoogleSignIn:inviteRecord.allowGoogleSignIn===true,status:'cancelled' as const,cancelledAt:new Date().toISOString()};
     try{await firebaseClient.write(adminInvitationPath(next.id),next);setInvites(current=>current.map(item=>item.id===next.id?next:item));emit('Đã thu hồi lời mời.','info')}
     catch(reason){setRulesBlocked(isFirebasePermissionError(reason));setError(reason instanceof Error?reason.message:'Không thể thu hồi lời mời.')}
   };
 
   const changeRole=async(member:AdminMemberRecord,nextRole:AdminRole)=>{
-    const next={...member,role:nextRole,updatedAt:new Date().toISOString()};
+    const next={...member,allowGoogleSignIn:member.allowGoogleSignIn===true,role:nextRole,updatedAt:new Date().toISOString()};
     try{await firebaseClient.write(adminMemberPath(member.uid),next);setMembers(current=>current.map(item=>item.uid===member.uid?next:item));emit(`Đã đổi quyền của ${member.email}.`)}
     catch(reason){setRulesBlocked(isFirebasePermissionError(reason));setError(reason instanceof Error?reason.message:'Không thể đổi vai trò.')}
   };
 
+  const changeGoogleAccess=async(member:AdminMemberRecord,enabled:boolean)=>{
+    const next={...member,allowGoogleSignIn:enabled,updatedAt:new Date().toISOString()};
+    try{await firebaseClient.write(adminMemberPath(member.uid),next);setMembers(current=>current.map(item=>item.uid===member.uid?next:item));emit(`${enabled?'Đã cho phép':'Đã tắt'} đăng nhập Google của ${member.email}.`,enabled?'success':'info')}
+    catch(reason){setRulesBlocked(isFirebasePermissionError(reason));setError(reason instanceof Error?reason.message:'Không thể cập nhật quyền đăng nhập Google.')}
+  };
+
   const suspend=async(member:AdminMemberRecord)=>{
     if(!confirm(`Thu hồi quyền truy cập của ${member.email}?`))return;
-    const next={...member,status:'suspended' as const,updatedAt:new Date().toISOString()};
+    const next={...member,allowGoogleSignIn:member.allowGoogleSignIn===true,status:'suspended' as const,updatedAt:new Date().toISOString()};
     try{await firebaseClient.write(adminMemberPath(member.uid),next);setMembers(current=>current.map(item=>item.uid===member.uid?next:item));emit('Đã thu hồi quyền truy cập.','info')}
     catch(reason){setRulesBlocked(isFirebasePermissionError(reason));setError(reason instanceof Error?reason.message:'Không thể thu hồi quyền.')}
   };
@@ -173,7 +180,7 @@ export function TeamPermissionsV20(){
 
   return <div className="tf4917-team-page">
     <section className="tf4917-team-hero">
-      <div><span><ShieldCheck/>TRUY CẬP AN TOÀN</span><h2>Nhân sự và phân quyền</h2><p>Gửi lời mời qua email, chờ người nhận xác thực và chỉ kích hoạt đúng vai trò được phê duyệt.</p></div>
+      <div><span><ShieldCheck/>TRUY CẬP AN TOÀN</span><h2>Nhân sự và phân quyền</h2><p>Admin chỉ định vai trò và quyết định riêng từng email có được đăng nhập bằng Google hay không.</p></div>
       <div className="tf4917-team-metrics"><article><b>{counts.active}</b><span>Đang hoạt động</span></article><article><b>{counts.pending}</b><span>Chờ chấp nhận</span></article></div>
     </section>
 
@@ -185,23 +192,29 @@ export function TeamPermissionsV20(){
 
     <div className="tf4917-team-layout">
       <section className="tf4917-team-card tf4917-invite-form">
-        <header><div className="tf4917-team-card-icon"><UserPlus/></div><div><h3>Mời thành viên mới</h3><p>Email sẽ chứa liên kết xác thực dùng một lần.</p></div></header>
+        <header><div className="tf4917-team-card-icon"><UserPlus/></div><div><h3>Mời thành viên mới</h3><p>Quyền Google mặc định tắt và chỉ được bật khi Admin chủ động chọn.</p></div></header>
         <div className="tf4917-team-fields">
           <label><span>Họ tên</span><input value={name} onChange={event=>setName(event.target.value)} placeholder="Nguyễn Văn A"/></label>
           <label><span>Email</span><input type="email" value={email} onChange={event=>setEmail(event.target.value)} placeholder="email@domain.com"/></label>
           <label><span>Vai trò</span><select value={role} onChange={event=>setRole(event.target.value as InviteRole)}>{Object.entries(roleLabels).filter(([key])=>key!=='owner').map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
         </div>
+        <label className={`tf527-google-permission${allowGoogleSignIn?' is-enabled':''}`}>
+          <input type="checkbox" checked={allowGoogleSignIn} onChange={event=>setAllowGoogleSignIn(event.target.checked)}/>
+          <span className="tf527-google-mark">G</span>
+          <span className="tf527-google-copy"><b>Cho phép đăng nhập bằng Google</b><small>Chỉ email này mới được dùng nút Google. Admin có thể tắt lại bất kỳ lúc nào.</small></span>
+          <i aria-hidden="true"/>
+        </label>
         <div className="tf4917-role-preview"><KeyRound/><div><b>{roleLabels[role]}</b><p>{rolePermissions[role].slice(0,4).map(permission=>permission.replace('.', ' · ')).join(' · ')}</p></div></div>
         <Button disabled={sending||!firebaseClient.enabled||rulesBlocked} onClick={()=>void invite()}>{sending?<RefreshCw className="is-spin"/>:<Mail/>}{sending?'Đang gửi lời mời…':'Gửi lời mời qua email'}</Button>
-        <small className="tf4917-invite-note">Email sẽ quay về <b>{new URL(invitationOrigin()).hostname}</b>. Domain này phải có trong Firebase Authentication → Settings → Authorized domains. Gói Spark chỉ có quota Email link rất thấp; nếu thử gửi nhiều lần trong ngày, hãy kiểm tra Usage hoặc dùng nút sao chép link.</small>
+        <small className="tf4917-invite-note">Email sẽ quay về <b>{new URL(invitationOrigin()).hostname}</b>. Nếu bật Google, người nhận có thể đăng nhập ngay bằng đúng tài khoản Google đã được mời; nếu tắt, nút Google sẽ bị từ chối. Domain vẫn phải có trong Firebase Authentication → Settings → Authorized domains.</small>
       </section>
 
       <section className="tf4917-team-card tf4917-members-card">
         <header><div className="tf4917-team-card-icon"><UsersRound/></div><div><h3>Thành viên đang hoạt động</h3><p>Vai trò có hiệu lực ngay sau khi lưu.</p></div><button className="tf4917-refresh" onClick={()=>void load()} aria-label="Tải lại"><RefreshCw/></button></header>
         <div className="tf4917-member-list">
-          <article className="tf4917-member-row is-owner"><span className="tf4917-avatar">{(user?.name||'O').slice(0,1).toUpperCase()}</span><div><b>{user?.name||'Chủ cửa hàng'}</b><small>{user?.email}</small></div><span className="tf4917-role-pill">Chủ cửa hàng</span><span className="tf4917-state is-active"><Check/>Hoạt động</span></article>
+          <article className="tf4917-member-row is-owner"><span className="tf4917-avatar">{(user?.name||'O').slice(0,1).toUpperCase()}</span><div><b>{user?.name||'Chủ cửa hàng'}</b><small>{user?.email}</small></div><span className="tf4917-role-pill">Chủ cửa hàng</span><span className="tf527-google-state is-enabled"><b>G</b>Google</span><span className="tf4917-state is-active"><Check/>Hoạt động</span></article>
           {loading&&<div className="tf4917-team-loading"><i/><span>Đang tải thành viên…</span></div>}
-          {!loading&&activeMembers.map(member=><article className="tf4917-member-row" key={member.uid}><span className="tf4917-avatar">{member.name.slice(0,1).toUpperCase()}</span><div><b>{member.name}</b><small>{member.email}</small></div><select value={member.role} onChange={event=>void changeRole(member,event.target.value as AdminRole)}>{Object.entries(roleLabels).filter(([key])=>key!=='owner').map(([key,label])=><option key={key} value={key}>{label}</option>)}</select><div className="tf4917-member-actions"><span className="tf4917-state is-active"><Check/>Hoạt động</span><button onClick={()=>void suspend(member)} aria-label="Thu hồi quyền"><Trash2/></button></div></article>)}
+          {!loading&&activeMembers.map(member=><article className="tf4917-member-row" key={member.uid}><span className="tf4917-avatar">{member.name.slice(0,1).toUpperCase()}</span><div><b>{member.name}</b><small>{member.email}</small></div><select value={member.role} onChange={event=>void changeRole(member,event.target.value as AdminRole)}>{Object.entries(roleLabels).filter(([key])=>key!=='owner').map(([key,label])=><option key={key} value={key}>{label}</option>)}</select><label className={`tf527-member-google${member.allowGoogleSignIn===true?' is-enabled':''}`} title="Admin chỉ định quyền đăng nhập Google"><input type="checkbox" checked={member.allowGoogleSignIn===true} onChange={event=>void changeGoogleAccess(member,event.target.checked)}/><b>G</b><span>{member.allowGoogleSignIn===true?'Google bật':'Google tắt'}</span></label><div className="tf4917-member-actions"><span className="tf4917-state is-active"><Check/>Hoạt động</span><button onClick={()=>void suspend(member)} aria-label="Thu hồi quyền"><Trash2/></button></div></article>)}
           {!loading&&!activeMembers.length&&<div className="tf4917-team-empty"><UsersRound/><b>Chưa có thành viên phụ</b><span>Thành viên sẽ xuất hiện sau khi chấp nhận lời mời.</span></div>}
         </div>
       </section>
@@ -210,7 +223,7 @@ export function TeamPermissionsV20(){
     <section className="tf4917-team-card tf4917-pending-card">
       <header><div className="tf4917-team-card-icon"><Clock3/></div><div><h3>Lời mời</h3><p>Theo dõi trạng thái, gửi lại hoặc thu hồi lời mời.</p></div></header>
       <div className="tf4917-invite-list">
-        {invites.map(inviteRecord=>{const expired=inviteRecord.status==='pending'&&inviteExpired(inviteRecord);const status=expired?'expired':inviteRecord.status;return <article key={inviteRecord.id}><div className="tf4917-invite-person"><span className="tf4917-avatar">{inviteRecord.name.slice(0,1).toUpperCase()}</span><div><b>{inviteRecord.name}</b><small>{inviteRecord.email}</small></div></div><div className="tf4917-invite-role"><small>Vai trò</small><b>{roleLabels[inviteRecord.role]}</b></div><div className="tf4917-invite-time"><small>{inviteRecord.deliveryStatus==='failed'?'Email':'Gửi lúc'}</small><b className={inviteRecord.deliveryStatus==='failed'?'is-delivery-error':''}>{inviteRecord.deliveryStatus==='failed'?'Chưa gửi được':humanDate(inviteRecord.lastSentAt||inviteRecord.createdAt)}</b></div><span className={`tf4917-state is-${inviteRecord.deliveryStatus==='failed'?'delivery-failed':status}`}>{inviteRecord.deliveryStatus==='failed'?<XCircle/>:status==='accepted'?<Check/>:status==='cancelled'?<XCircle/>:<Clock3/>}{inviteRecord.deliveryStatus==='failed'?'Lỗi gửi email':status==='pending'?'Chờ chấp nhận':status==='accepted'?'Đã chấp nhận':status==='expired'?'Hết hạn':'Đã thu hồi'}</span><div className="tf4917-invite-actions">{status!=='accepted'&&<button onClick={()=>void resend(inviteRecord)} title="Gửi lại"><RefreshCw/></button>}<button onClick={()=>void copyInvite(inviteRecord)} title="Sao chép link"><Copy/></button>{status==='pending'&&<button className="danger" onClick={()=>void cancel(inviteRecord)} title="Thu hồi"><Trash2/></button>}</div></article>})}
+        {invites.map(inviteRecord=>{const expired=inviteRecord.status==='pending'&&inviteExpired(inviteRecord);const status=expired?'expired':inviteRecord.status;return <article key={inviteRecord.id}><div className="tf4917-invite-person"><span className="tf4917-avatar">{inviteRecord.name.slice(0,1).toUpperCase()}</span><div><b>{inviteRecord.name}</b><small>{inviteRecord.email}</small></div></div><div className="tf4917-invite-role"><small>Vai trò</small><b>{roleLabels[inviteRecord.role]}</b><span className={`tf527-google-state${inviteRecord.allowGoogleSignIn===true?' is-enabled':''}`}><b>G</b>{inviteRecord.allowGoogleSignIn===true?'Google được phép':'Google bị tắt'}</span></div><div className="tf4917-invite-time"><small>{inviteRecord.deliveryStatus==='failed'?'Email':'Gửi lúc'}</small><b className={inviteRecord.deliveryStatus==='failed'?'is-delivery-error':''}>{inviteRecord.deliveryStatus==='failed'?'Chưa gửi được':humanDate(inviteRecord.lastSentAt||inviteRecord.createdAt)}</b></div><span className={`tf4917-state is-${inviteRecord.deliveryStatus==='failed'?'delivery-failed':status}`}>{inviteRecord.deliveryStatus==='failed'?<XCircle/>:status==='accepted'?<Check/>:status==='cancelled'?<XCircle/>:<Clock3/>}{inviteRecord.deliveryStatus==='failed'?'Lỗi gửi email':status==='pending'?'Chờ chấp nhận':status==='accepted'?'Đã chấp nhận':status==='expired'?'Hết hạn':'Đã thu hồi'}</span><div className="tf4917-invite-actions">{status!=='accepted'&&<button onClick={()=>void resend(inviteRecord)} title="Gửi lại"><RefreshCw/></button>}<button onClick={()=>void copyInvite(inviteRecord)} title="Sao chép link"><Copy/></button>{status==='pending'&&<button className="danger" onClick={()=>void cancel(inviteRecord)} title="Thu hồi"><Trash2/></button>}</div></article>})}
         {!invites.length&&<div className="tf4917-team-empty"><Mail/><b>Chưa gửi lời mời nào</b><span>Lời mời mới sẽ được theo dõi tại đây.</span></div>}
       </div>
     </section>

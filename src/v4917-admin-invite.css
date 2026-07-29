@@ -9,3 +9,7 @@
 .tf4917-invite-loading{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:25px;color:#665e56;font-size:12px}.tf4917-invite-loading i{width:18px;height:18px;border:2px solid #d8cec4;border-top-color:#6d2d3a;border-radius:50%;animation:tf4917-spin .8s linear infinite}.tf4917-invite-actions{display:grid;gap:10px;margin-top:24px}.tf4917-invite-actions a{color:#6f2d3b;font-size:13px;font-weight:800;text-align:center;text-decoration:none}.tf4917-invite-card footer{margin-top:28px;padding-top:19px;border-top:1px solid #ece6df;color:#958c83;font-size:10px;line-height:1.5}
 @keyframes tf4917-spin{to{transform:rotate(360deg)}}
 @media(max-width:640px){.tf4917-invite-page{padding:14px}.tf4917-invite-card{padding:28px 20px;border-radius:20px}.tf4917-invite-brand{margin-bottom:24px}.tf4917-invite-brand img{width:128px}.tf4917-invite-brand span{font-size:8px}.tf4917-invite-summary{grid-template-columns:1fr}.tf4917-invite-card h1{font-size:31px}}
+
+/* V0.52.7 — display the owner-selected Google sign-in permission. */
+.tf4917-invite-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.tf527-invite-google-mark{flex:0 0 auto;width:19px;height:19px;border-radius:6px;font-size:10px;box-shadow:none}.tf4917-invite-summary>div:last-child b{white-space:normal;line-height:1.35}
+@media(max-width:760px){.tf4917-invite-summary{grid-template-columns:1fr}}

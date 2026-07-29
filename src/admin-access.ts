@@ -12,6 +12,7 @@ export interface AdminMemberRecord{
   inviteId?:string;
   invitedAt?:string;
   acceptedAt?:string;
+  allowGoogleSignIn:boolean;
   updatedAt:string;
 }
 
@@ -32,6 +33,7 @@ export interface AdminInvitationRecord{
   deliveryError?:string;
   lastSentAt?:string;
   continueUrl?:string;
+  allowGoogleSignIn:boolean;
 }
 
 export const ADMIN_MEMBERS_PATH='timeforge/adminMembers';

@@ -51,8 +51,9 @@ export function AcceptAdminInviteV4917(){
       const normalized=normalizeEmail(candidateEmail);
       const auth=await getFirebaseAuth();if(!auth)throw new Error('Firebase Authentication chưa sẵn sàng.');
       const sdk=await import('firebase/auth');
+      const emailLinkMode=sdk.isSignInWithEmailLink(auth,currentUrl);
       let firebaseUser=auth.currentUser;
-      if(!firebaseUser||normalizeEmail(firebaseUser.email||'')!==normalized){
+      if(emailLinkMode||!firebaseUser||normalizeEmail(firebaseUser.email||'')!==normalized){
         const credential=await sdk.signInWithEmailLink(auth,normalized,currentUrl);
         firebaseUser=credential.user;
       }
@@ -60,11 +61,14 @@ export function AcceptAdminInviteV4917(){
       const record=invite||await firebaseClient.read<AdminInvitationRecord>(adminInvitationPath(inviteId));
       if(!record)throw new Error('Không tìm thấy lời mời.');
       if(normalizeEmail(record.email)!==normalized)throw new Error('Email này không trùng với email được mời.');
+      const token=await firebaseUser.getIdTokenResult();
+      const provider=String(token.signInProvider||((token.claims.firebase as{sign_in_provider?:unknown}|undefined)?.sign_in_provider)||'');
+      if(provider==='google.com'&&record.allowGoogleSignIn!==true)throw new Error('Admin chưa cho phép email này đăng nhập bằng Google. Hãy mở liên kết xác thực email hoặc liên hệ chủ cửa hàng.');
       const retryAccepted=record.status==='accepted'&&record.acceptedBy===firebaseUser.uid;
       if((record.status!=='pending'&&!retryAccepted)||(record.status==='pending'&&inviteExpired(record)))throw new Error('Lời mời đã hết hạn hoặc không còn hiệu lực.');
       setInvite(record);
       const now=new Date().toISOString();
-      const member:AdminMemberRecord={uid:firebaseUser.uid,email:normalized,name:record.name||firebaseUser.displayName||normalized.split('@')[0],role:record.role,status:'active',inviteId:record.id,invitedAt:record.createdAt,acceptedAt:record.acceptedAt||now,updatedAt:now};
+      const member:AdminMemberRecord={uid:firebaseUser.uid,email:normalized,name:record.name||firebaseUser.displayName||normalized.split('@')[0],role:record.role,status:'active',inviteId:record.id,invitedAt:record.createdAt,acceptedAt:record.acceptedAt||now,allowGoogleSignIn:record.allowGoogleSignIn===true,updatedAt:now};
       if(record.status==='pending'){
         const acceptedInvite:AdminInvitationRecord={...record,status:'accepted',acceptedAt:now,acceptedBy:firebaseUser.uid};
         await firebaseClient.write(adminInvitationPath(record.id),acceptedInvite);
@@ -101,7 +105,7 @@ export function AcceptAdminInviteV4917(){
       <span className="tf4917-invite-kicker">LỜI MỜI QUẢN TRỊ</span>
       <h1>{stage==='success'?'Đã kích hoạt quyền truy cập':stage==='error'?'Không thể hoàn tất lời mời':stage==='sent'?'Kiểm tra email xác thực':'Tham gia Luxury Timeforge'}</h1>
       <p>{message}</p>
-      {invite&&stage!=='success'&&stage!=='error'&&<div className="tf4917-invite-summary"><div><Mail/><span><small>Email</small><b>{invite.email}</b></span></div><div><KeyRound/><span><small>Vai trò</small><b>{roleLabels[invite.role]}</b></span></div></div>}
+      {invite&&stage!=='success'&&stage!=='error'&&<div className="tf4917-invite-summary"><div><Mail/><span><small>Email</small><b>{invite.email}</b></span></div><div><KeyRound/><span><small>Vai trò</small><b>{roleLabels[invite.role]}</b></span></div><div><span className="tf527-invite-google-mark">G</span><span><small>Đăng nhập Google</small><b>{invite.allowGoogleSignIn===true?'Được Admin cho phép':'Không được cho phép'}</b></span></div></div>}
       {stage==='email'&&<form onSubmit={submit}><label>Email nhận lời mời<input autoFocus type="email" required value={email} onChange={event=>setEmail(event.target.value)} placeholder="email@domain.com"/></label><button type="submit">Xác nhận và chấp nhận<ArrowRight/></button></form>}
       {stage==='sending'||stage==='accepting'||stage==='checking'?<div className="tf4917-invite-loading"><i/><span>Vui lòng không đóng trang này.</span></div>:null}
       {stage==='sent'&&<div className="tf4917-invite-actions"><button onClick={()=>void sendVerification(email)}><Mail/>Gửi lại email xác thực</button></div>}
