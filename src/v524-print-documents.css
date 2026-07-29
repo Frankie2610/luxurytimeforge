@@ -1,0 +1,147 @@
+/* V0.52.4 — print-safe invoice and shipping label. SVG barcode remains visible in print. */
+.v524-print-page{
+  --doc-green:#0b5a42;
+  --doc-green-dark:#073d2f;
+  --doc-ink:#121a16;
+  --doc-muted:#65716a;
+  --doc-line:#d7dfda;
+  min-height:100vh;
+  padding:38px;
+  background:#e9eeeb;
+  color:var(--doc-ink);
+  font-family:"Avenir Next","Segoe UI",Inter,Arial,sans-serif;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.v524-print-page *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.v524-print-actions{max-width:1040px;margin:0 auto 14px;gap:8px}
+.v524-print-actions button{height:40px;padding:0 14px;border:1px solid #c7d2cc;border-radius:10px;color:#253a31;font-size:12px;font-weight:800;box-shadow:0 5px 15px rgba(24,55,42,.06)}
+.v524-print-actions button.primary{border-color:var(--doc-green);background:var(--doc-green);color:#fff}
+.v524-print-actions button:hover{transform:translateY(-1px)}
+.v524-print-actions svg{width:16px}
+.v524-document-brand{display:flex;align-items:center;gap:13px;min-width:0}
+.v524-document-brand>span{width:54px;height:54px;display:grid;place-items:center;overflow:hidden;border-radius:13px;background:var(--doc-green)}
+.v524-document-brand img{width:100%;height:100%;display:block;object-fit:cover}
+.v524-document-brand>div{display:grid;gap:3px;min-width:0}
+.v524-document-brand small,.v524-document-number small,.v524-invoice-title small,.v524-invoice-meta small,.v524-invoice-note small,.v524-label-order small,.v524-label-addresses small,.v524-label-meta small,.v524-shipping-label footer small{
+  color:#6a7770;font-size:8px;font-weight:900;letter-spacing:.17em;text-transform:uppercase;
+}
+.v524-document-brand b{font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:#14392b}
+
+/* Invoice */
+.v524-invoice{
+  max-width:1040px;margin:auto;padding:48px 52px 42px;border:1px solid #dce3df;border-radius:4px;
+  background:#fff;color:var(--doc-ink);box-shadow:0 24px 65px rgba(19,48,35,.11);
+  font-family:"Avenir Next","Segoe UI",Inter,Arial,sans-serif;
+}
+.v524-invoice>header{display:flex;align-items:flex-start;justify-content:space-between;gap:28px;padding-bottom:23px;border-bottom:2px solid #14392b}
+.v524-document-number{display:grid;justify-items:end;gap:4px;text-align:right}
+.v524-document-number b{font-size:17px;font-weight:900;letter-spacing:.02em;color:#12261d}
+.v524-document-number span{color:#68736d;font-size:11px;font-weight:650}
+.v524-invoice-title{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:28px 0 20px}
+.v524-invoice-title h1{margin:3px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:48px;font-weight:700;line-height:1;letter-spacing:-.045em;color:#15291f}
+.v524-payment-chip{padding:7px 11px;border:1px solid #ccd8d1;border-radius:999px;background:#eff4f1;color:#486055;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.v524-payment-chip.paid{border-color:#b9d9ca;background:#e8f6ef;color:#176143}
+.v524-payment-chip.failed{border-color:#edc6c2;background:#fff0ee;color:#9d3027}
+.v524-payment-chip.refunded{border-color:#d8cee9;background:#f5f0fb;color:#65458b}
+.v524-invoice .parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:0 0 24px}
+.v524-invoice .parties>div{min-height:142px;padding:17px 19px;display:grid;align-content:start;gap:5px;border:1px solid #dfe6e2;border-radius:13px;background:#fbfcfb}
+.v524-invoice .parties small{margin-bottom:4px;color:#688076;font-size:8px;font-weight:900;letter-spacing:.16em}
+.v524-invoice .parties b{font-size:14px;font-weight:900;color:#1b3027}
+.v524-invoice .parties span{color:#69746e;font-size:10.5px;font-weight:600;line-height:1.48}
+.v524-invoice-meta{display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden;margin-bottom:24px;border:1px solid #dce4df;border-radius:12px}
+.v524-invoice-meta>div{min-height:66px;padding:13px 15px;display:grid;align-content:center;gap:5px;background:#f3f7f4}
+.v524-invoice-meta>div+div{border-left:1px solid #dce4df}
+.v524-invoice-meta b{font-size:11px;font-weight:850;color:#223b30}
+.v524-table-wrap{overflow:hidden;border:1px solid #d7dfda;border-radius:13px}
+.v524-invoice table{width:100%;border-collapse:collapse;font-size:10.5px}
+.v524-invoice th{padding:12px 13px;background:#133f30;color:#fff;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;text-align:left}
+.v524-invoice th:nth-child(n+3),.v524-invoice td:nth-child(n+3){text-align:right}
+.v524-invoice td{padding:13px;border-bottom:1px solid #e2e8e4;vertical-align:top;color:#34453d;font-weight:650}
+.v524-invoice tbody tr:last-child td{border-bottom:0}
+.v524-invoice td:first-child,.v524-invoice td:nth-child(2){display:table-cell}
+.v524-invoice td b{display:block;color:#17271f;font-size:10.5px;font-weight:850}
+.v524-invoice td small{display:block;margin-top:3px;color:#7c8781;font-size:8.5px;font-weight:600}
+.v524-invoice .totals{display:grid;grid-template-columns:minmax(0,1fr) 350px;align-items:start;gap:34px;padding:25px 0 28px}
+.v524-invoice-note{padding:16px 17px;border-left:3px solid var(--doc-green);background:#f4f7f5}
+.v524-invoice-note p{margin:6px 0 0;color:#657169;font-size:10.5px;font-weight:600;line-height:1.55}
+.v524-invoice dl{width:100%;display:grid;gap:0;margin:0}
+.v524-invoice dl>div{min-height:34px;padding:7px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e1e7e3;color:#56635c;font-size:10.5px;font-weight:700}
+.v524-invoice dl .discount dd{color:#a04034}
+.v524-invoice dl .total{min-height:57px;margin-top:7px;padding:13px 15px;border:0;border-radius:11px;background:var(--doc-green);color:#fff;font-size:15px;font-weight:900}
+.v524-invoice dl .total dd{font-size:18px}
+.v524-invoice>footer{padding-top:18px;border-top:1px solid #dce3df;display:flex;align-items:center;justify-content:space-between;gap:24px;color:#68736d}
+.v524-invoice>footer>div{display:grid;gap:3px}
+.v524-invoice>footer b{color:#2a3e35;font-size:10px;font-weight:850}
+.v524-invoice>footer span{font-size:8.5px;font-weight:650}
+.v524-document-status{padding:6px 9px;border:1px solid #cfd9d3;border-radius:8px;color:#315344!important;font-size:8px!important;font-weight:900!important;letter-spacing:.08em}
+
+/* Shipping label */
+.v524-shipping-label{
+  max-width:760px;margin:auto;padding:34px;border:3px solid #111b16;border-radius:2px;background:#fff;color:#101713;
+  box-shadow:0 24px 65px rgba(19,48,35,.11);font-family:"Arial Narrow","Avenir Next Condensed","Segoe UI",Arial,sans-serif;
+}
+.v524-shipping-label>header{display:flex;align-items:center;justify-content:space-between;gap:22px;padding-bottom:18px;border-bottom:3px solid #102018}
+.v524-label-order{display:grid;justify-items:end;gap:4px;text-align:right}
+.v524-label-order b{font-size:20px;font-weight:950;letter-spacing:.015em}
+.v524-label-order span{font-size:9px;font-weight:750;color:#637169}
+.v524-label-priority{margin:15px 0 0;padding:10px 13px;display:flex;align-items:center;gap:10px;border:2px solid #143f31;background:#eaf4ef;color:#153e30}
+.v524-label-priority>svg{width:27px;height:27px;stroke-width:2.5}
+.v524-label-priority span{display:grid;gap:1px}.v524-label-priority b{font-size:12px;font-weight:950;letter-spacing:.08em}.v524-label-priority small{font-size:8.5px;font-weight:750}
+.v524-label-addresses{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(190px,.75fr);gap:0!important;padding:19px 0!important}
+.v524-label-addresses>div{padding:17px;border:2px solid #141b17}
+.v524-label-addresses .sender{border-left:0;background:#f2f4f2}
+.v524-label-addresses h1{margin:7px 0 5px;font-size:30px;font-weight:950;line-height:1.04;letter-spacing:-.025em;text-transform:uppercase}
+.v524-label-addresses .recipient>b{font-size:18px;font-weight:950;letter-spacing:.02em}
+.v524-label-addresses p{margin:11px 0 0;font-size:16px;font-weight:750;line-height:1.42}
+.v524-label-addresses .sender{display:grid;align-content:start;gap:6px}
+.v524-label-addresses .sender b{font-size:14px;font-weight:950;text-transform:uppercase}
+.v524-label-addresses .sender span{font-size:10px;font-weight:750;line-height:1.45}
+.v524-label-meta{grid-template-columns:repeat(4,1fr);border:2px solid #111b16}
+.v524-label-meta>span{min-height:70px;padding:11px 12px;align-content:center;gap:5px}
+.v524-label-meta>span+span{border-left:2px solid #111b16}
+.v524-label-meta b{font-size:11px;font-weight:950;line-height:1.25}
+.v524-barcode{margin:19px 0 12px;color:#090d0b;text-align:center;break-inside:avoid}
+.v524-barcode svg{display:block;width:100%;height:98px;color:#050806;fill:currentColor;shape-rendering:crispEdges;overflow:visible}
+.v524-barcode rect{fill:#050806}
+.v524-barcode figcaption{margin-top:4px;font-family:"Courier New",monospace;font-size:13px;font-weight:900;letter-spacing:.22em}
+.v524-shipping-label>footer{padding-top:13px;border-top:2px solid #111b16;display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.v524-shipping-label>footer>div{display:grid;gap:4px;max-width:66%}
+.v524-shipping-label>footer b{font-size:10px;font-weight:900;line-height:1.35}
+.v524-shipping-label>footer>span{max-width:220px;text-align:right;font-size:9px;font-weight:900;line-height:1.35;text-transform:uppercase}
+
+@media(max-width:760px){
+  .v524-print-page{padding:12px}
+  .v524-print-actions{position:sticky;top:0;z-index:10;padding:8px;margin:0 0 8px;border-radius:12px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px)}
+  .v524-invoice{padding:25px 20px}
+  .v524-invoice>header,.v524-invoice-title,.v524-invoice>footer{align-items:flex-start;flex-direction:column}
+  .v524-document-number{justify-items:start;text-align:left}
+  .v524-invoice-title h1{font-size:38px}
+  .v524-invoice .parties{grid-template-columns:1fr}
+  .v524-invoice-meta{grid-template-columns:1fr}
+  .v524-invoice-meta>div+div{border-left:0;border-top:1px solid #dce4df}
+  .v524-table-wrap{overflow-x:auto}.v524-invoice table{min-width:680px}
+  .v524-invoice .totals{grid-template-columns:1fr}
+  .v524-shipping-label{padding:20px}
+  .v524-shipping-label>header{align-items:flex-start;flex-direction:column}
+  .v524-label-order{justify-items:start;text-align:left}
+  .v524-label-addresses{grid-template-columns:1fr}
+  .v524-label-addresses .sender{border-left:2px solid #141b17;border-top:0}
+  .v524-label-meta{grid-template-columns:1fr 1fr}
+  .v524-label-meta>span+span{border-left:0}
+  .v524-label-meta>span:nth-child(even){border-left:2px solid #111b16}
+  .v524-label-meta>span:nth-child(n+3){border-top:2px solid #111b16}
+}
+@media print{
+  @page{size:A4;margin:10mm}
+  html,body{background:#fff!important}
+  .v524-print-page{min-height:auto;padding:0!important;background:#fff!important}
+  .v524-print-actions{display:none!important}
+  .v524-invoice,.v524-shipping-label{box-shadow:none!important;margin:0 auto!important}
+  .v524-invoice{max-width:none;padding:8mm 9mm;border:0}
+  .v524-shipping-label{max-width:180mm;padding:8mm;border:2.2pt solid #111b16;page-break-inside:avoid;break-inside:avoid}
+  .v524-barcode,.v524-barcode svg,.v524-barcode rect{display:block!important;visibility:visible!important;opacity:1!important;color:#000!important;fill:#000!important}
+  .v524-barcode svg{height:28mm!important}
+  .v524-invoice table{page-break-inside:auto}.v524-invoice tr{page-break-inside:avoid;page-break-after:auto}
+  .v524-invoice thead{display:table-header-group}
+}
