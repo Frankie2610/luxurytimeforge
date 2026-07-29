@@ -1,0 +1,24 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const read=(path)=>fs.readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
+const checkout=read('src/checkout-v11.tsx');
+const storefront=read('src/storefront-v10.tsx');
+const admin=read('src/admin-sprint11.tsx');
+const orderServer=read('server/orders.js');
+const types=read('src/types.ts');
+const css=read('src/v521-ui-polish.css');
+
+assert.doesNotMatch(storefront,/querySelectorAll<HTMLElement>[\s\S]{0,900}tf-logo-lockup-v44 > b/,'Runtime nav typography must not force store name back to 13px.');
+assert.match(css,/tf-logo-lockup-v44 > b[\s\S]{0,180}font-size:\s*26px\s*!important/,'Desktop store name must be 26px.');
+assert.match(storefront,/Number\(section\.settings\.height \|\| 680\) \* \.8/,'Home banner must be reduced by 20%.');
+assert.match(storefront,/Number\(bannerSection\?\.settings\.height \|\| 360\) \* \.8/,'Collection banner must be reduced by 20%.');
+assert.match(checkout,/transferReferencePreview/);
+assert.match(checkout,/Yêu cầu thanh toán đã được gửi/);
+assert.match(checkout,/chờ nhân viên xác nhận đã nhận tiền/);
+assert.match(orderServer,/bankTransferContent/);
+assert.match(types,/bankTransferContent\?:string/);
+assert.match(admin,/order\.bankTransferContent \|\| order\.number/);
+assert.match(css,/tf509-payment-marks[\s\S]{0,160}height:\s*36px/,'Footer payment marks must be smaller.');
+assert.match(css,/v16-admin-topbar[\s\S]{0,300}min-height:\s*66px/,'Admin topbar must use the polished layout.');
+assert.match(css,/tf521-admin-payment-card/,'Admin order payment card must be polished.');
+console.log('V0.52.1 UI polish checks passed: identity, compact banners, bank transfer reference/toast, footer marks and admin layout.');

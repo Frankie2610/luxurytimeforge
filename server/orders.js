@@ -3,7 +3,9 @@ import {firebaseEntries,firebaseMultiPatch,firebaseRead,findOrder} from './fireb
 
 const cleanText=(value,max=160)=>String(value||'').trim().slice(0,max);
 const safeInteger=(value)=>Number.isSafeInteger(Number(value))?Number(value):0;
-const orderNumber=()=>{const d=new Date();const stamp=`${String(d.getFullYear()).slice(-2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;return`TF-${stamp}-${crypto.randomInt(1000,10000)}`};
+const vietnamStamp=()=>{const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'2-digit',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));return`${values.year||''}${values.month||''}${values.day||''}`};
+const orderNumber=()=>`TF-${vietnamStamp()}-${crypto.randomInt(1000,10000)}`;
+const bankTransferContent=(lines,number)=>{const raw=cleanText(lines?.[0]?.sku,100).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12)||'ORDER';const suffix=String(number||'').replace(/\D/g,'').slice(-4)||String(crypto.randomInt(1000,10000));return`TF${vietnamStamp()}-${raw}-${suffix}`};
 const safeRequestId=(value)=>{const input=cleanText(value,120);return/^[A-Za-z0-9_-]{8,120}$/.test(input)?input:`order_${crypto.randomUUID().replaceAll('-','')}`};
 const uid=(prefix)=>`${prefix}_${crypto.randomUUID().replaceAll('-','')}`;
 
@@ -121,11 +123,13 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId}){
   if(method==='bank_transfer'&&!settings.preferred?.accountNumber)throw new Error('Cửa hàng chưa cấu hình số tài khoản nhận chuyển khoản.');
   const now=new Date().toISOString();
   const customerResult=customerFromOrder(firebaseEntries(customersRaw),payload,total);
+  const number=orderNumber();
+  const transferContent=method==='bank_transfer'?bankTransferContent(lines,number):'';
   const order={
-    id,number:orderNumber(),createdAt:now,updatedAt:now,customerId:customerResult.customer.id,customerName:cleanText(payload.customer.name,120),customerEmail:cleanText(payload.customer.email,160),customerPhone:cleanText(payload.customer.phone,30),
+    id,number,createdAt:now,updatedAt:now,customerId:customerResult.customer.id,customerName:cleanText(payload.customer.name,120),customerEmail:cleanText(payload.customer.email,160),customerPhone:cleanText(payload.customer.phone,30),
     shippingAddress:{fullName:cleanText(address.fullName||payload.customer.name,120),phone:cleanText(address.phone||payload.customer.phone,30),email:cleanText(address.email||payload.customer.email,160),address1:cleanText(address.address1,180),address2:cleanText(address.address2,180),ward:cleanText(address.ward,100),district:cleanText(address.district,100),city:cleanText(address.city,100),country:cleanText(address.country||'Việt Nam',80),postalCode:cleanText(address.postalCode,20)},
     lines:lines.map(({productKey,...line})=>line),subtotal,discountCode:promo.code,discountAmount,promotionDiscountAmount:promo.amount,paymentDiscountAmount:paymentDiscount.amount,paymentDiscountLabel:paymentDiscount.label,shippingAmount,taxAmount:0,total,currency:'VND',status:'open',paymentStatus:'pending',fulfillmentStatus:'unfulfilled',paymentMethod:method,paymentProvider:method==='payos'?'payos':undefined,
-    ...(method==='bank_transfer'&&settings.preferred?{bankAccountId:settings.preferred.id,bankName:settings.preferred.bankName,bankAccountName:settings.preferred.accountName,bankAccountNumber:settings.preferred.accountNumber}:{}),
+    ...(method==='bank_transfer'&&settings.preferred?{bankAccountId:settings.preferred.id,bankName:settings.preferred.bankName,bankAccountName:settings.preferred.accountName,bankAccountNumber:settings.preferred.accountNumber,bankTransferContent:transferContent}:{}),
     note:cleanText(payload.note,1000),source:'storefront',
   };
   const updates={};

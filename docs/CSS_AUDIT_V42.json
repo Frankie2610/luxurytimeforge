@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-29T09:21:43.345Z",
-  "files": 72,
-  "sourceBytes": 1198629,
-  "importantDeclarations": 2058,
-  "uniqueSelectors": 8435,
-  "duplicatedSelectors": 2907,
+  "generatedAt": "2026-07-29T15:09:57.621Z",
+  "files": 73,
+  "sourceBytes": 1212456,
+  "importantDeclarations": 2061,
+  "uniqueSelectors": 8507,
+  "duplicatedSelectors": 2931,
   "productionCss": [],
   "productionCssBytes": 0,
   "topDuplicates": [

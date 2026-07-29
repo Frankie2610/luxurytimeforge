@@ -90,6 +90,7 @@ import './v509-storefront-final.css';
 import './v510-storefront-stability.css';
 import './v512-storefront-corrections.css';
 import './v513-storefront-enhancements.css';
+import './v521-ui-polish.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -152,7 +153,6 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
         '#tf-storefront-announcement .lux-announcement-copy',
         '#tf-storefront-header .lux-main-nav > a',
         '#tf-storefront-header .lux-search-button > span',
-        '#tf-storefront-header .tf-logo-lockup-v44 > b',
         '#tf-storefront-brand-rail .tf-brand-rail-heading-v39 > small',
         '#tf-storefront-brand-rail .tf-brand-rail-heading-v39 > span',
         '#tf-storefront-brand-rail .tf-brand-rail-nav-v39 > a',
@@ -584,7 +584,7 @@ export function HomeV10() {
       const heading = getBlock(section, 'heading');
       const text = getBlock(section, 'text');
       const action = getBlock(section, 'button');
-      return <section key={section.id} {...boundary(section)} className={`lux-hero align-${section.settings.alignment || 'left'}`} style={{minHeight: Number(section.settings.height || 680)}}>
+      return <section key={section.id} {...boundary(section)} className={`lux-hero align-${section.settings.alignment || 'left'}`} style={{minHeight: Math.round(Number(section.settings.height || 680) * .8)}}>
         <img src={optimizedImage(String(section.settings.image || activeProducts[0]?.images[0] || ''), 1920, 1200)} alt="TimeForge luxury watches" width="1920" height="1200" fetchPriority="high" decoding="async" />
         <div className="lux-hero-shade" style={{opacity: Number(section.settings.overlay || 42) / 100}} />
         <motion.div className="lux-hero-copy" initial={{opacity: 0, y: 30}} animate={{opacity: 1, y: 0}} transition={{duration: .7}}>
@@ -1060,7 +1060,7 @@ export function CollectionPageV10() {
 
   return (
     <div className="lux-collection-page">
-      {bannerSection?.visible !== false && <section data-theme-section-id={bannerSection?.id} data-theme-section-label={bannerSection ? sectionLabels[bannerSection.type] : 'Banner bộ sưu tập'} className="tf4933-collection-banner" style={{minHeight: Number(bannerSection?.settings.height || 360)}}>
+      {bannerSection?.visible !== false && <section data-theme-section-id={bannerSection?.id} data-theme-section-label={bannerSection ? sectionLabels[bannerSection.type] : 'Banner bộ sưu tập'} className="tf4933-collection-banner" style={{minHeight: Math.round(Number(bannerSection?.settings.height || 360) * .8)}}>
         {bannerSection?.settings.showImage !== false && <img className="tf4933-collection-banner-media" src={optimizedImage(collection?.image || source[0]?.images[0] || '', 1920, 900)} alt={collection?.title || 'TimeForge collection'} width="1920" height="900" fetchPriority="high" decoding="async" />}
         <div className="tf4933-collection-banner-overlay" />
         <div className="tf4933-collection-banner-inner">

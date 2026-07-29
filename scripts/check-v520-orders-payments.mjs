@@ -57,6 +57,7 @@ assert.equal(bank.subtotal,3200000);
 assert.equal(bank.paymentDiscountAmount,160000);
 assert.equal(bank.total,3090000);
 assert.equal(bank.bankAccountNumber,'123456');
+assert.match(bank.bankTransferContent,/^TF\d{6}-WATCH1B-\d{4}$/);
 const bankProduct=patches.at(-1)['timeforge/products/sku_watch'];
 assert.equal(bankProduct.inventory,7);
 assert.equal(bankProduct.variants[0].inventory,4);

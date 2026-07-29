@@ -1,5 +1,5 @@
 import {motion} from 'framer-motion';
-import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, CreditCard, Gift, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
 import {useEffect, useMemo, useState, type FormEvent, type ReactNode} from 'react';
 import {Link, Navigate, useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import {useCommerce} from './context';
@@ -9,6 +9,7 @@ import {startPayment} from './payment-adapter';
 import type {CheckoutPayload, Order, Product} from './types';
 import {money} from './utils';
 import {trackCommerceEvent} from './commerce-events';
+import {toast} from 'sonner';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {Button} from './ui';
 import {sectionLabels} from './theme';
@@ -22,6 +23,7 @@ import './v503-commerce-polish.css';
 import './v504-commerce.css';
 import './v509-commerce-final.css';
 import './v515-order-payment.css';
+import './v521-ui-polish.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -183,6 +185,14 @@ export function CartPageV11() {
 
 const initialPayload: CheckoutPayload = {customer: {name: '', email: '', phone: ''}, shippingAddress: {fullName: '', phone: '', email: '', address1: '', address2: '', ward: '', district: '', city: 'TP. Hồ Chí Minh', country: 'Việt Nam', postalCode: ''}, paymentMethod: 'cod', note: '', discountCode: ''};
 
+const vietnamDateStamp = () => {
+  const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Ho_Chi_Minh', year: '2-digit', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year || ''}${value.month || ''}${value.day || ''}`;
+};
+const compactTransferSku = (value: string) => value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) || 'ORDER';
+
+
 function CheckoutSection({number, title, description, children}: {number: string; title: string; description: string; children: ReactNode}) {
   return <section className="tf4912-checkout-section"><header><span>{number}</span><div><h2>{title}</h2><p>{description}</p></div></header>{children}</section>;
 }
@@ -215,6 +225,15 @@ export function CheckoutPageV11() {
     return () => {document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', close);};
   }, [summaryOpen]);
   const {lines, subtotal, shippingAfterDiscount, discount, paymentDiscount, total} = useSummary(payload.discountCode,payload.paymentMethod,integration);
+  const transferReferencePreview = useMemo(() => {
+    const firstSku = lines[0]?.variant?.sku || lines[0]?.product?.sku || 'ORDER';
+    return `TF${vietnamDateStamp()}-${compactTransferSku(firstSku)}`;
+  }, [lines]);
+  const submitLabel = payload.paymentMethod === 'cod'
+    ? `Đặt hàng · ${money(total)}`
+    : payload.paymentMethod === 'payos'
+      ? `Thanh toán qua PayOS · ${money(total)}`
+      : `Gửi yêu cầu thanh toán · ${money(total)}`;
   const noPaymentMethod=!integration.payment.cod&&!integration.payment.bankTransfer&&!integration.payment.online;
   useEffect(() => {trackCommerceEvent('checkout_started', {value: total});}, []);
   if (!cart.length) return <Navigate to="/cart" replace/>;
@@ -234,6 +253,13 @@ export function CheckoutPageV11() {
         if (result.status === 'redirect' && result.checkoutUrl) {window.location.assign(result.checkoutUrl); return;}
       }
       trackCommerceEvent('checkout_completed', {orderId: createdOrder.id, value: createdOrder.total});
+      if (createdOrder.paymentMethod === 'bank_transfer') {
+        const transferContent = createdOrder.bankTransferContent || createdOrder.number;
+        toast.success('Yêu cầu thanh toán đã được gửi', {
+          description: `Vui lòng chuyển khoản đúng nội dung “${transferContent}” và chờ nhân viên xác nhận đã nhận tiền.`,
+          duration: 6500,
+        });
+      }
       navigate(`/order-confirmation/${createdOrder.id}`, {replace: true});
     } catch (reason) {
       const message=reason instanceof Error ? reason.message : 'Không thể tạo đơn hàng.';
@@ -290,14 +316,36 @@ export function CheckoutPageV11() {
             {integration.payment.bankTransfer && <label className={payload.paymentMethod === 'bank_transfer' ? 'is-active' : ''}><input type="radio" checked={payload.paymentMethod === 'bank_transfer'} onChange={() => setPayload({...payload, paymentMethod: 'bank_transfer'})}/><i><CreditCard/></i><span><b>Chuyển khoản ngân hàng</b><small>Thông tin chuyển khoản hiển thị sau khi đặt đơn.</small></span><Check/></label>}
             {integration.payment.online && <label className={payload.paymentMethod === 'payos' ? 'is-active' : ''}><input type="radio" checked={payload.paymentMethod === 'payos'} onChange={() => setPayload({...payload, paymentMethod: 'payos'})}/><i><QrCode/></i><span><b>Quét QR ngân hàng qua PayOS</b><small>Mở cổng PayOS bảo mật và xác nhận tự động sau thanh toán.</small></span><Check/></label>}
           </div>
-          {payload.paymentMethod === 'bank_transfer' && (() => {const bank=preferredBankAccount(integration);return bank ? <div className="tf515-checkout-bank"><Landmark/><div><b>{bank.bankName}</b><span>Chủ tài khoản: {bank.accountName || '—'}</span><span>Số tài khoản: <strong>{bank.accountNumber || '—'}</strong></span><small>Nội dung chuyển khoản sẽ là mã đơn hàng sau khi đặt.</small>{paymentDiscount.amount>0&&<em>{paymentDiscount.label} · Giảm {money(paymentDiscount.amount)}</em>}</div></div> : <div className="tf515-checkout-bank is-warning"><Landmark/><div><b>Chưa có tài khoản nhận tiền</b><span>Vui lòng chọn phương thức khác hoặc liên hệ cửa hàng.</span></div></div>})()}
+          {payload.paymentMethod === 'bank_transfer' && (() => {
+            const bank = preferredBankAccount(integration);
+            if (!bank) return <div className="tf515-checkout-bank is-warning"><Landmark/><div><b>Chưa có tài khoản nhận tiền</b><span>Vui lòng chọn phương thức khác hoặc liên hệ cửa hàng.</span></div></div>;
+            const copyText = async (value: string, label: string) => {
+              await navigator.clipboard?.writeText(value);
+              toast.success(`Đã sao chép ${label}`);
+            };
+            return <div className="tf515-checkout-bank tf521-checkout-bank-card">
+              <div className="tf521-bank-card-icon"><Landmark/></div>
+              <div className="tf521-bank-card-body">
+                <header><div><small>NGÂN HÀNG NHẬN TIỀN</small><b>{bank.bankName}</b></div>{paymentDiscount.amount > 0 && <em>{paymentDiscount.label}<strong>Giảm {money(paymentDiscount.amount)}</strong></em>}</header>
+                <div className="tf521-bank-details">
+                  <div><span>Chủ tài khoản</span><strong>{bank.accountName || '—'}</strong></div>
+                  <div><span>Số tài khoản</span><strong>{bank.accountNumber || '—'}</strong><button type="button" onClick={() => void copyText(bank.accountNumber || '', 'số tài khoản')} aria-label="Sao chép số tài khoản"><Copy/></button></div>
+                </div>
+                <div className="tf521-transfer-reference">
+                  <div><span>Nội dung chuyển khoản dự kiến</span><strong>{transferReferencePreview}</strong></div>
+                  <button type="button" onClick={() => void copyText(transferReferencePreview, 'nội dung chuyển khoản')}><Copy/>Sao chép</button>
+                  <p>Sau khi đặt đơn, hệ thống sẽ thêm mã xác nhận cuối để tránh trùng giao dịch. Khách cần nhập đúng nội dung hiển thị ở trang xác nhận đơn hàng.</p>
+                </div>
+              </div>
+            </div>;
+          })()}
           {payload.paymentMethod === 'payos' && <div className="tf515-payos-checkout-note"><QrCode/><div><b>Thanh toán QR qua PayOS</b><span>Đơn hàng được lưu trước, sau đó PayOS hiển thị mã QR và tự xác nhận khi giao dịch thành công.</span></div></div>}
           <label className="tf4912-order-note"><span>Ghi chú đơn hàng</span><textarea value={payload.note} onChange={(event) => setPayload({...payload, note: event.target.value})} placeholder="Thời gian liên hệ, lời nhắn quà tặng..."/></label>
         </CheckoutSection>
 
         {noPaymentMethod&&<div className="tf4912-checkout-error">Cửa hàng chưa bật phương thức thanh toán. Vui lòng liên hệ TimeForge.</div>}
         {error && <div className="tf4912-checkout-error">{error}</div>}
-        <Button className="tf4912-mobile-place-order" size="lg" full disabled={busy||noPaymentMethod}>{busy ? 'Đang tạo đơn hàng...' : `Đặt hàng · ${money(total)}`}</Button>
+        <Button className="tf4912-mobile-place-order" size="lg" full disabled={busy||noPaymentMethod}>{busy ? 'Đang gửi yêu cầu...' : submitLabel}</Button>
         <p className="tf4912-legal">Khi đặt hàng, thông tin giao hàng được xác nhận và chính sách mua hàng của TimeForge được chấp thuận.</p>
       </main>
 
@@ -314,7 +362,7 @@ export function CheckoutPageV11() {
           <div className="tf4927-coupon"><label htmlFor="checkout-discount-code">Mã giảm giá</label><div><input id="checkout-discount-code" value={payload.discountCode} onChange={(event) => setPayload({...payload, discountCode: event.target.value.toUpperCase()})} placeholder="Nhập mã ưu đãi"/><Button type="button" variant="secondary" className="tf4927-coupon-apply" onClick={() => setPayload({...payload, discountCode: payload.discountCode.trim()})}>Áp dụng</Button></div></div>
           {payload.discountCode && <p className={discount?.valid ? 'tf4912-message is-success' : 'tf4912-message is-error'}>{discount?.message || 'Mã không hợp lệ.'}</p>}
           <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} paymentDiscount={paymentDiscount} total={total}/>
-          <Button className="tf4912-place-order" size="lg" full disabled={busy||noPaymentMethod}>{busy ? 'Đang tạo đơn hàng...' : `Đặt hàng · ${money(total)}`}</Button>
+          <Button className="tf4912-place-order" size="lg" full disabled={busy||noPaymentMethod}>{busy ? 'Đang gửi yêu cầu...' : submitLabel}</Button>
           <div className="tf4912-checkout-trust"><span><i><LockKeyhole/></i><b>Kết nối bảo mật</b><small>Dữ liệu được mã hóa</small></span><span><i><ShieldCheck/></i><b>Thông tin minh bạch</b><small>Không có phí ẩn</small></span><span><i><PackageCheck/></i><b>Đóng gói an toàn</b><small>Bảo hiểm vận chuyển</small></span></div>
         </section>
       </aside>
@@ -329,5 +377,5 @@ export function OrderConfirmationV11() {
   useEffect(()=>{if(id)sessionStorage.removeItem(`tf.order.notice.${id}`)},[id]);
   const order = orders.find((item) => item.id === id);
   if (!order) return <Navigate to="/" replace/>;
-  return <div className="s11-confirmation"><header><LuxuryCheckoutLogo/></header><main><motion.div className="s11-confirmation-mark" initial={{scale: .7, opacity: 0}} animate={{scale: 1, opacity: 1}}><CheckCircle2/></motion.div><small>ORDER CONFIRMED</small><h1>Đơn hàng đã được ghi nhận.</h1><p>TimeForge sẽ liên hệ để xác nhận trước khi xử lý và giao hàng.</p>{notice&&<div className="tf520-order-notice"><QrCode/><span><b>Đơn hàng đã được lưu an toàn</b><small>{notice}</small></span></div>}<div className="s11-confirmation-number"><span>Mã đơn hàng</span><b>{order.number}</b></div><section><div><h2>Thông tin giao hàng</h2><p><b>{order.customerName}</b><br/>{order.customerPhone}<br/>{order.shippingAddress.address1}{order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}<br/>{order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p></div><div><h2>Thanh toán</h2><p>{order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : ['payos','online'].includes(order.paymentMethod) ? 'PayOS · QR ngân hàng' : 'Chuyển khoản ngân hàng'}<br/><b>{money(order.total)}</b></p>{order.paymentMethod === 'bank_transfer' && <div className="s11-bank-note tf515-bank-confirmation"><Sparkles/><span><b>{order.bankName || 'Ngân hàng chuyển khoản'}</b><br/>Chủ tài khoản: {order.bankAccountName || '—'}<br/>Số tài khoản: <strong>{order.bankAccountNumber || '—'}</strong><br/>Nội dung: <strong>{order.number}</strong></span></div>}</div></section><div className="s11-confirmation-products">{order.lines.map((line) => <article key={line.id}><SmartImage src={line.image} alt={line.title} width={110} height={110}/><div><b>{line.title}</b><small>{line.variantTitle} · Số lượng {line.quantity}</small></div><strong>{money(line.lineTotal)}</strong></article>)}</div><div className="s11-confirmation-actions"><Link to="/collections">Tiếp tục mua sắm</Link><Link className="primary" to="/pages/contact">Liên hệ TimeForge</Link></div></main></div>;
+  return <div className="s11-confirmation"><header><LuxuryCheckoutLogo/></header><main><motion.div className="s11-confirmation-mark" initial={{scale: .7, opacity: 0}} animate={{scale: 1, opacity: 1}}><CheckCircle2/></motion.div><small>ORDER CONFIRMED</small><h1>Đơn hàng đã được ghi nhận.</h1><p>TimeForge sẽ liên hệ để xác nhận trước khi xử lý và giao hàng.</p>{notice&&<div className="tf520-order-notice"><QrCode/><span><b>Đơn hàng đã được lưu an toàn</b><small>{notice}</small></span></div>}<div className="s11-confirmation-number"><span>Mã đơn hàng</span><b>{order.number}</b></div><section><div><h2>Thông tin giao hàng</h2><p><b>{order.customerName}</b><br/>{order.customerPhone}<br/>{order.shippingAddress.address1}{order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}<br/>{order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p></div><div><h2>Thanh toán</h2><p>{order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : ['payos','online'].includes(order.paymentMethod) ? 'PayOS · QR ngân hàng' : 'Chuyển khoản ngân hàng'}<br/><b>{money(order.total)}</b></p>{order.paymentMethod === 'bank_transfer' && <div className="s11-bank-note tf515-bank-confirmation"><Sparkles/><span><b>{order.bankName || 'Ngân hàng chuyển khoản'}</b><br/>Chủ tài khoản: {order.bankAccountName || '—'}<br/>Số tài khoản: <strong>{order.bankAccountNumber || '—'}</strong><br/>Nội dung bắt buộc: <strong>{order.bankTransferContent || order.number}</strong></span></div>}</div></section><div className="s11-confirmation-products">{order.lines.map((line) => <article key={line.id}><SmartImage src={line.image} alt={line.title} width={110} height={110}/><div><b>{line.title}</b><small>{line.variantTitle} · Số lượng {line.quantity}</small></div><strong>{money(line.lineTotal)}</strong></article>)}</div><div className="s11-confirmation-actions"><Link to="/collections">Tiếp tục mua sắm</Link><Link className="primary" to="/pages/contact">Liên hệ TimeForge</Link></div></main></div>;
 }
