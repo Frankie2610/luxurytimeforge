@@ -8,7 +8,7 @@ const css = read('src/v522-ui-refinement.css');
 const pkg = JSON.parse(read('package.json'));
 
 const checks = [
-  ['version 0.52.2', pkg.version === '0.52.2'],
+  ['package keeps V0.52.2 refinements in later releases', Number(pkg.version.split('.')[1]) > 52 || (Number(pkg.version.split('.')[1]) === 52 && Number(pkg.version.split('.')[2]) >= 2)],
   ['storefront imports final CSS', storefront.includes("import './v522-ui-refinement.css';")],
   ['blog imports final CSS', blog.includes("import './v522-ui-refinement.css';")],
   ['admin imports final CSS', admin.includes("import './v522-ui-refinement.css';")],

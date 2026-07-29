@@ -92,6 +92,7 @@ import './v512-storefront-corrections.css';
 import './v513-storefront-enhancements.css';
 import './v521-ui-polish.css';
 import './v522-ui-refinement.css';
+import './v523-product-admin-fix.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -1273,6 +1274,14 @@ export function ProductPageV10() {
   const quantityBlock = getBlock(productMain, 'quantity');
   const buyBlock = getBlock(productMain, 'buyButtons') || ({id:'runtime-buy-buttons',type:'buyButtons',visible:true,settings:{showAddToCart:true,showBuyNow:true,showWishlist:true}} satisfies ThemeBlock);
   const descriptionBlock = getBlocks(productMain, 'accordion').find((item) => item.settings.source === 'description');
+  // Product details are a core storefront section. Keep them visible even when
+  // an older saved theme no longer contains the optional description block.
+  const productDetailsBlock = descriptionBlock || ({
+    id: 'runtime-product-details',
+    type: 'accordion',
+    visible: true,
+    settings: {title: 'Mô tả sản phẩm', source: 'description', open: true},
+  } satisfies ThemeBlock);
   const showProductMain = productMain?.visible !== false;
   const relatedLimit = Number(recommendationSection?.settings.limit || 4);
   const related = products.filter((item) => item.id !== product.id && item.status === 'active' && item.published && (item.vendor === product.vendor || item.productType === product.productType)).slice(0, relatedLimit);
@@ -1338,7 +1347,7 @@ export function ProductPageV10() {
 
             <ProductDeliveryEstimate />
 
-            {descriptionBlock && <section className="tf-pdp491-details" {...themeBlockProps(descriptionBlock)}>
+            <section className="tf-pdp491-details" {...themeBlockProps(productDetailsBlock)} aria-label="Mô tả và thông số kỹ thuật">
               <article className="tf-pdp491-description">
                 <h2>Mô tả sản phẩm</h2>
                 <div>{parsedContent.paragraphs.map((paragraph, index) => {
@@ -1346,8 +1355,8 @@ export function ProductPageV10() {
                   return <p key={`${paragraph}-${index}`}>{index === 0 ? <><strong>{beginsWithModel ? paragraph.slice(0, modelName.length) : modelName}</strong>{beginsWithModel ? paragraph.slice(modelName.length) : ` ${paragraph}`}</> : paragraph}</p>;
                 })}</div>
               </article>
-              <article className="tf-pdp491-specs"><h2>Thông số sản phẩm</h2><ul>{parsedContent.specs.map((item, index) => <li key={`${item.label}-${index}`}><span><strong>{item.label}:</strong> {item.value}</span></li>)}</ul></article>
-            </section>}
+              <article className="tf-pdp491-specs"><h2>Thông số kỹ thuật</h2><ul>{parsedContent.specs.map((item, index) => <li key={`${item.label}-${index}`}><span><strong>{item.label}:</strong> {item.value}</span></li>)}</ul></article>
+            </section>
           </aside>
         </section>
 

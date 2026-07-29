@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.52.2",
+  "version": "0.52.3",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -27,7 +27,8 @@
     "v514:check": "node scripts/check-v514-store-fallback.mjs",
     "v520:check": "node scripts/check-v520-orders-payments.mjs",
     "v521:check": "node scripts/check-v521-ui-polish.mjs",
-    "v522:check": "node scripts/check-v522-ui-refinement.mjs"
+    "v522:check": "node scripts/check-v522-ui-refinement.mjs",
+    "v523:check": "node scripts/check-v523-product-admin-fix.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -70,7 +71,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury Timeforge V0.52.2: refined storefront branding, compact hero and PDP spacing, polished Journal pages, improved Admin header/buttons, and lightweight rendering optimizations.",
+  "description": "Luxury Timeforge V0.52.3: restored product description/specifications, reduced related-products footer spacing, and polished the Admin header, account control, page surfaces, and buttons.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"
