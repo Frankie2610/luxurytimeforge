@@ -91,6 +91,7 @@ import './v510-storefront-stability.css';
 import './v512-storefront-corrections.css';
 import './v513-storefront-enhancements.css';
 import './v521-ui-polish.css';
+import './v522-ui-refinement.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -103,21 +104,22 @@ function LuxuryLogo() {
   const {theme} = useCommerce();
   const storeName = resolveStoreName(theme.settings.storeName);
   const customLogo = resolveCustomStoreLogo(theme.settings.logoImage);
-  const logoSource = customLogo ? optimizedImage(customLogo, 420, 140, 'fit') : '';
+  const logoSource = customLogo ? optimizedImage(customLogo, 220, 220, 'fit') : DEFAULT_STORE_LOGO;
   return (
-    <Link className="lux-logo" to="/" aria-label={storeName}>
-      {logoSource ? (
-        <img
-          className="tf-store-logo-image-v513"
-          src={logoSource}
-          alt={storeName}
-          width="210"
-          height="70"
-          decoding="async"
-        />
-      ) : (
-        <span className="tf-logo-lockup-v44"><img src={DEFAULT_STORE_LOGO} alt="" aria-hidden="true"/><b>{storeName}</b></span>
-      )}
+    <Link className="lux-logo tf522-store-brand" to="/" aria-label={storeName}>
+      <span className={`tf-logo-lockup-v44 tf522-logo-lockup ${customLogo ? 'has-custom-logo' : 'uses-default-logo'}`}>
+        <span className="tf522-logo-media" aria-hidden="true">
+          <img
+            className={customLogo ? 'tf-store-logo-image-v513' : 'tf522-default-store-logo'}
+            src={logoSource}
+            alt=""
+            width="72"
+            height="72"
+            decoding="async"
+          />
+        </span>
+        <b>{storeName}</b>
+      </span>
     </Link>
   );
 }
@@ -584,7 +586,7 @@ export function HomeV10() {
       const heading = getBlock(section, 'heading');
       const text = getBlock(section, 'text');
       const action = getBlock(section, 'button');
-      return <section key={section.id} {...boundary(section)} className={`lux-hero align-${section.settings.alignment || 'left'}`} style={{minHeight: Math.round(Number(section.settings.height || 680) * .8)}}>
+      return <section key={section.id} {...boundary(section)} className={`lux-hero align-${section.settings.alignment || 'left'}`} style={{minHeight: Math.round(Number(section.settings.height || 680) * .64)}}>
         <img src={optimizedImage(String(section.settings.image || activeProducts[0]?.images[0] || ''), 1920, 1200)} alt="TimeForge luxury watches" width="1920" height="1200" fetchPriority="high" decoding="async" />
         <div className="lux-hero-shade" style={{opacity: Number(section.settings.overlay || 42) / 100}} />
         <motion.div className="lux-hero-copy" initial={{opacity: 0, y: 30}} animate={{opacity: 1, y: 0}} transition={{duration: .7}}>
@@ -1060,7 +1062,7 @@ export function CollectionPageV10() {
 
   return (
     <div className="lux-collection-page">
-      {bannerSection?.visible !== false && <section data-theme-section-id={bannerSection?.id} data-theme-section-label={bannerSection ? sectionLabels[bannerSection.type] : 'Banner bộ sưu tập'} className="tf4933-collection-banner" style={{minHeight: Math.round(Number(bannerSection?.settings.height || 360) * .8)}}>
+      {bannerSection?.visible !== false && <section data-theme-section-id={bannerSection?.id} data-theme-section-label={bannerSection ? sectionLabels[bannerSection.type] : 'Banner bộ sưu tập'} className="tf4933-collection-banner" style={{minHeight: Math.round(Number(bannerSection?.settings.height || 360) * .64)}}>
         {bannerSection?.settings.showImage !== false && <img className="tf4933-collection-banner-media" src={optimizedImage(collection?.image || source[0]?.images[0] || '', 1920, 900)} alt={collection?.title || 'TimeForge collection'} width="1920" height="900" fetchPriority="high" decoding="async" />}
         <div className="tf4933-collection-banner-overlay" />
         <div className="tf4933-collection-banner-inner">

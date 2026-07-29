@@ -10,8 +10,8 @@ const css=read('src/v521-ui-polish.css');
 
 assert.doesNotMatch(storefront,/querySelectorAll<HTMLElement>[\s\S]{0,900}tf-logo-lockup-v44 > b/,'Runtime nav typography must not force store name back to 13px.');
 assert.match(css,/tf-logo-lockup-v44 > b[\s\S]{0,180}font-size:\s*26px\s*!important/,'Desktop store name must be 26px.');
-assert.match(storefront,/Number\(section\.settings\.height \|\| 680\) \* \.8/,'Home banner must be reduced by 20%.');
-assert.match(storefront,/Number\(bannerSection\?\.settings\.height \|\| 360\) \* \.8/,'Collection banner must be reduced by 20%.');
+assert.match(storefront,/Number\(section\.settings\.height \|\| 680\) \* \.(?:64|8)/,'Home banner must remain reduced by at least 20%.');
+assert.match(storefront,/Number\(bannerSection\?\.settings\.height \|\| 360\) \* \.(?:64|8)/,'Collection banner must remain reduced by at least 20%.');
 assert.match(checkout,/transferReferencePreview/);
 assert.match(checkout,/Yêu cầu thanh toán đã được gửi/);
 assert.match(checkout,/chờ nhân viên xác nhận đã nhận tiền/);

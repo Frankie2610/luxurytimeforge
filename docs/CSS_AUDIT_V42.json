@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-07-29T15:09:57.621Z",
-  "files": 73,
-  "sourceBytes": 1212456,
-  "importantDeclarations": 2061,
-  "uniqueSelectors": 8507,
-  "duplicatedSelectors": 2931,
+  "generatedAt": "2026-07-29T16:18:08.055Z",
+  "files": 74,
+  "sourceBytes": 1224428,
+  "importantDeclarations": 2142,
+  "uniqueSelectors": 8567,
+  "duplicatedSelectors": 2952,
   "productionCss": [],
   "productionCssBytes": 0,
   "topDuplicates": [
@@ -464,6 +464,16 @@
       ]
     },
     {
+      "selector": ".tf-storefront-v4912 .lux-hero",
+      "count": 12,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v521-ui-polish.css",
+        "src/v522-ui-refinement.css"
+      ]
+    },
+    {
       "selector": ".tf-storefront-v4912 .tf-brand-rail-inner-v39",
       "count": 12,
       "files": [
@@ -497,19 +507,6 @@
         "src/styles.css",
         "src/v24-tokens.css",
         "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": "textarea",
-      "count": 11,
-      "files": [
-        "src/base.css",
-        "src/sprint16.css",
-        "src/sprint20.css",
-        "src/sprint21.css",
-        "src/styles.css",
-        "src/v4912-storefront.css",
-        "src/v499-theme-editor.css"
       ]
     }
   ]

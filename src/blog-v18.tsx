@@ -1,5 +1,6 @@
 import './v4922-journal.css';
 import './v50-journal-polish.css';
+import './v522-ui-refinement.css';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {AlignLeft, ArrowLeft, ArrowRight, BookOpen, Clock3, Code2, Edit3, ExternalLink, FileText, MoreHorizontal, Plus, Search, Sparkles, Trash2} from 'lucide-react';
 import {useMemo, useState} from 'react';
@@ -33,7 +34,7 @@ export function BlogIndexV18(){
       </div>
     </section>
     <nav className="tf4922-journal-categories" aria-label="Chủ đề TimeForge Journal"><div><button className="is-active" aria-current="page">Khám phá</button><button>Kiến thức</button><button>Phong cách</button><button>Chăm sóc</button><button>Câu chuyện thương hiệu</button></div></nav>
-    {featured&&<section className="tf4922-journal-feature"><div className="tf4922-journal-feature-media"><SmartImage src={imageFor(featured,0,1400,900)} alt={featured.title} width={1400} height={900} priority/><span>{formatDate(featured.publishedAt)}</span></div><div className="tf4922-journal-feature-copy"><span><BookOpen/>BÀI ĐỌC TUẦN NÀY</span><h2>{featured.title}</h2><p>{featured.excerpt}</p><div><span><Clock3/>5 phút đọc</span><b>{featured.author}</b></div><Link to={`/blogs/${featured.handle}`}>Đọc toàn bộ bài viết <ArrowRight/></Link></div></section>}
+    {featured&&<section className="tf4922-journal-feature"><div className="tf4922-journal-feature-media"><SmartImage src={imageFor(featured,0,1200,760)} alt={featured.title} width={1200} height={760}/><span>{formatDate(featured.publishedAt)}</span></div><div className="tf4922-journal-feature-copy"><span><BookOpen/>BÀI ĐỌC TUẦN NÀY</span><h2>{featured.title}</h2><p>{featured.excerpt}</p><div><span><Clock3/>5 phút đọc</span><b>{featured.author}</b></div><Link to={`/blogs/${featured.handle}`}>Đọc toàn bộ bài viết <ArrowRight/></Link></div></section>}
     <section className="tf4922-journal-archive"><header><div><span>THƯ VIỆN BIÊN TẬP</span><h2>Góc nhìn mới nhất</h2></div><p>Nội dung được biên tập để dễ đọc, hữu ích và phù hợp với hành trình lựa chọn đồng hồ.</p></header><div className="tf4922-journal-grid">{remaining.map((post,index)=><article key={post.id}><Link to={`/blogs/${post.handle}`}><SmartImage src={imageFor(post,index+1,900,650)} alt={post.title} width={900} height={650}/><div className="tf4922-journal-card-copy"><div><time>{formatDate(post.publishedAt)}</time><span>TIMEFORGE</span></div><h3>{post.title}</h3><p>{post.excerpt}</p><b>Đọc bài viết <ArrowRight/></b></div></Link></article>)}</div>{!remaining.length&&<div className="tf4922-journal-empty"><BookOpen/><b>Đang chuẩn bị nội dung mới</b><span>Quay lại sau để đọc các bài viết tiếp theo.</span></div>}</section>
     <section className="tf4922-journal-letter"><div><span>THE LETTER</span><h2>Mỗi câu chuyện, một góc nhìn khác về thời gian.</h2><p>Theo dõi TimeForge Journal để nhận nội dung mới và tuyển chọn sản phẩm đáng chú ý.</p></div><Link to="/collections">Khám phá bộ sưu tập <ArrowRight/></Link></section>
   </main>;

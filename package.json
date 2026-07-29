@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.52.1",
+  "version": "0.52.2",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -26,7 +26,8 @@
     "v513:check": "node scripts/check-v513-store-identity.mjs",
     "v514:check": "node scripts/check-v514-store-fallback.mjs",
     "v520:check": "node scripts/check-v520-orders-payments.mjs",
-    "v521:check": "node scripts/check-v521-ui-polish.mjs"
+    "v521:check": "node scripts/check-v521-ui-polish.mjs",
+    "v522:check": "node scripts/check-v522-ui-refinement.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -69,7 +70,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury Timeforge V0.52.1: server-verified storefront orders, realtime Admin order operations, bank-transfer accounts and discounts, PayOS QR/payment confirmation, fulfillment and shipping tracking, transfer references and polished checkout/admin UI.",
+  "description": "Luxury Timeforge V0.52.2: refined storefront branding, compact hero and PDP spacing, polished Journal pages, improved Admin header/buttons, and lightweight rendering optimizations.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-29T09:18:48.299Z",
+  "generatedAt": "2026-07-29T16:18:07.775Z",
   "entry": "src/main.tsx",
   "modules": 61,
-  "reachable": 105,
+  "reachable": 107,
   "orphaned": []
 }
