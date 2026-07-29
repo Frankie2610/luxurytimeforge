@@ -1,0 +1,8 @@
+/* V50.9 — checkout summary has zero layout footprint while closed on phones. */
+@media(max-width:680px){
+  .tf4912-checkout-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+  .tf4912-checkout-aside[data-summary-open="false"]{display:none;position:fixed;visibility:hidden;transform:translateY(105%)}
+  .tf4912-checkout-aside[data-summary-open="true"]{display:block;position:fixed;visibility:visible;transform:translateY(0)}
+  .tf4912-mobile-place-order{width:min(100%,320px);min-height:42px;margin:2px auto 0;padding:8px 12px;border-radius:9px;font-size:11px;box-shadow:0 7px 17px rgba(31,53,40,.12)}
+  .tf4912-legal{max-width:520px;margin:8px auto 20px;padding:0 8px;text-align:center}
+}

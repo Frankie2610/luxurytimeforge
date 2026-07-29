@@ -35,9 +35,20 @@ export function productImage(product: {images?: string[]; rawShopify?: Record<st
   return images[index] || images[0] || rawCandidates[index] || rawCandidates[0] || DEFAULT_PRODUCT_IMAGE;
 }
 
-export function optimizedImage(url: string, _width = 900, _height?: number, _crop: 'fill' | 'fit' | 'limit' = 'fill') {
-  // CDN URLs are stored and rendered verbatim; optimization parameters belong to the selected CDN.
-  return url;
+export function optimizedImage(url: string, width = 900, height?: number, crop: 'fill' | 'fit' | 'limit' = 'fill') {
+  const source = String(url || '').trim();
+  if (!source || source.startsWith('data:') || source.startsWith('blob:')) return source;
+  // Cloudinary originals can be several megabytes. Insert a deterministic,
+  // cacheable transformation while leaving every non-Cloudinary URL untouched.
+  const marker = '/image/upload/';
+  if (/^https?:\/\/res\.cloudinary\.com\//i.test(source) && source.includes(marker)) {
+    const [prefix, suffix] = source.split(marker, 2);
+    const safeWidth = Math.max(80, Math.min(2400, Math.round(width || 900)));
+    const safeHeight = height ? Math.max(80, Math.min(2400, Math.round(height))) : 0;
+    const resize = [`c_${crop}`, `w_${safeWidth}`, safeHeight ? `h_${safeHeight}` : '', crop === 'fill' ? 'g_auto' : ''].filter(Boolean).join(',');
+    return `${prefix}${marker}f_auto,q_auto:eco,dpr_auto,${resize}/${suffix}`;
+  }
+  return source;
 }
 
 export function SmartImage({src = '', alt = '', className = '', width, height, priority = false, ...props}: ImgHTMLAttributes<HTMLImageElement> & {priority?: boolean}) {

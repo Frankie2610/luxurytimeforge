@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.51.3 — Store identity and header correction
+
+- Added device-based shop logo upload in Admin with preview, validation and class-based responsive styling.
+- Uploads the selected image to Cloudinary only when **Lưu thông tin** is pressed.
+- Saves `secure_url` with the full public shop profile at `timeforge/settings/store` and synchronizes draft/published theme identity.
+- Reads the Firebase-backed logo in the storefront header and updates favicon/apple-touch icon.
+- Overrides historical 10–11px header rules with final ID selectors plus a runtime `13px !important` safeguard from 821px upward.
+- Reuses the green TimeForge Selection badge treatment for Journal, Related, Search Results and Discover labels.
+- Reduces payment-logo dimensions and keeps new uploader styling isolated from the initial storefront bundle.
+
 ## 0.31.0-alpha.1 — Sprint 31
 
 - Storefront typography đậm, rõ và đồng đều hơn.

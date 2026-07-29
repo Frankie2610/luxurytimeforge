@@ -81,9 +81,11 @@ function authMessage(error:unknown){
 }
 
 export function AuthProvider({children}:{children:ReactNode}){
+  const location=useLocation();
   const previewFrame=embeddedThemePreview();
-  const[user,setUser]=useState<AdminSessionUser|null>(()=>{if(previewFrame)return null;if(demoEnabled){try{const demo=JSON.parse(sessionStorage.getItem(DEMO_KEY)||'null');if(demo)return demo}catch{}}return readFirebaseSession()});
-  const[loading,setLoading]=useState(firebaseAppEnabled&&!previewFrame);
+  const authRequired=location.pathname.startsWith('/admin');
+  const[user,setUser]=useState<AdminSessionUser|null>(()=>{if(previewFrame||!authRequired)return null;if(demoEnabled){try{const demo=JSON.parse(sessionStorage.getItem(DEMO_KEY)||'null');if(demo)return demo}catch{}}return readFirebaseSession()});
+  const[loading,setLoading]=useState(firebaseAppEnabled&&!previewFrame&&authRequired);
 
   const resolveFirebaseUser=useCallback(async(firebaseUser:{uid:string;email?:string|null;displayName?:string|null;photoURL?:string|null},allowPending=false):Promise<AdminSessionUser|null>=>{
     const email=(firebaseUser.email||'').trim().toLowerCase();
@@ -116,7 +118,8 @@ export function AuthProvider({children}:{children:ReactNode}){
     /* The same-origin storefront iframe inside Theme Editor never needs Admin auth.
        Starting another observer there can propagate a background sign-out back to
        the parent window because Firebase persistence is shared by the origin. */
-    if(previewFrame||!firebaseAppEnabled){setLoading(false);return}
+    if(previewFrame||!firebaseAppEnabled||!authRequired){setLoading(false);return}
+    setLoading(true)
     let active=true;
     let revision=0;
     let unsubscribe=()=>{};
@@ -167,7 +170,7 @@ export function AuthProvider({children}:{children:ReactNode}){
       else unsubscribe=nextUnsubscribe;
     })().catch(()=>{if(active)setLoading(false)});
     return()=>{active=false;revision++;timers.forEach(timer=>clearTimeout(timer));timers.clear();unsubscribe()};
-  },[previewFrame,resolveFirebaseUser]);
+  },[previewFrame,resolveFirebaseUser,authRequired]);
 
   const assertReady=()=>{
     if(!firebaseAppEnabled)throw new Error('Firebase Authentication chưa được cấu hình.');

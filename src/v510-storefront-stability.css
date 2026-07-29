@@ -1,0 +1,127 @@
+/* V51.1 — stable filter portal, unified green section labels and final desktop typography. */
+
+/* The filter drawer lives in a dedicated portal and no longer depends on
+   Radix data-state animations. Critical geometry is repeated here so older
+   storefront layers cannot leave a visible white shell with unmounted content. */
+.tf510-filter-overlay{
+  position:fixed!important;
+  inset:0!important;
+  z-index:2100!important;
+  display:block!important;
+  background:rgba(13,18,14,.62)!important;
+  -webkit-backdrop-filter:blur(3px);
+  backdrop-filter:blur(3px);
+  contain:strict;
+}
+.tf510-filter-dialog{
+  position:fixed!important;
+  z-index:2101!important;
+  left:0!important;
+  right:auto!important;
+  top:0!important;
+  bottom:0!important;
+  width:min(460px,96vw)!important;
+  height:100dvh!important;
+  max-height:none!important;
+  padding:0!important;
+  overflow:hidden!important;
+  transform:none!important;
+  display:block!important;
+  opacity:1!important;
+  visibility:visible!important;
+  isolation:isolate;
+  contain:layout paint;
+  border:0!important;
+  border-right:1px solid #c8c5bf!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:#181d19!important;
+  box-shadow:30px 0 80px rgba(18,24,19,.24)!important;
+}
+.tf510-filter-dialog .tf503-filter-drawer{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  display:grid!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+  background:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.tf510-filter-dialog .tf503-filter-scroll{
+  min-width:0!important;
+  min-height:0!important;
+  display:block!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  background:#fff!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.tf510-filter-dialog .tf503-filter-section,
+.tf510-filter-dialog .tf503-filter-options{
+  visibility:visible!important;
+  opacity:1!important;
+}
+.tf510-filter-dialog .tf503-filter-drawer>header>p{min-height:20px}
+.tf510-filter-dialog .tf503-filter-drawer>header>p.is-updating{color:#657068}
+.tf510-filter-dialog .tf503-filter-drawer>header>p>span{font-size:10px;font-weight:650}
+
+/* CURATED WORLDS, THE TIMEFORGE SELECTION and ĐƯỢC LỰA CHỌN NHIỀU use one
+   consistent green badge on every viewport. */
+.tf-storefront-v4912 :is(.tf-curated-v4912,.tf-selection-v4912,.tf-bestsellers-v4910) .tf-section-title-v4912>small{
+  width:max-content;
+  min-height:30px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 13px;
+  border:1px solid #234330!important;
+  border-radius:7px!important;
+  background:linear-gradient(135deg,#1d3827,#315c40)!important;
+  color:#fff!important;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.13em;
+  line-height:1;
+  box-shadow:0 8px 18px rgba(29,56,39,.13);
+}
+
+/* Final desktop override: older 10–11px rules existed in several historical
+   storefront files, so this last imported layer intentionally wins. */
+@media(min-width:1025px){
+  .tf-storefront-v4912 .lux-announcement,
+  .tf-storefront-v4912 .lux-main-nav a,
+  .tf-storefront-v4912 .lux-search-button span,
+  .tf-storefront-v4912 .tf-logo-lockup-v44 b,
+  .tf-storefront-v4912 .tf-brand-rail-heading-v39 small,
+  .tf-storefront-v4912 .tf-brand-rail-heading-v39 span,
+  .tf-storefront-v4912 .tf-brand-rail-nav-v39>a{
+    font-size:13px!important;
+  }
+}
+
+@media(max-width:680px){
+  .tf510-filter-dialog{
+    left:0!important;
+    right:0!important;
+    top:auto!important;
+    bottom:0!important;
+    width:100vw!important;
+    height:min(88dvh,720px)!important;
+    border:0!important;
+    border-top:1px solid #c8c5bf!important;
+    border-radius:20px 20px 0 0!important;
+  }
+  .tf-storefront-v4912 :is(.tf-curated-v4912,.tf-selection-v4912,.tf-bestsellers-v4910) .tf-section-title-v4912>small{
+    min-height:24px;
+    padding:0 9px;
+    font-size:8px;
+    letter-spacing:.1em;
+    border-radius:6px!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .tf510-filter-overlay,.tf510-filter-dialog{animation:none!important;transition:none!important}
+}

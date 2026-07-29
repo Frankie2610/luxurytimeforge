@@ -37,6 +37,13 @@ export async function firebaseWrite(path,value){
   return response.json().catch(()=>value);
 }
 
+
+export async function firebaseMultiPatch(values){
+  const response=await fetch(firebaseUrl(''),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(values)});
+  if(!response.ok)throw new Error(`Firebase multi-path patch failed (${response.status})`);
+  return response.json().catch(()=>values);
+}
+
 export async function firebasePatch(path,value){
   const response=await fetch(firebaseUrl(path),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)});
   if(!response.ok)throw new Error(`Firebase patch failed (${response.status})`);

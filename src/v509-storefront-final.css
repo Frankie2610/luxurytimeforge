@@ -1,0 +1,133 @@
+/* V50.9 — consolidated typography, PDP variants and footer channels. */
+@media(min-width:1025px){
+  .tf-storefront-v4912 .lux-main-nav a{font-size:13px}
+  .tf-storefront-v4912 .lux-search-button span{font-size:13px}
+  .tf-storefront-v4912 .tf-logo-lockup-v44 b{font-size:13px}
+  .tf-storefront-v4912 .tf-brand-rail-heading-v39 small{font-size:12px}
+  .tf-storefront-v4912 .tf-brand-rail-heading-v39 span{font-size:12px}
+  .tf-storefront-v4912 .tf-brand-rail-nav-v39>a{font-size:13px}
+  .tf-storefront-v4912 :where(.tf-pdp491-breadcrumb,.tf4941-about-breadcrumb,.tf4923-policy-breadcrumb){font-size:13px}
+  .tf-storefront-v4912 :is(.tf-curated-v4912,.tf-selection-v4912,.tf-bestsellers-v4910) .tf-section-title-v4912 h2{font-size:36px}
+  .tf-storefront-v4912 .tf-selection-v4912 .tf-section-title-v4912 small{min-height:30px;padding:0 13px;border-color:#234330;border-radius:7px;background:linear-gradient(135deg,#1d3827,#315c40);color:#fff;font-size:11px;letter-spacing:.13em;box-shadow:0 8px 18px rgba(29,56,39,.13)}
+
+  .tf-storefront-v4912 .tf-pdp491-accordion-title{font-size:13px}
+  .tf-storefront-v4912 .tf-pdp491-accordion-title b{font-size:12px}
+  .tf-storefront-v4912 .tf-pdp491-accordion-body{font-size:13px}
+
+  .tf-storefront-v4912 .tf4924-delivery header small{font-size:12px}
+  .tf-storefront-v4912 .tf4924-delivery header p,
+  .tf-storefront-v4912 .tf4924-delivery header strong{font-size:13px}
+  .tf-storefront-v4912 .tf4924-delivery-steps b{font-size:13px}
+  .tf-storefront-v4912 .tf4924-delivery-steps small{font-size:12px}
+
+  .tf-storefront-v4912 .tf504-family-selector>header small{font-size:12px}
+  .tf-storefront-v4912 .tf504-family-selector>header p{font-size:13px}
+  .tf-storefront-v4912 .tf504-family-selector>header>span{font-size:12px}
+  .tf-storefront-v4912 .tf504-family-selector>div b{font-size:12px}
+  .tf-storefront-v4912 .tf504-family-selector>div small{font-size:12px}
+  .tf-storefront-v4912 .tf504-family-selector>div strong{font-size:13px}
+
+  .tf-storefront-v4912 .tf-pdp491-policies>header small{font-size:12px}
+  .tf-storefront-v4912 .tf-pdp491-policies article small{font-size:20px;line-height:1}
+  .tf-storefront-v4912 .tf-pdp491-policies article h3{font-size:16px}
+  .tf-storefront-v4912 .tf-pdp491-policies article p{font-size:13px}
+
+  .tf-storefront-v4912 .tf4941-about-hero>div>span,
+  .tf-storefront-v4912 .tf4941-about-story>aside>small,
+  .tf-storefront-v4912 .tf4941-about-footer small{font-size:12px}
+  .tf-storefront-v4912 .tf4941-about-hero>div>a,
+  .tf-storefront-v4912 .tf4941-about-footer>a{font-size:13px}
+  .tf-storefront-v4912 .tf4941-about-story>aside>div span{font-size:13px}
+  .tf-storefront-v4912 .tf4941-about-story>aside>div b{font-size:15px}
+  .tf-storefront-v4912 .tf4941-about-story>main>article>span{font-size:22px}
+
+  .tf-storefront-v4912 .tf-footer-services-v4910 b{font-size:14px}
+  .tf-storefront-v4912 .tf-footer-services-v4910 small{font-size:13px}
+  .tf-storefront-v4912 .tf-footer-newsletter-copy-v4910 small{font-size:12px}
+  .tf-storefront-v4912 .tf-footer-newsletter-copy-v4910 p,
+  .tf-storefront-v4912 .tf-footer-brand-copy-v4910 p{font-size:14px}
+  .tf-storefront-v4912 .tf-footer-signup-v4910>button{font-size:15px}
+  .tf-storefront-v4912 .tf-footer-grid-v4910 h4{font-size:15px;font-weight:900}
+  .tf-storefront-v4912 .tf-footer-grid-v4910 a{font-size:14px}
+  .tf-storefront-v4912 .tf-footer-proof-v4910 span,
+  .tf-storefront-v4912 .tf-footer-bottom-v4910{font-size:12px}
+}
+
+.tf504-family-selector>div>a,.tf504-family-selector>div>span{min-width:124px;flex-basis:124px}
+.tf509-family-copy{min-width:0;display:grid;gap:5px}
+.tf509-family-variant{min-width:0;display:flex;align-items:baseline;gap:6px}
+.tf509-family-variant b{min-width:0;flex:1}
+.tf509-family-variant small{flex:0 0 auto}
+.tf509-family-copy>strong{margin-top:0}
+
+.tf509-footer-contact{display:grid;gap:5px;margin-top:4px}
+.tf509-footer-contact :where(a,span){width:auto;color:#444;font-size:12px;line-height:1.45}
+.tf509-footer-channels{position:relative;z-index:1;width:min(var(--lux-content),100%);display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:28px;padding:20px 0;border-top:1px solid #cbc4bd}
+.tf509-footer-channels.is-payments-only{grid-template-columns:1fr}
+.tf509-footer-channels>div{min-width:0;display:grid;gap:10px}
+.tf509-footer-channels>div>b{color:#20241f;font-size:14px;font-weight:900}
+.tf509-payment-marks,.tf509-social-marks{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tf509-brand-mark{height:50px;min-width:64px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:4px 11px;border:1px solid #d8d3cc;border-radius:11px;background:linear-gradient(180deg,#fff,#fbfaf8);color:#252722;box-sizing:border-box;box-shadow:0 4px 12px rgba(34,31,27,.045)}
+.tf509-brand-mark svg{width:42px;height:26px;fill:currentColor}
+.tf509-brand-mark b{color:inherit;font-size:12px;font-style:normal;line-height:1}
+.tf509-brand-mark.is-bank svg{width:20px}.tf509-brand-mark.is-bank b{font-size:12px}
+.tf509-brand-mark.is-visa{color:#1434cb}.tf509-brand-mark.is-visa svg{width:46px;height:28px}
+.tf509-brand-mark.is-mastercard svg{width:48px;height:30px}
+.tf509-brand-mark.is-momo{min-width:104px;border-color:#e3c7d8;background:#fff}.tf509-brand-mark.is-momo .tf509-momo-logo{width:82px;height:36px;display:block;object-fit:contain}
+.tf509-brand-mark.is-zalopay{min-width:112px}.tf509-brand-mark.is-zalopay svg{width:94px;height:30px}
+.tf509-brand-mark.is-payos{min-width:104px}.tf509-brand-mark.is-payos svg{width:84px;height:30px}
+.tf509-social-marks a{width:38px;height:38px;display:grid;place-items:center;border:1px solid #c9c5bf;border-radius:50%;background:#fff;color:#243128;text-decoration:none;transition:transform .18s ease,border-color .18s ease}
+.tf509-social-marks a:hover{transform:translateY(-2px);border-color:#325b40}
+.tf509-social-marks .tf509-brand-mark{min-width:0;width:18px;height:18px;padding:0;border:0;background:transparent}
+.tf509-social-marks .tf509-brand-mark svg{width:18px;height:18px}
+.tf509-social-marks small{color:#62645f;font-size:12px}
+
+@media(max-width:1024px){
+  .tf509-footer-channels{grid-template-columns:1fr;padding-inline:0}
+}
+
+@media(max-width:680px){
+  .tf-storefront-v4912 .tf-pdp491-breadcrumb{font-size:10px}
+  .tf-storefront-v4912 .tf-pdp491-accordion-title{font-size:11px}
+  .tf-storefront-v4912 .tf-pdp491-accordion-title b{font-size:10px}
+  .tf-storefront-v4912 .tf-pdp491-accordion-body{font-size:11px}
+  .tf-storefront-v4912 .tf4924-delivery header small{font-size:10px}
+  .tf-storefront-v4912 .tf4924-delivery header p,
+  .tf-storefront-v4912 .tf4924-delivery header strong{font-size:11px}
+  .tf-storefront-v4912 .tf4924-delivery-steps b{font-size:10.5px}
+  .tf-storefront-v4912 .tf4924-delivery-steps small{font-size:10px}
+  .tf-storefront-v4912 .tf-pdp491-policies>header small{font-size:10px}
+  .tf-storefront-v4912 .tf-pdp491-policies article small{font-size:14px}
+  .tf-storefront-v4912 .tf-pdp491-policies article h3{font-size:13px}
+  .tf-storefront-v4912 .tf-pdp491-policies article p{font-size:11px}
+  .tf-storefront-v4912 .tf4941-about-story>aside>div span{font-size:11px}
+  .tf-storefront-v4912 .tf4941-about-story>aside>div b{font-size:13px}
+  .tf-storefront-v4912 .tf4941-about-story>main>article>span{font-size:16px}
+
+  .tf504-family-selector>div>a,.tf504-family-selector>div>span{min-width:108px;flex-basis:108px}
+  .tf509-family-copy{gap:4px}
+  .tf509-family-variant{gap:5px}
+  .tf504-family-selector .tf509-family-variant b{font-size:11px}
+  .tf504-family-selector .tf509-family-variant small{font-size:10px}
+  .tf504-family-selector .tf509-family-copy>strong{font-size:11px}
+
+  .tf-storefront-v4912 .tf-footer-v4910{padding-inline:14px}
+  .tf-storefront-v4912 .tf-footer-services-v4910 b{font-size:11px}
+  .tf-storefront-v4912 .tf-footer-services-v4910 small{font-size:10px}
+  .tf-storefront-v4912 .tf-footer-newsletter-copy-v4910 small{font-size:10px}
+  .tf-storefront-v4912 .tf-footer-newsletter-copy-v4910 p{font-size:12px}
+  .tf-storefront-v4912 .tf-footer-signup-v4910>button{font-size:11px}
+  .tf-storefront-v4912 .tf-footer-grid-v4910{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 16px}
+  .tf-storefront-v4912 .tf-footer-grid-v4910>section:last-child{grid-column:auto}
+  .tf-storefront-v4912 .tf-footer-grid-v4910 h4{font-size:13px;font-weight:900}
+  .tf-storefront-v4912 .tf-footer-grid-v4910 a{font-size:11px}
+  .tf509-footer-contact :where(a,span){font-size:10px}
+  .tf509-footer-channels{gap:18px;padding:18px 0}
+  .tf509-footer-channels>div>b{font-size:12px}
+  .tf509-payment-marks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .tf509-brand-mark{width:100%;min-width:0;height:44px;padding-inline:6px}
+  .tf509-brand-mark.is-momo .tf509-momo-logo{width:72px;height:32px}
+  .tf509-brand-mark.is-zalopay svg{width:82px}.tf509-brand-mark.is-payos svg{width:72px}
+  .tf509-brand-mark.is-momo,.tf509-brand-mark.is-zalopay,.tf509-brand-mark.is-payos{min-width:0}
+  .tf-storefront-v4912 .tf-footer-bottom-v4910{font-size:10px}
+}

@@ -84,6 +84,13 @@ async function updateFirebasePaths(values:Record<string,unknown>,operationPath='
 
 export const firebaseClient={
   enabled:firebaseEnabled,
+  async subscribe<T>(path:string,onValue:(value:T|null)=>void,onError?:(error:FirebaseClientError)=>void){
+    const database=await db();if(!database)return()=>{};
+    const sdk=await import('firebase/database');
+    const reference=sdk.ref(database,path);
+    const unsubscribe=sdk.onValue(reference,(snapshot)=>onValue(snapshot.exists()?snapshot.val() as T:null),(error)=>onError?.(firebaseOperationError(error,'theo dõi',path)));
+    return unsubscribe;
+  },
   async read<T>(path:string){
     const database=await db();if(!database)return null;
     try{

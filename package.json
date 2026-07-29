@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.50.7",
+  "version": "0.52.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -14,13 +14,18 @@
     "admin:css:check": "node scripts/check-admin-css.mjs",
     "auth:session:check": "node scripts/check-auth-session.mjs",
     "content:pages:check": "node scripts/check-content-pages.mjs",
+    "import:status:check": "node scripts/run-import-status-check.mjs",
     "audit:project": "tsc -b --pretty false && node scripts/check-auth-session.mjs && node scripts/check-content-pages.mjs && node scripts/check-admin-css.mjs && node scripts/css-audit.mjs && node scripts/dead-code-audit.mjs",
     "build:report": "tsc -b && vite build && node scripts/bundle-report.mjs",
     "firebase:rules:generate": "node scripts/generate-firebase-rules.mjs",
     "firebase:rules:deploy": "node scripts/generate-firebase-rules.mjs && node scripts/check-firebase-rules.mjs && node scripts/deploy-firebase-rules.mjs",
     "firebase:rules:check": "node scripts/check-firebase-rules.mjs",
     "firebase:rules:doctor": "node scripts/firebase-rules-doctor.mjs",
-    "payos:doctor": "node scripts/payos-doctor.mjs"
+    "payos:doctor": "node scripts/payos-doctor.mjs",
+    "v512:check": "node scripts/check-v512-critical-fixes.mjs",
+    "v513:check": "node scripts/check-v513-store-identity.mjs",
+    "v514:check": "node scripts/check-v514-store-fallback.mjs",
+    "v520:check": "node scripts/check-v520-orders-payments.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -63,7 +68,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury Timeforge V50.7: single promo banner, compact checkout footer flow, responsive trust rail, and a richer Shopify-like theme customizer.",
+  "description": "Luxury Timeforge V0.52.0: server-verified storefront orders, realtime Admin order operations, bank-transfer accounts and discounts, PayOS QR/payment confirmation, fulfillment and shipping tracking.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

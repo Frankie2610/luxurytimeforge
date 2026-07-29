@@ -1,12 +1,13 @@
 import {useMemo, useState, type ChangeEvent, type DragEvent} from 'react';
 import Papa from 'papaparse';
-import {CheckCircle2, Download, FileSpreadsheet, ImageOff, Layers3, Pencil, Plus, RotateCw, Save, Trash2, UploadCloud, X} from 'lucide-react';
+import {CheckCircle2, Download, FileSpreadsheet, ImageOff, Layers3, Pencil, Plus, RotateCw, Save, Trash2, UploadCloud} from 'lucide-react';
 import {toast} from 'sonner';
 import {useCommerce} from './context';
 import {readProductFilterValues} from './product-filter-data';
 import {buildAutomaticProductGroups} from './product-groups';
 import type {Product, ProductGroup, ProductGroupItem} from './types';
 import {slugify, uid} from './utils';
+import {Dialog, DialogContent} from './ui';
 import './v504-product-groups-admin.css';
 
 type ImportRow=Record<string, unknown>;
@@ -167,7 +168,11 @@ export function ProductGroupsAdminV504(){
       <div className="tf504-group-intro-actions"><button type="button" onClick={regenerate}><RotateCw/>Quét lại catalog</button><button type="button" onClick={downloadTemplate}><Download/>File mapping tùy chọn</button></div>
     </section>
 
-    {editing&&<GroupEditor group={editing} products={catalogProducts} onChange={setEditing} onCancel={()=>setEditing(null)} onSave={saveEditing}/>}
+    <Dialog open={Boolean(editing)} onOpenChange={(open)=>{if(!open)setEditing(null)}}>
+      {editing&&<DialogContent className="tf510-group-editor-dialog" overlayClassName="tf510-group-editor-overlay" title={`Chỉnh sửa ${editing.name}`} description="Thay đổi tên nhóm, tiền tố SKU, trạng thái, màu sắc và kích thước từng phiên bản. Dữ liệu chỉnh tay được giữ lại khi quét catalog.">
+        <GroupEditor group={editing} products={catalogProducts} onChange={setEditing} onCancel={()=>setEditing(null)} onSave={saveEditing}/>
+      </DialogContent>}
+    </Dialog>
 
     <div className="tf504-group-workspace">
       <section className="tf504-group-import">
@@ -213,7 +218,6 @@ function GroupEditor({group,products,onChange,onCancel,onSave}:{group:ProductGro
     setSku('');
   };
   return <section className="tf504-group-editor">
-    <header><div><small>CHỈNH THỦ CÔNG</small><h3>{group.name}</h3><p>Thay đổi ở đây được giữ lại khi hệ thống quét lại catalog.</p></div><button type="button" onClick={onCancel} aria-label="Đóng"><X/></button></header>
     <div className="tf504-group-editor-meta">
       <label><span>Tên bộ sưu tập</span><input value={group.name} onChange={(event)=>onChange({...group,name:event.target.value})}/></label>
       <label><span>Tiền tố SKU</span><input value={group.skuPrefix} onChange={(event)=>onChange({...group,skuPrefix:event.target.value.toUpperCase()})}/></label>
@@ -234,7 +238,7 @@ function GroupEditor({group,products,onChange,onCancel,onSave}:{group:ProductGro
 function GroupCard({group,products,onEdit,onDelete}:{group:ProductGroup;products:Product[];onEdit?:()=>void;onDelete?:()=>void}){
   const matched=group.items.filter((item)=>item.productId&&products.some((product)=>product.id===item.productId)).length;
   return <article className="tf504-group-card">
-    <header><div><small>{group.source==='automatic'?'TỰ ĐỘNG':'THỦ CÔNG'} · SKU BẮT ĐẦU BẰNG <b>{group.skuPrefix}</b></small><h4>{group.name}</h4><span>{group.items.length} phiên bản · {matched} đã đối chiếu catalog{group.manualOverride?' · đã chỉnh':''}</span></div>{(onEdit||onDelete)&&<div className="tf504-group-card-actions">{onEdit&&<button type="button" onClick={onEdit} aria-label={`Sửa ${group.name}`}><Pencil/></button>}{onDelete&&<button type="button" className="danger" onClick={onDelete} aria-label={`Xóa ${group.name}`}><Trash2/></button>}</div>}</header>
+    <header><div><small>{group.source==='automatic'?'TỰ ĐỘNG':'THỦ CÔNG'} · SKU BẮT ĐẦU BẰNG <b>{group.skuPrefix}</b></small><h4>{group.name}</h4><span>{group.items.length} phiên bản · {matched} đã đối chiếu catalog{group.manualOverride?' · đã chỉnh':''}</span></div>{(onEdit||onDelete)&&<div className="tf504-group-card-actions">{onEdit&&<button type="button" className="is-edit" onClick={onEdit} aria-label={`Chỉnh sửa ${group.name}`}><Pencil/><span>Chỉnh sửa</span></button>}{onDelete&&<button type="button" className="danger" onClick={onDelete} aria-label={`Xóa ${group.name}`}><Trash2/></button>}</div>}</header>
     <div className="tf504-group-items">{group.items.slice(0,8).map((item)=><div key={item.id}>
       {item.image?<img src={item.image} alt=""/>:<span className="tf504-group-no-image"><ImageOff/></span>}
       <span><b>{item.name}</b><small>{item.sku}</small><em>{[item.color,item.size].filter(Boolean).join(' · ')||'Chưa có màu / kích thước'}</em></span>

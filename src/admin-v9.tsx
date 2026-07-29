@@ -88,7 +88,7 @@ export function AdminCommandPalette(){
   {id:'theme',label:'Tùy chỉnh cửa hàng online',hint:'Mở Theme Editor',path:'/admin/online-store',group:'Thao tác nhanh',icon:<Search/>},
   {id:'import',label:'Nhập Shopify CSV',hint:'Nhập hoặc xuất dữ liệu',path:'/admin/import-export',group:'Thao tác nhanh',icon:<Search/>},
   {id:'integrations',label:'Thanh toán & giao hàng',hint:'Payment, tracking và Customer Account',path:'/admin/settings/integrations',group:'Cài đặt',icon:<Search/>},
-  {id:'settings',label:'Cài đặt',hint:'Dữ liệu, theme và tích hợp',path:'/admin/settings',group:'Điều hướng',icon:<Search/>}
+  {id:'settings',label:'Thông tin cửa hàng',hint:'Tên shop, liên hệ, MST, social và tuyển dụng',path:'/admin/settings',group:'Cài đặt',icon:<Search/>}
  ];
  const productCommands=products.slice(0,40).map(p=>({id:p.id,label:p.title,hint:`${p.sku||'Chưa SKU'} · ${money(p.price)}`,path:`/admin/products/${p.id}`,group:'Sản phẩm',icon:<img src={p.images[0]} alt=""/>}));
  const commands=[...base,...productCommands].filter(c=>`${c.label} ${c.hint}`.toLowerCase().includes(q.toLowerCase())).slice(0,12);

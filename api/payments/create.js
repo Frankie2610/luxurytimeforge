@@ -1,19 +1,18 @@
 import {findOrder} from '../../server/firebase-rest.js';
-import {createOrderCode,createReturnToken,getPayOS,persistVerifiedOnlineOrder,publicOrigin,readPaymentSession,safeOrderId,savePaymentSession,validateOrderForPayment} from '../../server/payos.js';
+import {createOrderCode,createReturnToken,getPayOS,publicOrigin,readPaymentSession,safeOrderId,savePaymentSession,validateOrderForPayment} from '../../server/payos.js';
 
 export default async function handler(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='POST')return res.status(405).json({message:'Method not allowed'});
   try{
     const orderId=safeOrderId(req.body?.orderId);
-    let found=await findOrder(orderId);
-    if(!found&&req.body?.order){const verified=await persistVerifiedOnlineOrder(req.body.order);found={key:'',order:verified}}
+    const found=await findOrder(orderId)
     if(!found)return res.status(404).json({message:'Không tìm thấy dữ liệu đơn hàng để tạo thanh toán PayOS.'});
     const order=found.order;
     const amount=validateOrderForPayment(order);
     const existing=await readPaymentSession(orderId).catch(()=>null);
     if(existing?.status==='PENDING'&&existing.checkoutUrl&&Number(existing.expiresAt||0)>Math.floor(Date.now()/1000)+30){
-      return res.status(200).json({checkoutUrl:existing.checkoutUrl,paymentLinkId:existing.paymentLinkId,orderCode:existing.orderCode});
+      return res.status(200).json({checkoutUrl:existing.checkoutUrl,paymentLinkId:existing.paymentLinkId,orderCode:existing.orderCode,qrCode:existing.qrCode||''});
     }
 
     const orderCode=createOrderCode();
@@ -37,8 +36,8 @@ export default async function handler(req,res){
       expiredAt,
     });
     const now=new Date().toISOString();
-    await savePaymentSession(orderId,{orderId,orderNumber:order.number,orderCode,amount,status:payment.status||'PENDING',paymentLinkId:payment.paymentLinkId,checkoutUrl:payment.checkoutUrl,returnToken,expiresAt,createdAt:now,updatedAt:now});
-    return res.status(200).json({checkoutUrl:payment.checkoutUrl,paymentLinkId:payment.paymentLinkId,orderCode});
+    await savePaymentSession(orderId,{orderId,orderNumber:order.number,orderCode,amount,status:payment.status||'PENDING',paymentLinkId:payment.paymentLinkId,checkoutUrl:payment.checkoutUrl,qrCode:payment.qrCode||'',returnToken,expiresAt,createdAt:now,updatedAt:now});
+    return res.status(200).json({checkoutUrl:payment.checkoutUrl,paymentLinkId:payment.paymentLinkId,orderCode,qrCode:payment.qrCode||''});
   }catch(error){
     const message=error instanceof Error?error.message:'Không thể tạo liên kết PayOS.';
     const configuration=/missing|configured|PAYOS_|Firebase server/i.test(message);

@@ -1,0 +1,171 @@
+/* V51.2 — deterministic collection filter + final desktop header typography. */
+
+/* Keep the drawer tree visible regardless of historical Dialog/label rules. */
+.tf510-filter-overlay,
+.tf510-filter-dialog,
+.tf510-filter-dialog .tf503-filter-drawer,
+.tf510-filter-dialog .tf503-filter-scroll,
+.tf510-filter-dialog .tf503-filter-section,
+.tf510-filter-dialog .tf503-filter-options{
+  color:#181d19!important;
+  contain:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.tf510-filter-dialog .tf503-filter-scroll{
+  contain:none!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+}
+.tf510-filter-dialog .tf503-filter-options{
+  display:grid!important;
+  gap:4px!important;
+  padding:0 11px 12px!important;
+  background:#fbfaf7!important;
+}
+
+/* Buttons replace hidden checkbox/label pairs. This avoids browser-specific
+   label/input state bugs and gives every facet the exact same interaction. */
+.tf510-filter-dialog .tf512-filter-option{
+  width:100%;
+  min-height:42px;
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  margin:0;
+  padding:6px 11px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:#fff;
+  color:#313832;
+  font:700 12px/1.35 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  text-align:left;
+  cursor:pointer;
+  box-shadow:none;
+}
+.tf510-filter-dialog .tf512-filter-option:hover{
+  border-color:#c8d6cb;
+  background:#eef4ef;
+  color:#173923;
+}
+.tf510-filter-dialog .tf512-filter-option:focus-visible{
+  outline:3px solid rgba(39,70,49,.22);
+  outline-offset:1px;
+}
+.tf510-filter-dialog .tf512-filter-option>i,
+.tf510-filter-dialog .tf512-stock-option>i{
+  width:20px;
+  height:20px;
+  display:grid;
+  place-items:center;
+  border:1.5px solid #879087;
+  border-radius:5px;
+  background:#fff;
+  color:transparent;
+}
+.tf510-filter-dialog .tf512-filter-option>i svg,
+.tf510-filter-dialog .tf512-stock-option>i svg{
+  width:13px;
+  height:13px;
+  stroke-width:2.5;
+}
+.tf510-filter-dialog .tf512-filter-option>span{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.tf510-filter-dialog .tf512-filter-option>small{
+  min-width:28px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  padding:0 7px;
+  border-radius:999px;
+  background:#ece9e4;
+  color:#5b625c;
+  font-size:10px;
+  font-weight:800;
+}
+.tf510-filter-dialog .tf512-filter-option.is-selected{
+  border-color:#9eb7a4;
+  background:#e5efe7;
+  color:#173923;
+}
+.tf510-filter-dialog .tf512-filter-option.is-selected>i,
+.tf510-filter-dialog .tf512-stock-option.is-selected>i{
+  border-color:#274631;
+  background:#274631;
+  color:#fff;
+}
+.tf510-filter-dialog .tf512-filter-option.is-selected>small{
+  background:#fff;
+  color:#173923;
+}
+
+.tf510-filter-dialog .tf503-stock-section{
+  padding:11px;
+  background:#fff;
+}
+.tf510-filter-dialog .tf512-stock-option{
+  width:100%;
+  min-height:66px;
+  display:grid;
+  grid-template-columns:20px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  padding:10px 12px;
+  border:1px solid #d5ddd7;
+  border-radius:10px;
+  background:#f8faf8;
+  color:#1d221e;
+  text-align:left;
+  cursor:pointer;
+}
+.tf510-filter-dialog .tf512-stock-option:hover{
+  border-color:#7e9484;
+  background:#eef5ef;
+}
+.tf510-filter-dialog .tf512-stock-option.is-selected{
+  border-color:#274631;
+  background:#e9f2eb;
+  box-shadow:0 0 0 2px rgba(39,70,49,.08);
+}
+.tf510-filter-dialog .tf512-stock-option>span{display:grid;gap:2px}
+.tf510-filter-dialog .tf512-stock-option b{font-size:12px;color:#1d221e}
+.tf510-filter-dialog .tf512-stock-option small{font-size:10px;color:#636a64}
+
+/* The main navigation is visible from 821px upward. Previous overrides only
+   started at 1025px, so 821–1024px still inherited the old 10–11px tablet rule. */
+@media(min-width:821px){
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-announcement,
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-announcement-copy,
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-header .lux-main-nav>a,
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-header .lux-search-button>span,
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-header .tf-logo-lockup-v44>b,
+  .tf-storefront-v4912.tf-storefront-v4912 .tf-brand-rail-heading-v39>small,
+  .tf-storefront-v4912.tf-storefront-v4912 .tf-brand-rail-heading-v39>span,
+  .tf-storefront-v4912.tf-storefront-v4912 .tf-brand-rail-nav-v39>a,
+  .tf-storefront-v4912.tf-storefront-v4912 .tf-brand-rail-nav-v39>a>span{
+    font-size:13px!important;
+  }
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-header .lux-main-nav>a,
+  .tf-storefront-v4912.tf-storefront-v4912 .lux-header .lux-search-button>span,
+  .tf-storefront-v4912.tf-storefront-v4912 .tf-brand-rail-nav-v39>a{
+    line-height:1.2!important;
+  }
+}
+
+@media(max-width:680px){
+  .tf510-filter-dialog .tf503-filter-options{padding-inline:8px!important}
+  .tf510-filter-dialog .tf512-filter-option{min-height:44px;font-size:12px}
+}
+.tf510-filter-dialog .tf512-filter-limit-note{
+  margin:5px 3px 2px!important;
+  padding:9px 10px!important;
+  border:1px solid #d7ded8;
+  border-radius:8px;
+  background:#f3f6f3!important;
+  color:#59665d!important;
+  font-size:10px!important;
+  line-height:1.45;
+}

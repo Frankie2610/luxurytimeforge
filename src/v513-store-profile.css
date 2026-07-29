@@ -1,0 +1,111 @@
+/* V51.3 — store profile logo upload. Class-based styling only. */
+.tf-admin-v499 .tf513-logo-uploader{
+  display:grid;
+  grid-template-columns:minmax(180px,240px) minmax(0,1fr);
+  align-items:stretch;
+  gap:18px;
+  padding:16px;
+  border:1px solid #d7ded8;
+  border-radius:14px;
+  background:linear-gradient(145deg,#fbfcfb,#f4f7f5);
+}
+.tf-admin-v499 .tf513-logo-preview{
+  min-height:148px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:1px dashed #bdc9c0;
+  border-radius:12px;
+  background:#fff;
+}
+.tf-admin-v499 .tf513-logo-preview.has-image{border-style:solid}
+.tf-admin-v499 .tf513-logo-preview img{
+  width:100%;
+  height:148px;
+  padding:16px;
+  object-fit:contain;
+  background:linear-gradient(45deg,#f6f7f6 25%,transparent 25%),linear-gradient(-45deg,#f6f7f6 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f6f7f6 75%),linear-gradient(-45deg,transparent 75%,#f6f7f6 75%);
+  background-position:0 0,0 8px,8px -8px,-8px 0;
+  background-size:16px 16px;
+}
+.tf-admin-v499 .tf513-logo-preview>span{
+  display:grid;
+  justify-items:center;
+  gap:8px;
+  color:#68746c;
+}
+.tf-admin-v499 .tf513-logo-preview>span svg{width:30px;height:30px;stroke-width:1.6}
+.tf-admin-v499 .tf513-logo-preview>span b{font-size:11px}
+.tf-admin-v499 .tf513-logo-controls{min-width:0;display:grid;align-content:center;gap:12px}
+.tf-admin-v499 .tf513-logo-controls>div:first-child{display:grid;gap:4px}
+.tf-admin-v499 .tf513-logo-controls>div:first-child>b{color:#29362e;font-size:13px}
+.tf-admin-v499 .tf513-logo-controls>div:first-child>small{color:#6f7a72;font-size:10px;line-height:1.45}
+.tf-admin-v499 .tf513-logo-file-input{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+.tf-admin-v499 .tf513-logo-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tf-admin-v499 .tf513-logo-choose,
+.tf-admin-v499 .tf513-logo-remove{
+  min-height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 13px;
+  border-radius:9px;
+  font-size:11px;
+  font-weight:800;
+  line-height:1;
+  transition:background-color .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+.tf-admin-v499 .tf513-logo-choose{
+  border:1px solid #315f42;
+  background:#315f42;
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 5px 14px rgba(37,83,54,.14);
+}
+.tf-admin-v499 .tf513-logo-choose:hover{border-color:#244c34;background:#244c34;transform:translateY(-1px)}
+.tf-admin-v499 .tf513-logo-choose.is-disabled{pointer-events:none;opacity:.58;transform:none}
+.tf-admin-v499 .tf513-logo-remove{
+  border:1px solid #d8b9b4;
+  background:#fff8f7;
+  color:#953e37;
+  cursor:pointer;
+}
+.tf-admin-v499 .tf513-logo-remove:hover{border-color:#b8665e;background:#f9e8e5;color:#7c2e29}
+.tf-admin-v499 .tf513-logo-choose svg,
+.tf-admin-v499 .tf513-logo-remove svg{width:15px;height:15px;stroke-width:2}
+.tf-admin-v499 .tf513-logo-selected{min-width:0;overflow:hidden;color:#536259;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.tf-admin-v499 .tf513-logo-selected b{color:#304137}
+.tf-admin-v499 .tf513-logo-warning,
+.tf-admin-v499 .tf513-logo-error{
+  margin:0;
+  padding:9px 10px;
+  border-radius:8px;
+  font-size:10px;
+  line-height:1.45;
+}
+.tf-admin-v499 .tf513-logo-warning{border:1px solid #e2d39e;background:#fff9e7;color:#775e16}
+.tf-admin-v499 .tf513-logo-error{border:1px solid #e2bbb7;background:#fff1ef;color:#9a3d36}
+
+@media(max-width:760px){
+  .tf-admin-v499 .tf513-logo-uploader{grid-template-columns:1fr;padding:12px}
+  .tf-admin-v499 .tf513-logo-preview,.tf-admin-v499 .tf513-logo-preview img{height:130px;min-height:130px}
+  .tf-admin-v499 .tf513-logo-actions{display:grid;grid-template-columns:1fr 1fr}
+  .tf-admin-v499 .tf513-logo-choose,.tf-admin-v499 .tf513-logo-remove{width:100%}
+}
+@media(max-width:420px){
+  .tf-admin-v499 .tf513-logo-actions{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .tf-admin-v499 .tf513-logo-choose,.tf-admin-v499 .tf513-logo-remove{transition:none}
+}

@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import type{ImportResult,Metafield,Product,ProductOption,Variant}from'./types';
+import type{ImportResult,Metafield,Product,ProductOption,Status,Variant}from'./types';
 import{slugify,strip,uid}from'./utils';
 import{canonicalProduct,isFirebaseSafeSku,normalizeSku}from'./product-data';
 import{isFirebaseSafeObjectKey}from'./firebase-value';
@@ -7,6 +7,18 @@ import{isFirebaseSafeObjectKey}from'./firebase-value';
 const num=(v:unknown)=>{const raw=String(v??'').trim();if(!raw)return 0;const normalized=raw.replace(/\s/g,'').replace(/(?<=\d)[.,](?=\d{3}(?:\D|$))/g,'').replace(',','.').replace(/[^0-9.-]/g,'');const n=Number(normalized);return Number.isFinite(n)?n:0};
 const bool=(v:unknown)=>['true','1','yes','y','co','có','active','published'].includes(String(v??'').trim().toLowerCase());
 const clean=(value:unknown)=>String(value??'').trim();
+const resolveImportedStatus=(rawStatus:string,publishFallback:boolean):Status=>{
+  const normalized=rawStatus.trim().toLowerCase();
+  if(normalized==='active')return'active';
+  if(normalized==='archive'||normalized==='archived')return'archived';
+  if(normalized==='draft')return'draft';
+  return publishFallback?'active':'draft';
+};
+const resolveImportedPublished=(status:Status,rawStatus:string,rawPublished:string,publishFallback:boolean)=>{
+  if(status!=='active')return false;
+  if(rawPublished.trim())return bool(rawPublished);
+  return rawStatus.trim()?true:publishFallback;
+};
 const norm=(value:string)=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const aliases=(...values:string[])=>new Set(values.map(norm));
 const findValue=(row:Record<string,string>,names:Set<string>)=>{for(const[header,value]of Object.entries(row)){if(names.has(norm(header))&&clean(value))return clean(value)}return''};
@@ -95,10 +107,11 @@ export function parseGenericRows(data:Record<string,string>[],publish:boolean):I
     const price=num(findValue(row,PRICE));
     const compareAtPrice=num(findValue(row,COMPARE));
     const inventory=num(findValue(row,INVENTORY));
-    const rawStatus=findValue(row,STATUS).toLowerCase();
+    const rawStatus=findValue(row,STATUS);
     const rawPublished=findValue(row,PUBLISHED);
-    const active=publish||rawStatus==='active'||bool(rawPublished);
-    if(!active)draftCount++;
+    const status=resolveImportedStatus(rawStatus,rawPublished.trim()?bool(rawPublished):publish);
+    const published=resolveImportedPublished(status,rawStatus,rawPublished,publish);
+    if(status!=='active'||!published)draftCount++;
     const variant:Variant={id:sku,title:'Default Title',sku,price,compareAtPrice,inventory,optionValues:{}};
     const product:Product={
       id:sku,sku,
@@ -110,8 +123,8 @@ export function parseGenericRows(data:Record<string,string>[],publish:boolean):I
       productType:findValue(row,TYPE),
       category:findValue(row,aliases('Product Category','Danh mục chuẩn','Category'))||findValue(row,TYPE),
       tags:splitList(findValue(row,TAGS)),
-      status:active?'active':rawStatus==='archived'?'archived':'draft',
-      published:active,
+      status,
+      published,
       images,
       price,compareAtPrice,cost:num(findValue(row,COST)),
       barcode:findValue(row,BARCODE),inventory,trackInventory:true,
@@ -147,15 +160,17 @@ export function parseShopifyRows(data:Record<string,string>[],headers:string[],p
     if(!isFirebaseSafeSku(primarySku)){warnings.push(`SKU “${primarySku}” có ký tự Firebase không hỗ trợ.`);return[]}
     const images=[...new Set(rows.flatMap(rowImages))];
     if(!images.length){missingImageCount++;return[]}
-    const original=(main.Status||'draft').toLowerCase();
-    if(original!=='active'||!bool(main.Published))draftCount++;
-    const active=publish||original==='active'&&bool(main.Published);
+    const original=clean(main.Status);
+    const rawPublished=clean(main.Published);
+    const status=resolveImportedStatus(original,rawPublished?bool(rawPublished):publish);
+    const published=resolveImportedPublished(status,original,rawPublished,publish);
+    if(status!=='active'||!published)draftCount++;
     const html=main['Body (HTML)']||'';
     const first=variants[0];
     const product:Product={
       id:primarySku,sku:primarySku,handle:clean(main.Handle)||slugify(`${main.Vendor}-${main.Title}-${primarySku}`),title:main.Title||groupKey.replace(/-/g,' '),
       descriptionHtml:html,descriptionText:strip(html),vendor:main.Vendor||'',productType:main.Type||'',category:main['Product Category']||'',tags:splitList(main.Tags||''),
-      status:active?'active':original==='archived'?'archived':'draft',published:active,
+      status,published,
       images,price:first?.price||num(main['Variant Price']),compareAtPrice:first?.compareAtPrice||num(main['Variant Compare At Price']),cost:num(main['Cost per item']),
       barcode:main['Variant Barcode']||'',inventory:variants.reduce((sum,item)=>sum+item.inventory,0)||num(main['Variant Inventory Qty']),trackInventory:main['Variant Inventory Tracker']==='shopify',weight:num(main['Variant Grams']),weightUnit:main['Variant Weight Unit']||'g',
       seoTitle:main['SEO Title']||`${main.Title||groupKey} | Luxury Timeforge`,seoDescription:main['SEO Description']||strip(html).slice(0,155),options:optionList(rows),metafields:metafields(main),

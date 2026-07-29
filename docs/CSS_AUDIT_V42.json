@@ -1,65 +1,12 @@
 {
-  "generatedAt": "2026-07-28T10:21:52.950Z",
-  "files": 61,
-  "sourceBytes": 1137127,
-  "importantDeclarations": 1877,
-  "uniqueSelectors": 8008,
-  "duplicatedSelectors": 2811,
-  "productionCss": [
-    {
-      "name": "storefront-v10-evnYqSgF.css",
-      "bytes": 246551
-    },
-    {
-      "name": "legacy-yhtfewsx.css",
-      "bytes": 235237
-    },
-    {
-      "name": "admin-shell-v16-CW24SPFk.css",
-      "bytes": 167897
-    },
-    {
-      "name": "checkout-v11-reL5tJxO.css",
-      "bytes": 54174
-    },
-    {
-      "name": "blog-v18-BiKk08VZ.css",
-      "bytes": 26941
-    },
-    {
-      "name": "index-CyM-VYai.css",
-      "bytes": 17003
-    },
-    {
-      "name": "online-store-v19-LQMWsvYh.css",
-      "bytes": 14696
-    },
-    {
-      "name": "v4927-commerce-COnk4C0b.css",
-      "bytes": 11385
-    },
-    {
-      "name": "product-groups-admin-v504-D9kIfFN4.css",
-      "bytes": 10508
-    },
-    {
-      "name": "login-BAUKEKHj.css",
-      "bytes": 5752
-    },
-    {
-      "name": "product-editor-v39-Dskf_fFH.css",
-      "bytes": 4474
-    },
-    {
-      "name": "admin-invite-BuN7DqL_.css",
-      "bytes": 3829
-    },
-    {
-      "name": "admin-CrXjeGKL.css",
-      "bytes": 387
-    }
-  ],
-  "productionCssBytes": 798834,
+  "generatedAt": "2026-07-29T09:21:43.345Z",
+  "files": 72,
+  "sourceBytes": 1198629,
+  "importantDeclarations": 2058,
+  "uniqueSelectors": 8435,
+  "duplicatedSelectors": 2907,
+  "productionCss": [],
+  "productionCssBytes": 0,
   "topDuplicates": [
     {
       "selector": "select",
@@ -84,11 +31,12 @@
     },
     {
       "selector": ".tf-storefront-v4912 .lux-product-grid",
-      "count": 26,
+      "count": 27,
       "files": [
         "src/v4912-storefront.css",
         "src/v4936-mobile-product-grid.css",
-        "src/v50-storefront-polish.css"
+        "src/v50-storefront-polish.css",
+        "src/v508-storefront-final.css"
       ]
     },
     {
@@ -114,6 +62,35 @@
       ]
     },
     {
+      "selector": "@media(max-width:680px)",
+      "count": 24,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint14.css",
+        "src/sprint15.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/ui/ui.css",
+        "src/v4912-commerce.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4915-commerce-fixes.css",
+        "src/v4920-commerce-mobile.css",
+        "src/v4923-storefront.css",
+        "src/v4925-commerce.css",
+        "src/v4927-commerce.css",
+        "src/v4933-collection.css",
+        "src/v504-commerce.css",
+        "src/v504-storefront-final.css",
+        "src/v508-storefront-final.css",
+        "src/v509-storefront-final.css",
+        "src/v510-storefront-stability.css",
+        "src/v512-storefront-corrections.css",
+        "src/v513-storefront-enhancements.css"
+      ]
+    },
+    {
       "selector": ".tf-storefront-v4912 .lux-header-inner",
       "count": 24,
       "files": [
@@ -125,7 +102,7 @@
     },
     {
       "selector": "to",
-      "count": 22,
+      "count": 23,
       "files": [
         "src/app.css",
         "src/auth.css",
@@ -138,7 +115,8 @@
         "src/v4917-admin-invite.css",
         "src/v4917-team.css",
         "src/v4920-commerce-mobile.css",
-        "src/v499-theme-editor.css"
+        "src/v499-theme-editor.css",
+        "src/v508-storefront-final.css"
       ]
     },
     {
@@ -160,41 +138,8 @@
       ]
     },
     {
-      "selector": "@media(max-width:680px)",
-      "count": 19,
-      "files": [
-        "src/sprint11.css",
-        "src/sprint12.css",
-        "src/sprint13.css",
-        "src/sprint14.css",
-        "src/sprint15.css",
-        "src/sprint18.css",
-        "src/sprint23.css",
-        "src/ui/ui.css",
-        "src/v4912-commerce.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4915-commerce-fixes.css",
-        "src/v4920-commerce-mobile.css",
-        "src/v4923-storefront.css",
-        "src/v4925-commerce.css",
-        "src/v4927-commerce.css",
-        "src/v4933-collection.css",
-        "src/v504-commerce.css",
-        "src/v504-storefront-final.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912",
-      "count": 18,
-      "files": [
-        "src/v4912-storefront.css",
-        "src/v50-storefront-polish.css",
-        "src/v504-storefront-final.css"
-      ]
-    },
-    {
       "selector": "@media(prefers-reduced-motion:reduce)",
-      "count": 17,
+      "count": 19,
       "files": [
         "src/app.css",
         "src/auth.css",
@@ -212,7 +157,18 @@
         "src/v4923-storefront.css",
         "src/v4925-storefront.css",
         "src/v4933-collection.css",
-        "src/v499-admin.css"
+        "src/v499-admin.css",
+        "src/v510-storefront-stability.css",
+        "src/v513-store-profile.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912",
+      "count": 18,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v504-storefront-final.css"
       ]
     },
     {
@@ -245,6 +201,24 @@
       ]
     },
     {
+      "selector": "@media(max-width:900px)",
+      "count": 16,
+      "files": [
+        "src/sprint11.css",
+        "src/sprint12.css",
+        "src/sprint13.css",
+        "src/sprint18.css",
+        "src/sprint23.css",
+        "src/styles.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4923-storefront.css",
+        "src/v4933-collection.css",
+        "src/v499-admin.css",
+        "src/v504-admin-final.css",
+        "src/v508-admin-final.css"
+      ]
+    },
+    {
       "selector": "h2",
       "count": 16,
       "files": [
@@ -268,6 +242,16 @@
         "src/v4922-journal.css",
         "src/v50-journal-polish.css",
         "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-main-nav a",
+      "count": 16,
+      "files": [
+        "src/v4912-storefront.css",
+        "src/v50-storefront-polish.css",
+        "src/v502-storefront-contrast.css",
+        "src/v509-storefront-final.css"
       ]
     },
     {
@@ -312,33 +296,7 @@
       ]
     },
     {
-      "selector": "@media(max-width:900px)",
-      "count": 15,
-      "files": [
-        "src/sprint11.css",
-        "src/sprint12.css",
-        "src/sprint13.css",
-        "src/sprint18.css",
-        "src/sprint23.css",
-        "src/styles.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4923-storefront.css",
-        "src/v4933-collection.css",
-        "src/v499-admin.css",
-        "src/v504-admin-final.css"
-      ]
-    },
-    {
       "selector": ".tf-storefront-v4912 .lux-main-nav",
-      "count": 15,
-      "files": [
-        "src/v4912-storefront.css",
-        "src/v50-storefront-polish.css",
-        "src/v502-storefront-contrast.css"
-      ]
-    },
-    {
-      "selector": ".tf-storefront-v4912 .lux-main-nav a",
       "count": 15,
       "files": [
         "src/v4912-storefront.css",
@@ -367,6 +325,17 @@
       ]
     },
     {
+      "selector": "a)",
+      "count": 14,
+      "files": [
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-storefront-polish.css",
+        "src/v508-storefront-final.css"
+      ]
+    },
+    {
       "selector": "button)",
       "count": 14,
       "files": [
@@ -377,6 +346,18 @@
         "src/v4927-commerce.css",
         "src/v499-admin.css",
         "src/v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-checkout-layout",
+      "count": 14,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css",
+        "src/v504-commerce.css",
+        "src/v509-commerce-final.css"
       ]
     },
     {
@@ -404,16 +385,6 @@
       ]
     },
     {
-      "selector": "a)",
-      "count": 13,
-      "files": [
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v50-storefront-polish.css"
-      ]
-    },
-    {
       "selector": "h4",
       "count": 13,
       "files": [
@@ -423,17 +394,6 @@
         "src/v50-journal-polish.css",
         "src/v50-storefront-polish.css",
         "src/v502-storefront-contrast.css"
-      ]
-    },
-    {
-      "selector": ".tf4912-checkout-layout",
-      "count": 13,
-      "files": [
-        "src/v4912-commerce.css",
-        "src/v4925-commerce.css",
-        "src/v502-commerce-polish.css",
-        "src/v503-commerce-polish.css",
-        "src/v504-commerce.css"
       ]
     },
     {

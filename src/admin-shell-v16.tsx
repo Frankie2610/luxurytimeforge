@@ -4,7 +4,7 @@ import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
   Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,
   BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Menu,PackageSearch,Plus,
-  PanelLeftClose,PanelLeftOpen,RotateCcw,Search,Settings,ShoppingBag,Tags,Users,UserRoundSearch,Wrench,X,
+  PanelLeftClose,PanelLeftOpen,RotateCcw,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,
 } from 'lucide-react';
 import {toast as sonnerToast} from 'sonner';
 import {useCommerce} from './context';
@@ -15,6 +15,9 @@ import {AdminCommandPalette} from './admin-v9';
 import './admin-v4938.css';
 import './v50-admin-polish.css';
 import './v504-admin-final.css';
+import './v508-admin-final.css';
+import './v509-admin-final.css';
+import './v512-admin-contrast.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -42,7 +45,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/activity':{title:'Nhật ký hoạt động',eyebrow:'Hệ thống',description:'Theo dõi những thay đổi quan trọng trong Admin.'},
   '/admin/import-export':{title:'Nhập / xuất dữ liệu',eyebrow:'Dữ liệu',description:'Đồng bộ catalog bằng Shopify CSV và xuất bản sao dữ liệu.'},
   '/admin/online-store':{title:'Cửa hàng online',eyebrow:'Kênh bán hàng',description:'Điều chỉnh template, section, block và giao diện hiển thị.',fullBleed:true},
-  '/admin/settings':{title:'Cài đặt',eyebrow:'Hệ thống',description:'Cấu hình nguồn dữ liệu, theme và môi trường vận hành.'},
+  '/admin/settings':{title:'Thông tin cửa hàng',eyebrow:'Cửa hàng online',description:'Quản lý tên shop, liên hệ, địa chỉ, mã số thuế, social và tuyển dụng.'},
   '/admin/settings/team':{title:'Nhân sự & phân quyền',eyebrow:'Hệ thống',description:'Quản lý vai trò và phạm vi truy cập Admin.'},
   '/admin/settings/integrations':{title:'Thanh toán & giao hàng',eyebrow:'Tích hợp',description:'Quản lý payment adapter, vận chuyển và tài khoản khách hàng.'},
 };
@@ -93,7 +96,10 @@ export function AdminLayoutV16(){
       {to:'/admin/pages',label:'Trang nội dung',icon:FileText},
       {to:'/admin/analytics',label:'Phân tích',icon:BarChart3},
     ]},
-    {label:'Kênh bán hàng',items:[{to:'/admin/online-store',label:'Cửa hàng online',icon:LayoutTemplate}]},
+    {label:'Kênh bán hàng',items:[
+      {to:'/admin/online-store',label:'Cửa hàng online',icon:LayoutTemplate},
+      {to:'/admin/settings',label:'Thông tin cửa hàng',icon:Store},
+    ]},
     {label:'Hệ thống',items:[
       {to:'/admin/import-export',label:'Nhập / xuất',icon:FileUp},
       {to:'/admin/activity',label:'Hoạt động',icon:Activity},
@@ -104,7 +110,7 @@ export function AdminLayoutV16(){
   useEffect(()=>{if(!open)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[open]);
   const initials=(user?.name||user?.email||'A').trim().slice(0,1).toUpperCase();
   const liveData=dataSource==='firebase';
-  const dataSourceLabel=dataSource==='loading'?'Đang tải Firebase':liveData?'Firebase live':dataSource==='local'?'Local':dataSource==='seed'?'Dữ liệu mẫu':dataSource==='local-fallback'?'Local fallback':'Mẫu fallback';
+  const dataSourceLabel=dataSource==='loading'?'Đang tải Firebase':liveData?'Firebase live':dataSource==='error'?'Lỗi tải catalog':dataSource==='local'?'Local':'Dữ liệu mẫu';
   return <div className={`v16-admin-shell tf-admin-v499 ${collapsed?'is-sidebar-collapsed':''}`}>
     {open&&<button className="v16-admin-backdrop" aria-label="Đóng menu" onClick={()=>setOpen(false)}/>} 
     <aside className={`v16-admin-sidebar ${open?'is-open':''}`} aria-label="Điều hướng quản trị">

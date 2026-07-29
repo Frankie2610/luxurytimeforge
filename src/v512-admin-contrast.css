@@ -1,0 +1,133 @@
+/* V51.2 — final admin action contrast. Imported after every legacy admin skin. */
+
+/* Topbar controls: avoid dark text on dark buttons and preserve contrast on hover. */
+.tf-admin-v499.tf-admin-v499 .v16-admin-topbar{
+  background:#17231b!important;
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-icon-action{
+  border:1px solid #afc2b4!important;
+  background:#f7faf8!important;
+  color:#173923!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-icon-action:hover{
+  border-color:#fff!important;
+  background:#dceadf!important;
+  color:#102b1b!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-icon-action>span{
+  border-color:#17231b!important;
+  background:#c5221f!important;
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger{
+  border:1px solid #afc2b4!important;
+  background:#fff!important;
+  color:#173923!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger:hover,
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger[data-state="open"]{
+  border-color:#fff!important;
+  background:#dceadf!important;
+  color:#102b1b!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger>span:first-child{
+  background:#234c32!important;
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger b{
+  color:#173923!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger small{
+  color:#56685d!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger>svg{
+  color:#365b43!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-create-button{
+  border:1px solid #e7d5ad!important;
+  background:#fff4d9!important;
+  color:#51390b!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-create-button:hover,
+.tf-admin-v499.tf-admin-v499 .v16-create-button[data-state="open"]{
+  border-color:#fff!important;
+  background:#fff!important;
+  color:#302006!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-view-store{
+  border:1px solid #afc2b4!important;
+  background:transparent!important;
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-view-store:hover{
+  border-color:#fff!important;
+  background:#fff!important;
+  color:#173923!important;
+}
+
+/* Product bulk actions: each action has a distinct, readable state. */
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar{
+  border:1px solid #42614d!important;
+  background:#15291d!important;
+  color:#fff!important;
+  box-shadow:0 20px 55px rgba(10,28,17,.3)!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:first-child b{
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:first-child>button{
+  border:1px solid rgba(255,255,255,.62)!important;
+  background:transparent!important;
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:first-child>button:hover{
+  border-color:#fff!important;
+  background:#fff!important;
+  color:#173923!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button{
+  border:1px solid #9fb6a5!important;
+  background:#e7f3ea!important;
+  color:#173923!important;
+  box-shadow:none!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button:hover{
+  border-color:#c9dfcf!important;
+  background:#cfe7d5!important;
+  color:#102b1b!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button:nth-child(2){
+  border-color:#d2b779!important;
+  background:#fff0c9!important;
+  color:#634507!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button:nth-child(2):hover{
+  border-color:#e0c986!important;
+  background:#ffe2a0!important;
+  color:#493100!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button:nth-child(3){
+  border-color:#aeb8c1!important;
+  background:#e9edf0!important;
+  color:#29343d!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button:nth-child(3):hover{
+  border-color:#c7d0d6!important;
+  background:#d4dce1!important;
+  color:#172129!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button.danger{
+  border-color:#d85c55!important;
+  background:#b42318!important;
+  color:#fff!important;
+}
+.tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar>div:last-child>button.danger:hover{
+  border-color:#ff8b84!important;
+  background:#8f1c13!important;
+  color:#fff!important;
+}
+
+@media(max-width:760px){
+  .tf-admin-v499.tf-admin-v499 .v16-admin-content .tf4917-products-page .v9-bulk-bar button{white-space:nowrap}
+}

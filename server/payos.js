@@ -31,7 +31,7 @@ export function safeOrderId(value){
 }
 
 export function validateOrderForPayment(order){
-  if(!order||order.paymentMethod!=='online')throw new Error('Order is not eligible for PayOS');
+  if(!order||!['payos','online'].includes(order.paymentMethod))throw new Error('Order is not eligible for PayOS');
   if(order.paymentStatus==='paid')throw new Error('Order has already been paid');
   if(order.status==='cancelled')throw new Error('Order has been cancelled');
   const amount=Number(order.total);
@@ -133,7 +133,7 @@ export async function syncPaymentState({orderId,status,paymentLinkId,reference,o
     paymentReference:reference||paymentLinkId||found.order.paymentReference||'',
     paymentOrderCode:Number(orderCode)||found.order.paymentOrderCode||0,
     updatedAt:new Date().toISOString(),
-    ...(paymentStatus==='paid'?{status:found.order.status==='open'?'confirmed':found.order.status,paidAt:paidAt||new Date().toISOString()}:{}),
+    ...(paymentStatus==='paid'?{status:found.order.status==='open'?'confirmed':found.order.status,paidAt:paidAt||new Date().toISOString(),paymentConfirmationSource:'payos_webhook'}:{}),
   };
   await firebasePatch(`timeforge/orders/${found.key}`,patch);
   return{persisted:true,order:{...found.order,...patch}};
