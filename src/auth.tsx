@@ -49,13 +49,15 @@ export const embeddedThemePreview=()=>{
   }catch{return false}
 };
 const validRole=(role:unknown):role is Role=>['owner','admin','manager','staff','content'].includes(String(role));
-type FirebaseAuthUser={uid:string;email?:string|null;displayName?:string|null;photoURL?:string|null;getIdTokenResult?:()=>Promise<{signInProvider?:string;claims?:Record<string,unknown>}>};
+type FirebaseAuthUser={uid:string;email?:string|null;displayName?:string|null;photoURL?:string|null;getIdTokenResult?:(forceRefresh?:boolean)=>Promise<unknown>};
 const firebaseSignInProvider=async(firebaseUser:FirebaseAuthUser,providerHint='')=>{
   if(providerHint)return providerHint;
   try{
     const token=await firebaseUser.getIdTokenResult?.();
-    const firebaseClaim=token?.claims?.firebase as{sign_in_provider?:unknown}|undefined;
-    return String(token?.signInProvider||firebaseClaim?.sign_in_provider||'');
+    if(!token||typeof token!=='object')return'';
+    const tokenRecord=token as{signInProvider?:unknown;claims?:Record<string,unknown>};
+    const firebaseClaim=tokenRecord.claims?.firebase as{sign_in_provider?:unknown}|undefined;
+    return String(tokenRecord.signInProvider||firebaseClaim?.sign_in_provider||'');
   }catch{return''}
 };
 const googleDeniedMessage='Admin chưa cho phép email này đăng nhập bằng Google. Hãy dùng email/mật khẩu hoặc liên hệ chủ cửa hàng.';

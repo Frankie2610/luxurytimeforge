@@ -53,6 +53,7 @@ import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreIcon, resolveStoreLogo, resolveStoreName} from './store-profile';
+import {useWishlist} from './wishlist';
 import {
   BankCardMark,
   FacebookMark,
@@ -71,7 +72,6 @@ import {
   type ProductFilterKey,
   type ProductFilterOption,
 } from './product-filter-data';
-import './legacy.css';
 import './v4913-storefront-compat.css';
 import './v4912-storefront.css';
 import './v4918-flat-product-cards.css';
@@ -93,6 +93,7 @@ import './v513-storefront-enhancements.css';
 import './v521-ui-polish.css';
 import './v522-ui-refinement.css';
 import './v523-product-admin-fix.css';
+import './v53-storefront-polish.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -127,6 +128,7 @@ function LuxuryLogo() {
 
 function LuxuryHeader({openCart}: {openCart: () => void}) {
   const {collections, cart, theme, products} = useCommerce();
+  const {ids: wishlistIds} = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -147,36 +149,6 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
     setSearchOpen(false);
     setMobileOpen(false);
   };
-  useLayoutEffect(() => {
-    const desktopQuery = window.matchMedia('(min-width: 821px)');
-    const enforceDesktopHeaderType = () => {
-      const desktop = desktopQuery.matches;
-      document.querySelectorAll<HTMLElement>([
-        '#tf-storefront-announcement',
-        '#tf-storefront-announcement .lux-announcement-copy',
-        '#tf-storefront-header .lux-main-nav > a',
-        '#tf-storefront-header .lux-search-button > span',
-        '#tf-storefront-brand-rail .tf-brand-rail-heading-v39 > small',
-        '#tf-storefront-brand-rail .tf-brand-rail-heading-v39 > span',
-        '#tf-storefront-brand-rail .tf-brand-rail-nav-v39 > a',
-        '#tf-storefront-brand-rail .tf-brand-rail-nav-v39 > a > span',
-      ].join(',')).forEach((element) => {
-        if (desktop) element.style.setProperty('font-size', '13px', 'important');
-        else element.style.removeProperty('font-size');
-      });
-    };
-    enforceDesktopHeaderType();
-    desktopQuery.addEventListener('change', enforceDesktopHeaderType);
-    return () => desktopQuery.removeEventListener('change', enforceDesktopHeaderType);
-  }, [
-    activeCollections.length,
-    activeVendors.length,
-    theme.settings.announcement,
-    theme.settings.logoImage,
-    theme.settings.logoText,
-    theme.settings.showAnnouncement,
-  ]);
-
   return (
     <>
       {theme.settings.showAnnouncement && (
@@ -207,6 +179,10 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
               <Search />
               <span>Tìm kiếm</span>
             </button>
+            <Link className="lux-icon-button tf53-wishlist-link" to="/wishlist" aria-label={`Danh sách yêu thích, ${wishlistIds.length} sản phẩm`}>
+              <Heart fill={wishlistIds.length ? 'currentColor' : 'none'} />
+              {wishlistIds.length > 0 && <span>{wishlistIds.length}</span>}
+            </Link>
             <Link className="lux-icon-button lux-account-link" to="/account" aria-label="Tài khoản khách hàng">
               <UserRound />
             </Link>
@@ -269,6 +245,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
               <nav>
                 <Link to="/" onClick={() => setMobileOpen(false)}>Trang chủ</Link>
                 <Link to="/collections" onClick={() => setMobileOpen(false)}>Tất cả đồng hồ</Link>
+                <Link to="/wishlist" onClick={() => setMobileOpen(false)}>Yêu thích {wishlistIds.length > 0 ? `(${wishlistIds.length})` : ''}</Link>
                 {activeCollections.map((collection) => (
                   <Link key={collection.id} to={`/collections/${collection.handle}`} onClick={() => setMobileOpen(false)}>
                     {collection.title}
@@ -521,7 +498,8 @@ export function StoreLayoutV10() {
 
 export function LuxuryProductCard({product, priority = false}: {product: Product; priority?: boolean}) {
   const {addToCart, productGroups, products} = useCommerce();
-  const [wished, setWished] = useState(false);
+  const {has, toggle} = useWishlist();
+  const wished = has(product.id);
   const [secondaryRequested, setSecondaryRequested] = useState(false);
   const sale = discount(product.price, product.compareAtPrice);
   const primary = productImage(product);
@@ -539,7 +517,7 @@ export function LuxuryProductCard({product, priority = false}: {product: Product
           {sale > 0 && <span>–{sale}%</span>}
           {product.inventory <= 3 && product.inventory > 0 && <span className="low">Còn {product.inventory}</span>}
         </div>
-        <button className={`tf-product-wish-v4918 ${wished ? 'is-active' : ''}`} onClick={() => setWished((value) => !value)} aria-label="Yêu thích">
+        <button type="button" className={`tf-product-wish-v4918 ${wished ? 'is-active' : ''}`} onClick={() => {toggle(product.id); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}>
           <Heart fill={wished ? 'currentColor' : 'none'} />
         </button>
         <button className="tf-product-quick-add-v4918" onClick={() => {addToCart(product.id, product.variants[0]?.id || '', 1); trackCommerceEvent('add_to_cart',{productId:product.id,value:product.price}); toast.success('Đã thêm sản phẩm vào giỏ hàng');}} disabled={product.inventory <= 0}>
@@ -1243,7 +1221,7 @@ export function ProductPageV10() {
   const [zoom, setZoom] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [variantId, setVariantId] = useState(product?.variants[0]?.id || '');
-  const [wished, setWished] = useState(false);
+  const {has, toggle} = useWishlist();
 
   useEffect(() => {
     setImageIndex(0);
@@ -1256,6 +1234,7 @@ export function ProductPageV10() {
   if (!product && isLoading) return <div className="route-loading tf-product-route-loading" aria-label="Đang tải đầy đủ dữ liệu sản phẩm" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><i/><b>Đang chuẩn bị sản phẩm</b></div></div>;
   if (!product) return <Navigate to="/404" replace />;
   if (product.status !== 'active' || !product.published) return <Navigate to="/404" replace />;
+  const wished = has(product.id);
 
   const images = product.images.length ? product.images : ['https://placehold.co/1200x1200/f0eee8/25231f?text=TimeForge'];
   const variant = product.variants.find((item) => item.id === variantId) || product.variants[0];
@@ -1336,7 +1315,7 @@ export function ProductPageV10() {
               {infoBlock?.settings.showStock !== false && <div className={`tf-pdp491-stock ${inventory > 0 ? 'is-available' : 'is-sold-out'}`}><span><i />{inventory > 0 ? `Chỉ còn ${inventory} sản phẩm` : 'Tạm hết hàng'}</span></div>}
               {(quantityBlock || Boolean(buyBlock?.settings.showWishlist)) && <div className="tf-pdp491-controls">
                 {quantityBlock && <div className="tf-pdp491-quantity" {...themeBlockProps(quantityBlock)}><span>Số lượng</span><div><button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={inventory <= 0} aria-label="Giảm số lượng"><Minus /></button><strong>{inventory > 0 ? quantity : 0}</strong><button onClick={() => setQuantity(Math.min(Math.max(inventory, 1), quantity + 1))} disabled={inventory <= 0 || quantity >= inventory} aria-label="Tăng số lượng"><Plus /></button></div></div>}
-                {Boolean(buyBlock?.settings.showWishlist) && <button className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => setWished((value) => !value)} aria-label="Thêm vào danh sách yêu thích"><Heart fill={wished ? 'currentColor' : 'none'} /></button>}
+                {Boolean(buyBlock?.settings.showWishlist) && <button type="button" className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => {toggle(product.id); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}><Heart fill={wished ? 'currentColor' : 'none'} /></button>}
               </div>}
             </div>
 

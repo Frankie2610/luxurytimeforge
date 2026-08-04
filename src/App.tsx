@@ -8,6 +8,7 @@ const Home=lazy(()=>import('./storefront-v10').then(m=>({default:m.HomeV10})));
 const CollectionPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.CollectionPageV10})));
 const ProductPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.ProductPageV10})));
 const SearchPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.SearchPageV10})));
+const WishlistPageV53=lazy(()=>import('./wishlist-page-v53').then(m=>({default:m.WishlistPageV53})));
 const ContentPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.ContentPageV10})));
 const NotFound=lazy(()=>import('./storefront-v10').then(m=>({default:m.NotFoundV10})));
 const CartPageV11=lazy(()=>import('./checkout-v11').then(m=>({default:m.CartPageV11})));
@@ -57,7 +58,7 @@ function RouteLoading(){const adminRoute=typeof window!=='undefined'&&window.loc
 
 export function App(){return <Suspense fallback={<RouteLoading/>}><Routes>
  <Route element={<StoreLayout/>}>
-  <Route path="/" element={<Home/>}/><Route path="/collections" element={<CollectionPage/>}/><Route path="/collections/:handle" element={<CollectionPage/>}/><Route path="/products/:handle" element={<ProductPage/>}/><Route path="/search" element={<SearchPage/>}/><Route path="/cart" element={<CartPageV11/>}/><Route path="/checkout" element={<CheckoutPageV11/>}/><Route path="/payment/payos/return" element={<PayOSReturnPageV4927/>}/><Route path="/order-confirmation/:id" element={<OrderConfirmationV11/>}/><Route path="/blogs" element={<BlogIndexV18/>}/><Route path="/blogs/:handle" element={<BlogPostPageV18/>}/><Route path="/pages/:slug" element={<ContentPage/>}/><Route path="/404" element={<NotFound/>}/>
+  <Route path="/" element={<Home/>}/><Route path="/collections" element={<CollectionPage/>}/><Route path="/collections/:handle" element={<CollectionPage/>}/><Route path="/products/:handle" element={<ProductPage/>}/><Route path="/search" element={<SearchPage/>}/><Route path="/wishlist" element={<WishlistPageV53/>}/><Route path="/cart" element={<CartPageV11/>}/><Route path="/checkout" element={<CheckoutPageV11/>}/><Route path="/payment/payos/return" element={<PayOSReturnPageV4927/>}/><Route path="/order-confirmation/:id" element={<OrderConfirmationV11/>}/><Route path="/blogs" element={<BlogIndexV18/>}/><Route path="/blogs/:handle" element={<BlogPostPageV18/>}/><Route path="/pages/:slug" element={<ContentPage/>}/><Route path="/404" element={<NotFound/>}/>
  </Route>
  <Route path="/account/login" element={<CustomerLoginV12/>}/><Route path="/account" element={<CustomerAccountV12/>}/><Route path="/account/orders/:id" element={<CustomerOrderV12/>}/><Route path="/account/orders/:id/return" element={<CustomerReturnV13/>}/><Route path="/track-order" element={<TrackOrderV12/>}/>
  <Route path="/admin/orders/:id/invoice" element={<ProtectedAdmin><InvoiceV12/></ProtectedAdmin>}/><Route path="/admin/orders/:id/shipping-label" element={<ProtectedAdmin><ShippingLabelV12/></ProtectedAdmin>}/><Route path="/admin/draft-orders/:id/invoice" element={<ProtectedAdmin><DraftInvoiceV12/></ProtectedAdmin>}/>

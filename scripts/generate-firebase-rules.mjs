@@ -52,6 +52,7 @@ const condition=roles=>`auth != null && (${envCondition(roles)} || (${memberActi
 const replacements={
   '__ACTIVE_ADMIN_CONDITION__':condition(['owner','admin','manager','staff','content']),
   '__OWNER_CONDITION__':`auth != null && auth.token.email != null && auth.token.email == '${escapeRule(ownerEmail)}'`,
+  '__TEAM_MANAGE_CONDITION__':condition(['owner','admin']),
   '__PRODUCTS_CONDITION__':condition(['owner','admin','manager','staff','content']),
   '__PRODUCTS_MANAGE_CONDITION__':condition(['owner','admin','manager']),
   '__ORDERS_CONDITION__':condition(['owner','admin','manager','staff']),

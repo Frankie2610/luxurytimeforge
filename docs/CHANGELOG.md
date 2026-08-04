@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.53.0 — Storefront, Admin and performance polish
+
+- Introduced a warmer deep-forest/ivory visual system with clearer type scale, spacing, cards, navigation, forms and focus states across customer and Admin screens.
+- Added a persistent wishlist shared by the header, product cards, product detail and the new responsive `/wishlist` page.
+- Reworked the Admin overview into an Operations Pulse with seven-day revenue context, priority alerts and practical quick actions.
+- Added final responsive layers for desktop, tablet and mobile, including touch-friendly controls, 16px mobile form fields, adaptable product grids and scroll-safe Admin tables.
+- Removed the storefront's static dependency on the 45.61 KiB gzip legacy stylesheet and removed runtime DOM font-size mutation from the customer header.
+- Added offscreen rendering containment, reduced-motion handling and a production-manifest guard that prevents legacy CSS from returning to the storefront's static graph.
+- Added V0.53 regression checks while retaining all V0.52.1–V0.52.7 verification suites.
+
 ## 0.51.3 — Store identity and header correction
 
 - Added device-based shop logo upload in Admin with preview, validation and class-based responsive styling.

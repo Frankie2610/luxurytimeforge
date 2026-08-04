@@ -1,5 +1,5 @@
 import{useMemo,useState,type ReactNode}from'react';
-import{Activity as ActivityIcon,ArrowUpRight,BadgePercent,BarChart3,Boxes,CalendarDays,CheckCircle2,CircleDollarSign,Clock3,PackageCheck,PackageSearch,Plus,RotateCcw,Search,ShoppingBag,SlidersHorizontal,Trash2,Truck,Users,X}from'lucide-react';
+import{Activity as ActivityIcon,ArrowDownRight,ArrowUpRight,BadgePercent,BarChart3,Boxes,CalendarDays,CheckCircle2,CircleDollarSign,Clock3,FileText,ListChecks,PackageCheck,PackageSearch,Plus,RotateCcw,Search,ShoppingBag,SlidersHorizontal,Sparkles,Trash2,Truck,Users,X}from'lucide-react';
 import{Link}from'react-router-dom';
 import{useCommerce}from'./context';
 import type{Customer,Discount,FulfillmentStatus,Order,OrderStatus,PaymentStatus}from'./types';
@@ -14,7 +14,78 @@ const orderTone=(s:OrderStatus)=>s==='completed'?'success':s==='cancelled'?'dang
 const paymentTone=(s:PaymentStatus)=>s==='paid'?'success':s==='failed'?'danger':s==='refunded'?'neutral':'warning';
 const fmt=(s:string)=>new Date(s).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
-export function DashboardV3(){const{products,customers,orders,activities}=useCommerce();const valid=orders.filter(o=>o.status!=='cancelled'),revenue=valid.reduce((s,o)=>s+o.total,0),pending=orders.filter(o=>o.status==='open').length,low=products.filter(p=>p.inventory<=3).length;return <div><section className="welcome"><div><small>TIMEFORGE OPERATIONS</small><h2>Đơn hàng và vận hành đã hoạt động.</h2><p>Sprint 3 nối checkout với kho, khách hàng, mã giảm giá và dashboard phân tích.</p></div><Link to="/admin/orders">Xem đơn hàng<ArrowUpRight/></Link></section><section className="metrics"><Metric icon={<CircleDollarSign/>} label="Doanh thu" value={money(revenue)} note={`${valid.length} đơn hợp lệ`}/><Metric icon={<ShoppingBag/>} label="Đơn chờ xử lý" value={String(pending)} note={`${orders.length} đơn tổng cộng`}/><Metric icon={<Users/>} label="Khách hàng" value={String(customers.length)} note="Tự cập nhật từ checkout"/><Metric icon={<PackageSearch/>} label="Sắp hết hàng" value={String(low)} note="Tồn kho ≤ 3"/></section><section className="admin-two"><article className="card"><CardHead small="ORDERS" title="Đơn hàng mới" link="/admin/orders"/><div className="recent-orders">{orders.length?orders.slice(0,6).map(o=><Link to="/admin/orders" key={o.id}><div><b>{o.number}</b><span>{o.customerName} · {fmt(o.createdAt)}</span></div><strong>{money(o.total)}</strong><Badge tone={orderTone(o.status)}>{statusLabel[o.status]}</Badge></Link>):<EmptyInline text="Chưa có đơn hàng. Mở storefront và thử checkout."/>}</div></article><article className="card"><CardHead small="ACTIVITY" title="Hoạt động gần đây" link="/admin/activity"/><div className="activity-mini">{activities.slice(0,7).map(a=><div key={a.id}><span><ActivityIcon/></span><p><b>{a.action}</b><small>{a.detail} · {fmt(a.createdAt)}</small></p></div>)}</div></article></section></div>}
+export function DashboardV3(){
+ const{products,customers,orders,activities}=useCommerce();
+ const insight=useMemo(()=>{
+  const now=new Date();
+  const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const currentStart=todayStart-6*86400000;
+  const previousStart=todayStart-13*86400000;
+  const valid=orders.filter(order=>order.status!=='cancelled');
+  const inRange=(order:Order,start:number,end=Number.POSITIVE_INFINITY)=>{const time=new Date(order.createdAt).getTime();return Number.isFinite(time)&&time>=start&&time<end};
+  const currentOrders=valid.filter(order=>inRange(order,currentStart));
+  const previousOrders=valid.filter(order=>inRange(order,previousStart,currentStart));
+  const currentRevenue=currentOrders.reduce((sum,order)=>sum+order.total,0);
+  const previousRevenue=previousOrders.reduce((sum,order)=>sum+order.total,0);
+  const trend=previousRevenue>0?Math.round((currentRevenue-previousRevenue)/previousRevenue*100):currentRevenue>0?100:0;
+  const daily=Array.from({length:7},(_,index)=>{
+   const start=currentStart+index*86400000;
+   const end=start+86400000;
+   const value=valid.filter(order=>inRange(order,start,end)).reduce((sum,order)=>sum+order.total,0);
+   return{label:new Date(start).toLocaleDateString('vi-VN',{weekday:'short'}),value};
+  });
+  return{
+   dateLabel:now.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),
+   monthLabel:now.toLocaleDateString('vi-VN',{month:'long',year:'numeric'}),
+   monthRevenue:valid.filter(order=>inRange(order,monthStart)).reduce((sum,order)=>sum+order.total,0),
+   monthOrders:valid.filter(order=>inRange(order,monthStart)).length,
+   todayOrders:valid.filter(order=>inRange(order,todayStart)).length,
+   pendingOrders:orders.filter(order=>order.status==='open').length,
+   pendingPayment:orders.filter(order=>order.status!=='cancelled'&&order.paymentStatus==='pending').length,
+   lowStock:products.filter(product=>product.inventory>0&&product.inventory<=3).length,
+   outOfStock:products.filter(product=>product.inventory<=0).length,
+   draftProducts:products.filter(product=>product.status!=='active'||!product.published).length,
+   currentRevenue,trend,daily,
+  };
+ },[orders,products]);
+ const maxDaily=Math.max(1,...insight.daily.map(item=>item.value));
+ const priorityItems=[
+  {to:'/admin/orders',icon:<ShoppingBag/>,value:insight.pendingOrders,label:'Đơn đang mở',note:'Cần xác nhận hoặc xử lý'},
+  {to:'/admin/orders',icon:<CircleDollarSign/>,value:insight.pendingPayment,label:'Chờ thanh toán',note:'Kiểm tra trạng thái giao dịch'},
+  {to:'/admin/inventory',icon:<PackageSearch/>,value:insight.lowStock+insight.outOfStock,label:'Cảnh báo tồn kho',note:`${insight.outOfStock} sản phẩm đã hết`},
+  {to:'/admin/products',icon:<Boxes/>,value:insight.draftProducts,label:'Sản phẩm chưa bán',note:'Đang nháp hoặc chưa xuất bản'},
+ ];
+ return <div className="tf53-dashboard">
+  <section className="tf53-dashboard-hero">
+   <div className="tf53-dashboard-intro"><span><Sparkles/>OPERATIONS PULSE</span><h2>Tổng quan cửa hàng</h2><p>{insight.dateLabel}. Theo dõi doanh thu, đơn hàng và những việc cần xử lý trong một màn hình.</p></div>
+   <div className="tf53-dashboard-actions"><Link className="secondary" to="/admin/products/new"><Plus/>Thêm sản phẩm</Link><Link to="/admin/orders">Xem đơn hàng<ArrowUpRight/></Link></div>
+  </section>
+  <section className="tf53-dashboard-metrics" aria-label="Chỉ số vận hành">
+   <DashboardMetric icon={<CircleDollarSign/>} label={`Doanh thu ${insight.monthLabel}`} value={money(insight.monthRevenue)} note={`${insight.monthOrders} đơn hợp lệ`} trend={insight.trend}/>
+   <DashboardMetric icon={<ShoppingBag/>} label="Đơn hôm nay" value={String(insight.todayOrders)} note={`${insight.pendingOrders} đơn đang mở`}/>
+   <DashboardMetric icon={<Users/>} label="Khách hàng" value={String(customers.length)} note="Hồ sơ khách đã ghi nhận"/>
+   <DashboardMetric icon={<PackageSearch/>} label="Tồn kho cần chú ý" value={String(insight.lowStock+insight.outOfStock)} note={`${insight.outOfStock} hết hàng · ${insight.lowStock} sắp hết`} tone={insight.lowStock+insight.outOfStock>0?'warning':'success'}/>
+  </section>
+  <section className="tf53-dashboard-focus">
+   <article className="tf53-sales-pulse card">
+    <header><div><small>7 NGÀY GẦN NHẤT</small><h3>Nhịp doanh thu</h3></div><div className={insight.trend<0?'negative':'positive'}>{insight.trend<0?<ArrowDownRight/>:<ArrowUpRight/>}<b>{Math.abs(insight.trend)}%</b><span>so với 7 ngày trước</span></div></header>
+    <div className="tf53-pulse-total"><strong>{money(insight.currentRevenue)}</strong><span>Doanh thu đã ghi nhận</span></div>
+    <div className="tf53-pulse-chart" aria-label="Doanh thu 7 ngày">{insight.daily.map((item,index)=><div key={`${item.label}-${index}`}><span><i style={{height:`${Math.max(5,item.value/maxDaily*100)}%`}} title={money(item.value)}/></span><small>{item.label}</small></div>)}</div>
+   </article>
+   <article className="tf53-priority-center card">
+    <header><div><small>PRIORITY CENTER</small><h3>Việc cần ưu tiên</h3></div><ListChecks/></header>
+    <div>{priorityItems.map(item=><Link to={item.to} key={item.label} className={item.value>0?'has-work':''}><span>{item.icon}</span><div><b>{item.label}</b><small>{item.note}</small></div><strong>{item.value}</strong><ArrowUpRight/></Link>)}</div>
+   </article>
+  </section>
+  <section className="tf53-quick-actions card" aria-label="Thao tác nhanh">
+   <header><div><small>QUICK ACTIONS</small><h3>Thao tác nhanh</h3></div></header>
+   <div><Link to="/admin/products/new"><Plus/><span><b>Thêm sản phẩm</b><small>Tạo và xuất bản mặt hàng mới</small></span></Link><Link to="/admin/draft-orders/new"><FileText/><span><b>Tạo đơn nháp</b><small>Lập báo giá hoặc đơn thay khách</small></span></Link><Link to="/admin/discounts"><BadgePercent/><span><b>Tạo ưu đãi</b><small>Mã giảm giá và miễn phí vận chuyển</small></span></Link><Link to="/admin/analytics"><BarChart3/><span><b>Xem phân tích</b><small>Hiệu quả kinh doanh chi tiết</small></span></Link></div>
+  </section>
+  <section className="admin-two tf53-dashboard-lists"><article className="card"><CardHead small="ORDERS" title="Đơn hàng mới" link="/admin/orders"/><div className="recent-orders">{orders.length?orders.slice(0,6).map(o=><Link to={`/admin/orders/${o.id}`} key={o.id}><div><b>{o.number}</b><span>{o.customerName} · {fmt(o.createdAt)}</span></div><strong>{money(o.total)}</strong><Badge tone={orderTone(o.status)}>{statusLabel[o.status]}</Badge></Link>):<EmptyInline text="Chưa có đơn hàng mới."/>}</div></article><article className="card"><CardHead small="ACTIVITY" title="Hoạt động gần đây" link="/admin/activity"/><div className="activity-mini">{activities.slice(0,7).map(a=><div key={a.id}><span><ActivityIcon/></span><p><b>{a.action}</b><small>{a.detail} · {fmt(a.createdAt)}</small></p></div>)}{!activities.length&&<EmptyInline text="Chưa có hoạt động được ghi nhận."/>}</div></article></section>
+ </div>
+}
+function DashboardMetric({icon,label,value,note,trend,tone='neutral'}:{icon:ReactNode;label:string;value:string;note:string;trend?:number;tone?:'neutral'|'warning'|'success'}){return <article className={`tf53-dashboard-metric ${tone}`}><span>{icon}</span><div><small>{label}</small><strong>{value}</strong><p>{note}</p></div>{trend!==undefined&&<em className={trend<0?'negative':'positive'}>{trend<0?<ArrowDownRight/>:<ArrowUpRight/>}{Math.abs(trend)}%</em>}</article>}
 function Metric({icon,label,value,note}:{icon:ReactNode;label:string;value:string;note:string}){return <article><span>{icon}</span><div><small>{label}</small><b>{value}</b><p>{note}</p></div></article>}
 function CardHead({small,title,link}:{small:string;title:string;link?:string}){return <header className="card-head"><div><small>{small}</small><h3>{title}</h3></div>{link&&<Link to={link}>Xem tất cả</Link>}</header>}
 function EmptyInline({text}:{text:string}){return <div className="empty-inline"><Clock3/><p>{text}</p></div>}

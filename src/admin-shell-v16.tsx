@@ -21,6 +21,7 @@ import './v512-admin-contrast.css';
 import './v521-ui-polish.css';
 import './v522-ui-refinement.css';
 import './v523-product-admin-fix.css';
+import './v53-admin-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
