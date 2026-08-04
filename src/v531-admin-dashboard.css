@@ -44,7 +44,8 @@
 .tf53-dashboard-metric>div>small{display:block;overflow:hidden;color:var(--tf53-muted);font-size:10px;font-weight:700;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
 .tf53-dashboard-metric>div>strong{display:block;overflow:hidden;margin-top:6px;color:var(--tf53-text);font-size:clamp(21px,2vw,28px);line-height:1.08;letter-spacing:-.03em;text-overflow:ellipsis;white-space:nowrap}
 .tf53-dashboard-metric>div>p{margin:7px 0 0;color:#79837b;font-size:10px;line-height:1.4}
-.tf53-dashboard-metric>em{position:absolute;top:13px;right:13px;display:inline-flex;align-items:center;gap:3px;color:#2f7648;font-size:10px;font-style:normal;font-weight:800}
+.tf53-dashboard-metric.has-trend>div>p{padding-right:42px}
+.tf53-dashboard-metric>em{position:absolute;right:13px;bottom:15px;display:inline-flex;align-items:center;gap:3px;color:#2f7648;font-size:10px;font-style:normal;font-weight:800}
 .tf53-dashboard-metric>em.negative{color:#ad3d36}
 .tf53-dashboard-metric>em svg{width:14px}
 

@@ -1,0 +1,24 @@
+/* V0.54.0 — scoped storefront additions. Existing storefront layout remains authoritative. */
+.tf-storefront-v4912 .tf54-recently-viewed{
+  content-visibility:auto;
+  contain-intrinsic-size:760px;
+  border-top:1px solid color-mix(in srgb,var(--lux-text,#171513) 10%,transparent);
+}
+.tf-storefront-v4912 .tf54-recently-viewed>header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:clamp(25px,3.5vw,42px)}
+.tf-storefront-v4912 .tf54-recently-viewed>header>div{max-width:720px}
+.tf-storefront-v4912 .tf54-recently-viewed>header small{color:var(--lux-accent,#7a3f25);font-size:10px;font-weight:850;letter-spacing:.18em}
+.tf-storefront-v4912 .tf54-recently-viewed>header h2{margin:9px 0 8px;color:var(--lux-text,#171513);font-family:var(--lux-heading-font),Georgia,serif;font-size:clamp(31px,4vw,52px);line-height:1.02;letter-spacing:-.04em}
+.tf-storefront-v4912 .tf54-recently-viewed>header p{max-width:620px;margin:0;color:var(--lux-muted,#746f69);font-size:14px;line-height:1.65}
+.tf-storefront-v4912 .tf54-recently-viewed>header button{min-height:41px;display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;padding:0 14px;border:1px solid color-mix(in srgb,var(--lux-text,#171513) 17%,transparent);border-radius:999px;background:transparent;color:var(--lux-text,#171513);font:700 11px/1 inherit;cursor:pointer}
+.tf-storefront-v4912 .tf54-recently-viewed>header button svg{width:15px}
+
+@media(hover:hover){
+  .tf-storefront-v4912 .tf54-recently-viewed>header button:hover{border-color:var(--lux-accent,#7a3f25);background:color-mix(in srgb,var(--lux-accent,#7a3f25) 7%,transparent);color:var(--lux-accent,#7a3f25)}
+}
+@media(max-width:700px){
+  .tf-storefront-v4912 .tf54-recently-viewed{contain-intrinsic-size:980px}
+  .tf-storefront-v4912 .tf54-recently-viewed>header{align-items:flex-start;flex-direction:column;gap:16px;margin-bottom:24px}
+  .tf-storefront-v4912 .tf54-recently-viewed>header h2{font-size:34px}
+  .tf-storefront-v4912 .tf54-recently-viewed>header button{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.tf-storefront-v4912 .tf54-recently-viewed *{scroll-behavior:auto!important;transition:none!important}}

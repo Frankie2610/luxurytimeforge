@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.55.0 — Admin forms, Wishlist and interaction performance
+
+- Rebuilt the Admin order search/filter toolbar with collision-safe grid tracks, consistent control sizing and focused tablet/mobile layouts.
+- Extended the same search-input treatment to products, customers, inventory, discounts, returns and draft orders without adding broad global overrides.
+- Added debounced URL-backed order search, `/` focus shortcut, Escape-to-clear, filtered result counts and CSV export.
+- Added a second normalization boundary inside order detail so malformed legacy workflow records cannot trigger `undefined.filter` during direct navigation.
+- Rebuilt Wishlist cards around centered, square, non-rounded `object-fit: contain` media with a compact mobile list layout and smaller responsive typography.
+- Added persistent Wishlist sorting, “add all available” and clear-list actions.
+- Memoized Wishlist/product/search/segment lookups, deferred Wishlist persistence, prefetched high-intent routes and stopped query-string changes from remounting the storefront route view.
+- Reduced mobile blur, hover transforms and unnecessary promoted image layers; added reduced-motion and paint-containment safeguards.
+- Added V0.55 regression checks covering layout boundaries, useful actions, legacy-data safety and performance guards.
+
+## 0.54.0 — Navigation reliability and scoped polish
+
+- Fixed the Admin order-detail crash caused by legacy workflow records missing `events`, `fulfillments`, `refunds` or `returns` arrays.
+- Normalized array- and Firebase-map-shaped data for orders, workflows, returns, draft orders, customer segments, product views and blog posts.
+- Replaced order-row navigation buttons with real links and persisted search, status and payment filters in the Admin URL.
+- Added direct filtered links from the Admin Priority Center and searchable order results in the command palette.
+- Added an Admin route recovery boundary so one malformed resource cannot blank the entire management interface.
+- Added a device-local “Sản phẩm bạn vừa xem” section with a clear-history action on product pages.
+- Deferred large order/product searches, lazy-decoded Admin thumbnails and excluded generated preview directories from Vite file watching.
+- Kept all new visual rules scoped to the Admin recovery/orders/dashboard surfaces and the new recently-viewed storefront section.
+- Added V0.54 runtime fixtures and regression checks for legacy workflow data and internal navigation.
+
 ## 0.53.1 — Layout stability correction
 
 - Removed the two broad V0.53 visual override stylesheets that were competing with established storefront and Admin breakpoints.

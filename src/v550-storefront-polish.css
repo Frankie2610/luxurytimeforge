@@ -1,0 +1,29 @@
+/* V0.55 — mobile type scale and paint containment for the customer storefront. */
+.tf-storefront-v4912 :is(.tf-product-media-v4918,.lux-product-media,.tf-pdp491-media,.tf4922-journal-cover,.tf4922-journal-feature-media){contain:layout paint}
+
+@media(max-width:640px){
+  .tf-storefront-v4912 .lux-hero-copy h1{font-size:clamp(28px,8.7vw,36px)!important;line-height:1.02!important;letter-spacing:-.042em!important}
+  .tf-storefront-v4912 .lux-hero-copy>p{font-size:12px!important;line-height:1.58!important}
+  .tf-storefront-v4912 :is(.lux-section-heading h2,.tf-section-heading-v39 h2,.tf-section-title-v39 h2,.tf-section-title-v4912 h2){font-size:clamp(22px,6.8vw,29px)!important;line-height:1.06!important;letter-spacing:-.035em!important}
+  .tf-storefront-v4912 :is(.tf-section-description-v39,.tf-section-description-v4912){font-size:10.5px!important;line-height:1.52!important}
+  .tf-storefront-v4912 .v27-search-hero h1{font-size:clamp(25px,7.6vw,32px)!important;line-height:1.06!important}
+  .tf-storefront-v4912 .v27-search-hero p{font-size:11px!important;line-height:1.55!important}
+  .tf-storefront-v4912 .v27-search-results .tf-section-title-v39 h2{font-size:clamp(22px,6.7vw,29px)!important}
+  .tf-storefront-v4912 :is(.v18-blog-hero h1,.tf-policy-hero-v496 h1,.tf-not-found-v496 h1){font-size:clamp(28px,8.6vw,36px)!important;line-height:1.03!important}
+  .tf-storefront-v4912 :is(.v26-rich-text h2,.v26-newsletter h2,.v26-video-section h2,.tf-editorial-content-v39>h2){font-size:clamp(26px,8vw,34px)!important;line-height:1.06!important}
+  .tf-storefront-v4912 :is(.v26-rich-text p,.v26-newsletter p,.v26-video-section p,.tf-editorial-content-v39>p){font-size:12px!important;line-height:1.6!important}
+  .tf-storefront-v4912 .tf54-recently-viewed>header h2{font-size:clamp(24px,7.3vw,31px)!important}
+  .tf-storefront-v4912 .tf54-recently-viewed>header p{font-size:11px!important;line-height:1.55!important}
+  .tf-storefront-v4912 .v29-search-field input{font-size:16px!important}
+  .tf-storefront-v4912 :is(.lux-header,.tf-pdp-mobile-bar-v39,.lux-search-overlay-v29){backdrop-filter:none!important}
+  .tf-storefront-v4912 :is(.tf-product-card-v4918,.lux-product-card){transform:none!important}
+  .tf-storefront-v4912 :is(.tf-product-card-v4918,.lux-product-card):hover{transform:none!important}
+  .tf-storefront-v4912 :is(.tf-product-media-v4918,.lux-product-media) img{transition-duration:.18s!important}
+}
+
+@media(hover:none){
+  .tf-storefront-v4912 :is(.tf-product-card-v4918,.lux-product-card):hover{transform:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .tf-storefront-v4912 :is(.tf-product-card-v4918,.lux-product-card,.tf-product-media-v4918 img,.lux-product-media img){transition:none!important;animation:none!important;transform:none!important}
+}

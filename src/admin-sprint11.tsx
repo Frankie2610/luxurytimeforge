@@ -1,11 +1,11 @@
 import {AnimatePresence, motion} from 'framer-motion';
 import {
-  ArrowLeft, BadgeDollarSign, Box, Check, CheckCircle2, ChevronRight, CircleDollarSign,
+  ArrowLeft, BadgeDollarSign, Box, Check, CheckCircle2, ChevronRight, CircleDollarSign, Download,
   Clock3, Copy, Filter, Mail, MoreHorizontal, PackageCheck, Plus, RefreshCcw, RotateCcw,
   ExternalLink, Landmark, QrCode, Search, Send, ShoppingBag, Tag, Truck, Undo2, UserRoundSearch, Users, X,
 } from 'lucide-react';
-import {useEffect, useMemo, useState, type ReactNode} from 'react';
-import {Link, Navigate, useNavigate, useParams} from 'react-router-dom';
+import {useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
+import {Link, Navigate, useParams, useSearchParams} from 'react-router-dom';
 import {useCommerce} from './context';
 import {SmartImage} from './image-utils';
 import {firebaseClient} from './firebase';
@@ -16,6 +16,9 @@ import type {Customer, Order, OrderLine, PaymentStatus, Product, Section} from '
 import {money, uid} from './utils';
 import {AdminResourceFrame,AdminResourceIntro,AdminResourceSurface} from './admin-ui-v25';
 import {buildTrackingUrl,readIntegrationSettings} from './integrations';
+import {asList, asStringList} from './data-normalize';
+import {emptyWorkflow, normalizeWorkflowStore, type FulfillmentRecord, type RefundRecord, type ReturnRecord, type WorkflowEvent, type WorkflowStore} from './workflow-normalize';
+import {download} from './csv';
 import './v515-order-payment.css';
 import './v521-ui-polish.css';
 import './v525-admin-orders.css';
@@ -33,45 +36,91 @@ function Modal({title, eyebrow, close, children, footer, wide = false}: {title: 
   return <motion.div className="s11-modal-shell" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} onMouseDown={close}><motion.section className={`s11-modal ${wide ? 'wide' : ''}`} initial={{y: 18, scale: .985}} animate={{y: 0, scale: 1}} onMouseDown={(event) => event.stopPropagation()}><header><div><small>{eyebrow}</small><h2>{title}</h2></div><button onClick={close}><X /></button></header><div className="s11-modal-body">{children}</div>{footer && <footer>{footer}</footer>}</motion.section></motion.div>;
 }
 
-interface WorkflowEvent {id: string; orderId: string; type: 'note' | 'payment' | 'fulfillment' | 'return' | 'refund' | 'status'; title: string; detail: string; createdAt: string; actor: string}
-interface FulfillmentRecord {id: string; orderId: string; lineIds: string[]; carrier: string; trackingNumber: string; trackingUrl: string; status: 'processing' | 'shipped' | 'delivered'; createdAt: string}
 interface RefundLine {lineId: string; quantity: number; amount: number}
-interface RefundRecord {id: string; orderId: string; lines: RefundLine[]; amount: number; reason: string; restocked: boolean; createdAt: string}
-interface ReturnRecord {id: string; orderId: string; lineIds: string[]; reason: string; status: 'requested' | 'approved' | 'received' | 'closed'; createdAt: string}
-interface WorkflowStore {events: WorkflowEvent[]; fulfillments: FulfillmentRecord[]; refunds: RefundRecord[]; returns: ReturnRecord[]}
 const workflowKey = 'tf.s11.order-workflows';
-const loadWorkflow = (): WorkflowStore => {try {const raw = localStorage.getItem(workflowKey); return raw ? JSON.parse(raw) : {events: [], fulfillments: [], refunds: [], returns: []};} catch {return {events: [], fulfillments: [], refunds: [], returns: []};}};
+const loadWorkflow = (): WorkflowStore => {try {const raw = localStorage.getItem(workflowKey); return normalizeWorkflowStore(raw ? JSON.parse(raw) : null);} catch {return emptyWorkflow();}};
 function useWorkflowStore() {
   const [store, setStore] = useState<WorkflowStore>(loadWorkflow);
-  useEffect(() => {if (!firebaseClient.enabled) return; void firebaseClient.read<WorkflowStore>('timeforge/orderWorkflows').then((remote) => {if (remote) {setStore(remote); localStorage.setItem(workflowKey, JSON.stringify(remote));}});}, []);
-  const commit = (next: WorkflowStore) => {setStore(next); localStorage.setItem(workflowKey, JSON.stringify(next)); if (firebaseClient.enabled) void firebaseClient.write('timeforge/orderWorkflows', next);};
+  useEffect(() => {if (!firebaseClient.enabled) return; void firebaseClient.read<Partial<WorkflowStore>>('timeforge/orderWorkflows').then((remote) => {if (remote) {const normalized=normalizeWorkflowStore(remote);setStore(normalized);localStorage.setItem(workflowKey, JSON.stringify(normalized));}});}, []);
+  const commit = (next: WorkflowStore) => {const normalized=normalizeWorkflowStore(next);setStore(normalized); localStorage.setItem(workflowKey, JSON.stringify(normalized)); if (firebaseClient.enabled) void firebaseClient.write('timeforge/orderWorkflows', normalized);};
   const addEvent = (event: Omit<WorkflowEvent, 'id' | 'createdAt' | 'actor'>) => commit({...store, events: [{...event, id: uid('evt'), createdAt: new Date().toISOString(), actor: 'Admin'}, ...store.events]});
   return {store, commit, addEvent};
 }
 
 export function OrdersV11() {
   const {orders, updateOrder, cancelOrder} = useCommerce();
-  const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-  const [view, setView] = useState<'all' | Order['status']>('all');
-  const [payment, setPayment] = useState<'all' | PaymentStatus>('all');
+  const [params, setParams] = useSearchParams();
+  const urlQuery = params.get('q') || '';
+  const [query, setQuery] = useState(urlQuery);
+  const deferredQuery = useDeferredValue(query);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const requestedStatus = params.get('status');
+  const requestedPayment = params.get('payment');
+  const view: 'all' | Order['status'] = ['open','confirmed','completed','cancelled'].includes(requestedStatus || '') ? requestedStatus as Order['status'] : 'all';
+  const payment: 'all' | PaymentStatus = ['pending','paid','refunded','failed'].includes(requestedPayment || '') ? requestedPayment as PaymentStatus : 'all';
   const [selected, setSelected] = useState<string[]>([]);
+  const setFilter = (key: 'q' | 'status' | 'payment', value: string) => setParams((current) => {
+    const next = new URLSearchParams(current);
+    if (!value || value === 'all') next.delete(key); else next.set(key, value);
+    return next;
+  }, {replace: true});
+  useEffect(() => {setQuery(urlQuery);}, [urlQuery]);
+  useEffect(() => {
+    if (query === urlQuery) return;
+    const timer = window.setTimeout(() => setParams((current) => {
+      const next = new URLSearchParams(current);
+      if (query.trim()) next.set('q', query.trim()); else next.delete('q');
+      return next;
+    }, {replace: true}), 180);
+    return () => window.clearTimeout(timer);
+  }, [query, setParams, urlQuery]);
+  useEffect(() => {
+    const focusSearch = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isEditing = target?.matches('input, textarea, select, [contenteditable="true"]');
+      if (event.key === '/' && !isEditing) {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (event.key === 'Escape' && document.activeElement === searchRef.current && query) setQuery('');
+    };
+    window.addEventListener('keydown', focusSearch);
+    return () => window.removeEventListener('keydown', focusSearch);
+  }, [query]);
   const filtered = useMemo(() => orders.filter((order) => {
     if (view !== 'all' && order.status !== view) return false;
     if (payment !== 'all' && order.paymentStatus !== payment) return false;
-    return `${order.number} ${order.customerName} ${order.customerEmail} ${order.customerPhone}`.toLowerCase().includes(query.toLowerCase());
-  }), [orders, query, view, payment]);
-  const toggleAll = () => setSelected(selected.length === filtered.length ? [] : filtered.map((item) => item.id));
+    return `${order.number} ${order.customerName} ${order.customerEmail} ${order.customerPhone}`.toLowerCase().includes(deferredQuery.toLowerCase());
+  }), [orders, deferredQuery, view, payment]);
+  const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const allVisibleSelected = filtered.length > 0 && filtered.every((item) => selectedSet.has(item.id));
+  const toggleAll = () => setSelected((current) => {
+    const visibleIds = new Set(filtered.map((item) => item.id));
+    if (allVisibleSelected) return current.filter((id) => !visibleIds.has(id));
+    return [...new Set([...current, ...visibleIds])];
+  });
   const bulk = (patch: Partial<Order>) => {selected.forEach((id) => updateOrder(id, patch)); setSelected([]);};
-  const paidOrders=orders.filter((item)=>item.paymentStatus==='paid').length;
-  const waitingFulfillment=orders.filter((item)=>item.fulfillmentStatus==='unfulfilled'||item.fulfillmentStatus==='processing').length;
+  const metrics = useMemo(() => orders.reduce((result, order) => {
+    if (order.paymentStatus === 'paid') result.paid += 1;
+    if (order.fulfillmentStatus === 'unfulfilled' || order.fulfillmentStatus === 'processing') result.waiting += 1;
+    result.status[order.status] += 1;
+    return result;
+  }, {paid: 0, waiting: 0, status: {open: 0, confirmed: 0, completed: 0, cancelled: 0}}), [orders]);
+  const clearFilters = () => {setQuery(''); setParams({}, {replace: true});};
+  const exportFiltered = () => {
+    const escape = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+    const rows = filtered.map((order) => [order.number, order.createdAt, order.customerName, order.customerEmail, order.customerPhone, order.total, order.paymentMethod, paymentStatus[order.paymentStatus], fulfillmentStatus[order.fulfillmentStatus], orderStatus[order.status]].map(escape).join(','));
+    download([['Mã đơn','Ngày tạo','Khách hàng','Email','Điện thoại','Tổng tiền','Phương thức','Thanh toán','Giao hàng','Trạng thái'].map(escape).join(','), ...rows].join('\n'), `timeforge-orders-${new Date().toISOString().slice(0, 10)}.csv`);
+    window.dispatchEvent(new CustomEvent('timeforge:toast', {detail: {message: `Đã xuất ${filtered.length} đơn hàng`, tone: 'success'}}));
+  };
   return <AdminResourceFrame className="s11-page tf4921-orders-page"><section className="tf4921-ops-banner">
     <div className="tf4921-ops-banner-copy"><span><ShoppingBag/>TRUNG TÂM VẬN HÀNH</span><h2>Xử lý đơn hàng theo từng trạng thái</h2><p>Kiểm soát thanh toán, đóng gói, giao hàng, hoàn trả và hoàn tiền trong cùng một luồng.</p></div>
-    <div className="tf4921-ops-banner-side"><div className="tf4921-ops-kpis"><article><b>{orders.length}</b><span>Tổng đơn</span></article><article><b>{paidOrders}</b><span>Đã thanh toán</span></article><article><b>{waitingFulfillment}</b><span>Chờ xử lý</span></article></div><Link className="s11-primary tf4921-draft-order" to="/admin/draft-orders/new"><Plus />Tạo đơn nháp</Link></div>
+    <div className="tf4921-ops-banner-side"><div className="tf4921-ops-kpis"><article><b>{orders.length}</b><span>Tổng đơn</span></article><article><b>{metrics.paid}</b><span>Đã thanh toán</span></article><article><b>{metrics.waiting}</b><span>Chờ xử lý</span></article></div><Link className="s11-primary tf4921-draft-order" to="/admin/draft-orders/new"><Plus />Tạo đơn nháp</Link></div>
   </section>
-    <AdminResourceSurface className="s11-index-card tf4921-ops-surface"><div className="s11-view-tabs">{([['all', 'Tất cả'], ['open', 'Đang mở'], ['confirmed', 'Đã xác nhận'], ['completed', 'Hoàn tất'], ['cancelled', 'Đã hủy']] as const).map(([id, label]) => <button key={id} className={view === id ? 'active' : ''} onClick={() => setView(id)}>{label}<span>{id === 'all' ? orders.length : orders.filter((item) => item.status === id).length}</span></button>)}</div>
-      <div className="s11-toolbar"><label><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm mã đơn, khách hàng, email hoặc số điện thoại" /></label><select value={payment} onChange={(event) => setPayment(event.target.value as typeof payment)}><option value="all">Tất cả thanh toán</option>{Object.entries(paymentStatus).map(([id, label]) => <option value={id} key={id}>{label}</option>)}</select><button><Filter />Bộ lọc</button></div>
-      <div className="s11-table-wrap"><table><thead><tr><th><input type="checkbox" checked={!!filtered.length && selected.length === filtered.length} onChange={toggleAll} /></th><th>Đơn hàng</th><th>Ngày</th><th>Khách hàng</th><th>Tổng tiền</th><th>Phương thức</th><th>Thanh toán</th><th>Giao hàng</th><th>Trạng thái</th><th /></tr></thead><tbody>{filtered.map((order) => <tr key={order.id} className={selected.includes(order.id) ? 'selected' : ''}><td><input type="checkbox" checked={selected.includes(order.id)} onChange={() => setSelected((current) => current.includes(order.id) ? current.filter((id) => id !== order.id) : [...current, order.id])} /></td><td><button className="s11-link" onClick={() => navigate(`/admin/orders/${order.id}`)}>{order.number}</button></td><td>{fmt(order.createdAt)}</td><td><div className="s11-person"><span>{order.customerName.slice(0, 1).toUpperCase()}</span><div><b>{order.customerName}</b><small>{order.customerEmail}</small></div></div></td><td><b>{money(order.total)}</b></td><td><Badge tone={order.paymentMethod==='bank_transfer'?'info':order.paymentMethod==='cod'?'neutral':'success'}>{paymentMethodLabel[order.paymentMethod]||order.paymentMethod}</Badge></td><td><Badge tone={order.paymentStatus === 'paid' ? 'success' : order.paymentStatus === 'failed' ? 'critical' : order.paymentStatus === 'refunded' ? 'info' : 'warning'}>{paymentStatus[order.paymentStatus]}</Badge></td><td><Badge tone={order.fulfillmentStatus === 'fulfilled' ? 'success' : order.fulfillmentStatus === 'processing' ? 'info' : 'neutral'}>{fulfillmentStatus[order.fulfillmentStatus]}</Badge></td><td><Badge tone={order.status === 'completed' ? 'success' : order.status === 'cancelled' ? 'critical' : 'info'}>{orderStatus[order.status]}</Badge></td><td><button className="s11-icon-button" onClick={() => navigate(`/admin/orders/${order.id}`)}><ChevronRight /></button></td></tr>)}</tbody></table>{!filtered.length && <div className="s11-empty"><ShoppingBag /><h3>Không có đơn hàng phù hợp</h3><p>Thử thay đổi từ khóa hoặc chế độ xem.</p></div>}</div>
+    <AdminResourceSurface className="s11-index-card tf4921-ops-surface"><div className="s11-view-tabs">{([['all', 'Tất cả'], ['open', 'Đang mở'], ['confirmed', 'Đã xác nhận'], ['completed', 'Hoàn tất'], ['cancelled', 'Đã hủy']] as const).map(([id, label]) => <button key={id} className={view === id ? 'active' : ''} onClick={() => setFilter('status', id)}>{label}<span>{id === 'all' ? orders.length : metrics.status[id]}</span></button>)}</div>
+      <div className="s11-toolbar tf55-orders-toolbar"><label className="tf55-admin-search"><Search aria-hidden="true"/><input ref={searchRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm mã đơn, khách hàng, email hoặc số điện thoại" aria-label="Tìm kiếm đơn hàng"/>{query && <button type="button" className="tf55-search-clear" onClick={() => {setQuery(''); searchRef.current?.focus();}} aria-label="Xóa từ khóa tìm kiếm"><X/></button>}</label><select value={payment} onChange={(event) => setFilter('payment', event.target.value)} aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả thanh toán</option>{Object.entries(paymentStatus).map(([id, label]) => <option value={id} key={id}>{label}</option>)}</select><button type="button" className={view !== 'all' || payment !== 'all' || query ? 'is-active' : ''} onClick={clearFilters}><Filter />{view !== 'all' || payment !== 'all' || query ? 'Xóa bộ lọc' : 'Bộ lọc'}</button><button type="button" className="tf55-export-orders" disabled={!filtered.length} onClick={exportFiltered}><Download/>Xuất kết quả</button></div>
+      <div className="tf55-order-results"><span>Hiển thị <b>{filtered.length}</b> / {orders.length} đơn hàng</span><kbd>/</kbd><small>để tìm nhanh</small></div>
+      <div className="s11-table-wrap"><table><thead><tr><th><input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} aria-label="Chọn tất cả đơn đang hiển thị" /></th><th>Đơn hàng</th><th>Ngày</th><th>Khách hàng</th><th>Tổng tiền</th><th>Phương thức</th><th>Thanh toán</th><th>Giao hàng</th><th>Trạng thái</th><th /></tr></thead><tbody>{filtered.map((order) => <tr key={order.id} className={selectedSet.has(order.id) ? 'selected' : ''}><td><input type="checkbox" checked={selectedSet.has(order.id)} onChange={() => setSelected((current) => current.includes(order.id) ? current.filter((id) => id !== order.id) : [...current, order.id])} aria-label={`Chọn đơn hàng ${order.number}`} /></td><td><Link className="s11-link" to={`/admin/orders/${order.id}`}>{order.number}</Link></td><td>{fmt(order.createdAt)}</td><td><div className="s11-person"><span>{order.customerName.slice(0, 1).toUpperCase()}</span><div><b>{order.customerName}</b><small>{order.customerEmail}</small></div></div></td><td><b>{money(order.total)}</b></td><td><Badge tone={order.paymentMethod==='bank_transfer'?'info':order.paymentMethod==='cod'?'neutral':'success'}>{paymentMethodLabel[order.paymentMethod]||order.paymentMethod}</Badge></td><td><Badge tone={order.paymentStatus === 'paid' ? 'success' : order.paymentStatus === 'failed' ? 'critical' : order.paymentStatus === 'refunded' ? 'info' : 'warning'}>{paymentStatus[order.paymentStatus]}</Badge></td><td><Badge tone={order.fulfillmentStatus === 'fulfilled' ? 'success' : order.fulfillmentStatus === 'processing' ? 'info' : 'neutral'}>{fulfillmentStatus[order.fulfillmentStatus]}</Badge></td><td><Badge tone={order.status === 'completed' ? 'success' : order.status === 'cancelled' ? 'critical' : 'info'}>{orderStatus[order.status]}</Badge></td><td><Link className="s11-icon-button" to={`/admin/orders/${order.id}`} aria-label={`Mở đơn hàng ${order.number}`}><ChevronRight /></Link></td></tr>)}</tbody></table>{!filtered.length && <div className="s11-empty"><ShoppingBag /><h3>Không có đơn hàng phù hợp</h3><p>Thử thay đổi từ khóa hoặc chế độ xem.</p></div>}</div>
     </AdminResourceSurface>
     <AnimatePresence>{!!selected.length && <motion.div className="s11-bulk" initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 20, opacity: 0}}><b>{selected.length} đơn đã chọn</b><button onClick={() => bulk({status: 'confirmed'})}><Check />Xác nhận</button><button onClick={() => bulk({paymentStatus: 'paid'})}><CircleDollarSign />Đã thanh toán</button><button onClick={() => bulk({fulfillmentStatus: 'fulfilled', status: 'completed'})}><PackageCheck />Đã giao</button><button className="danger" onClick={() => {selected.forEach(cancelOrder); setSelected([]);}}><Undo2 />Hủy & hoàn kho</button><button onClick={() => setSelected([])}><X /></button></motion.div>}</AnimatePresence>
   </AdminResourceFrame>;
@@ -106,16 +155,17 @@ export function OrderDetailV11() {
   const {orders, updateOrder, cancelOrder, adjustInventory} = useCommerce();
   const order = orders.find((item) => item.id === id);
   const {store, commit, addEvent} = useWorkflowStore();
+  const workflow = useMemo(() => normalizeWorkflowStore(store), [store]);
   const [modal, setModal] = useState<'fulfill' | 'refund' | 'return' | null>(null);
   const [note, setNote] = useState('');
   if (!order) return <Navigate to="/admin/orders" replace />;
-  const events = store.events.filter((item) => item.orderId === order.id);
-  const fulfillments = store.fulfillments.filter((item) => item.orderId === order.id);
-  const refunds = store.refunds.filter((item) => item.orderId === order.id);
-  const returns = store.returns.filter((item) => item.orderId === order.id);
-  const saveFulfillment = (record: FulfillmentRecord) => {const now=new Date().toISOString();commit({...store, fulfillments: [record, ...store.fulfillments], events: [{id: uid('evt'), orderId: order.id, type: 'fulfillment', title: record.trackingNumber ? 'Đã tạo vận đơn' : 'Đang chuẩn bị hàng', detail: record.trackingNumber ? `${record.carrier} · ${record.trackingNumber}` : record.carrier, createdAt: now, actor: 'Admin'}, ...store.events]}); updateOrder(order.id, {status: 'confirmed', fulfillmentStatus: 'processing',shippingCarrier:record.carrier,trackingNumber:record.trackingNumber,trackingUrl:record.trackingUrl,shippedAt:record.trackingNumber?now:order.shippedAt}); setModal(null);};
-  const saveRefund = (record: RefundRecord) => {if (record.restocked) record.lines.forEach((item) => {const line = order.lines.find((lineItem) => lineItem.id === item.lineId); if (line) adjustInventory(line.productId, line.variantId, item.quantity, `Hoàn kho từ ${order.number}`);}); const refundedBefore = refunds.reduce((sum, item) => sum + item.amount, 0); updateOrder(order.id, {paymentStatus: refundedBefore + record.amount >= order.total ? 'refunded' : order.paymentStatus, fulfillmentStatus: record.restocked ? 'returned' : order.fulfillmentStatus}); commit({...store, refunds: [record, ...store.refunds], events: [{id: uid('evt'), orderId: order.id, type: 'refund', title: 'Đã ghi nhận hoàn tiền', detail: `${money(record.amount)} · ${record.reason}${record.restocked ? ' · Đã hoàn kho' : ''}`, createdAt: new Date().toISOString(), actor: 'Admin'}, ...store.events]}); setModal(null);};
-  const saveReturn = (record: ReturnRecord) => {commit({...store, returns: [record, ...store.returns], events: [{id: uid('evt'), orderId: order.id, type: 'return', title: 'Đã tạo yêu cầu hoàn trả', detail: record.reason, createdAt: new Date().toISOString(), actor: 'Admin'}, ...store.events]}); setModal(null);};
+  const events = workflow.events.filter((item) => item.orderId === order.id);
+  const fulfillments = workflow.fulfillments.filter((item) => item.orderId === order.id);
+  const refunds = workflow.refunds.filter((item) => item.orderId === order.id);
+  const returns = workflow.returns.filter((item) => item.orderId === order.id);
+  const saveFulfillment = (record: FulfillmentRecord) => {const now=new Date().toISOString();commit({...workflow, fulfillments: [record, ...workflow.fulfillments], events: [{id: uid('evt'), orderId: order.id, type: 'fulfillment', title: record.trackingNumber ? 'Đã tạo vận đơn' : 'Đang chuẩn bị hàng', detail: record.trackingNumber ? `${record.carrier} · ${record.trackingNumber}` : record.carrier, createdAt: now, actor: 'Admin'}, ...workflow.events]}); updateOrder(order.id, {status: 'confirmed', fulfillmentStatus: 'processing',shippingCarrier:record.carrier,trackingNumber:record.trackingNumber,trackingUrl:record.trackingUrl,shippedAt:record.trackingNumber?now:order.shippedAt}); setModal(null);};
+  const saveRefund = (record: RefundRecord) => {if (record.restocked) record.lines.forEach((item) => {const line = order.lines.find((lineItem) => lineItem.id === item.lineId); if (line) adjustInventory(line.productId, line.variantId, item.quantity, `Hoàn kho từ ${order.number}`);}); const refundedBefore = refunds.reduce((sum, item) => sum + item.amount, 0); updateOrder(order.id, {paymentStatus: refundedBefore + record.amount >= order.total ? 'refunded' : order.paymentStatus, fulfillmentStatus: record.restocked ? 'returned' : order.fulfillmentStatus}); commit({...workflow, refunds: [record, ...workflow.refunds], events: [{id: uid('evt'), orderId: order.id, type: 'refund', title: 'Đã ghi nhận hoàn tiền', detail: `${money(record.amount)} · ${record.reason}${record.restocked ? ' · Đã hoàn kho' : ''}`, createdAt: new Date().toISOString(), actor: 'Admin'}, ...workflow.events]}); setModal(null);};
+  const saveReturn = (record: ReturnRecord) => {commit({...workflow, returns: [record, ...workflow.returns], events: [{id: uid('evt'), orderId: order.id, type: 'return', title: 'Đã tạo yêu cầu hoàn trả', detail: record.reason, createdAt: new Date().toISOString(), actor: 'Admin'}, ...workflow.events]}); setModal(null);};
   const addNote = () => {if (!note.trim()) return; addEvent({orderId: order.id, type: 'note', title: 'Đã thêm ghi chú', detail: note.trim()}); setNote('');};
   const confirmBankTransfer=()=>{const now=new Date().toISOString();updateOrder(order.id,{paymentStatus:'paid',status:order.status==='open'?'confirmed':order.status,paidAt:now,bankTransferConfirmedAt:now,paymentConfirmationSource:'admin_bank_transfer'});addEvent({orderId:order.id,type:'payment',title:'Đã xác nhận nhận chuyển khoản',detail:`${money(order.total)} · ${order.bankName||'Ngân hàng'}`})};
   const markDelivered=()=>{const now=new Date().toISOString();updateOrder(order.id,{fulfillmentStatus:'fulfilled',status:'completed',deliveredAt:now});addEvent({orderId:order.id,type:'fulfillment',title:'Đã giao hàng thành công',detail:order.trackingNumber?`${order.shippingCarrier||'Đơn vị vận chuyển'} · ${order.trackingNumber}`:'Đã hoàn tất giao hàng'})};
@@ -126,7 +176,7 @@ export function OrderDetailV11() {
        {['payos','online'].includes(order.paymentMethod)&&<div className="tf515-payos-state"><QrCode/><div><b>PayOS · QR ngân hàng</b><span>{order.paymentStatus==='paid'?'Webhook đã xác nhận giao dịch thành công.':'Hệ thống đang chờ webhook PayOS cập nhật tự động.'}</span>{order.paymentReference&&<small>Mã tham chiếu: {order.paymentReference}</small>}</div></div>}
        {order.paymentStatus==='paid'&&<div className="tf515-paid-confirmation"><CheckCircle2/><span><b>Đã thanh toán</b><small>{order.paidAt?fmt(order.paidAt):'Đã được xác nhận'}{order.paymentConfirmationSource==='admin_bank_transfer'?' · Admin xác nhận chuyển khoản':''}</small></span></div>}
        <dl className="s11-money-list"><div><dt>Tạm tính</dt><dd>{money(order.subtotal)}</dd></div>{!!order.promotionDiscountAmount&&<div><dt>Mã giảm giá {order.discountCode&&`(${order.discountCode})`}</dt><dd>–{money(order.promotionDiscountAmount)}</dd></div>}{!!order.paymentDiscountAmount&&<div><dt>{order.paymentDiscountLabel||'Ưu đãi chuyển khoản'}</dt><dd>–{money(order.paymentDiscountAmount)}</dd></div>}{!order.promotionDiscountAmount&&!order.paymentDiscountAmount&&order.discountAmount>0&&<div><dt>Giảm giá</dt><dd>–{money(order.discountAmount)}</dd></div>}<div><dt>Vận chuyển</dt><dd>{money(order.shippingAmount)}</dd></div><div className="total"><dt>Tổng cộng</dt><dd>{money(order.total)}</dd></div>{refunds.length > 0 && <div className="refund"><dt>Đã hoàn</dt><dd>–{money(refunds.reduce((sum, item) => sum + item.amount, 0))}</dd></div>}</dl></section>
-      {!!returns.length && <section className="s11-detail-card"><header><div><RefreshCcw /><span><h3>Hoàn trả</h3><p>{returns.length} yêu cầu</p></span></div></header>{returns.map((item) => <article className="s11-return-record" key={item.id}><div><b>{item.reason}</b><span>{fmt(item.createdAt)} · {item.lineIds.length} sản phẩm</span></div><select value={item.status} onChange={(event) => {const next = store.returns.map((record) => record.id === item.id ? {...record, status: event.target.value as ReturnRecord['status']} : record); commit({...store, returns: next});}}><option value="requested">Đã yêu cầu</option><option value="approved">Đã duyệt</option><option value="received">Đã nhận hàng</option><option value="closed">Đã đóng</option></select></article>)}</section>}
+      {!!returns.length && <section className="s11-detail-card"><header><div><RefreshCcw /><span><h3>Hoàn trả</h3><p>{returns.length} yêu cầu</p></span></div></header>{returns.map((item) => <article className="s11-return-record" key={item.id}><div><b>{item.reason}</b><span>{fmt(item.createdAt)} · {item.lineIds.length} sản phẩm</span></div><select value={item.status} onChange={(event) => {const next = workflow.returns.map((record) => record.id === item.id ? {...record, status: event.target.value as ReturnRecord['status']} : record); commit({...workflow, returns: next});}}><option value="requested">Đã yêu cầu</option><option value="approved">Đã duyệt</option><option value="received">Đã nhận hàng</option><option value="closed">Đã đóng</option></select></article>)}</section>}
     </main><aside><section className="s11-detail-card"><h3>Khách hàng</h3><div className="s11-customer-summary"><span>{order.customerName.slice(0, 1).toUpperCase()}</span><div><b>{order.customerName}</b><small>{order.customerEmail}<br />{order.customerPhone}</small></div></div><hr /><h4>Địa chỉ giao hàng</h4><p>{order.shippingAddress.address1}{order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}<br />{order.shippingAddress.ward}, {order.shippingAddress.district}<br />{order.shippingAddress.city}, {order.shippingAddress.country}</p></section><section className="s11-detail-card"><h3>Ghi chú đơn hàng</h3><p>{order.note || 'Khách hàng không để lại ghi chú.'}</p></section><section className="s11-timeline-card"><h3>Dòng thời gian</h3><div className="s11-note-box"><textarea value={note} onChange={(event) => setNote(event.target.value)} placeholder="Để lại ghi chú nội bộ..." /><button onClick={addNote}><Send /></button></div><div className="s11-timeline"><article><i /><div><b>Đơn hàng được tạo</b><p>{order.customerName} đặt hàng từ storefront.</p><span>{fmt(order.createdAt)}</span></div></article>{events.map((event) => <article key={event.id}><i className={event.type} /><div><b>{event.title}</b><p>{event.detail}</p><span>{fmt(event.createdAt)} · {event.actor}</span></div></article>)}</div></section><button className="s11-cancel-order" disabled={order.status === 'cancelled'} onClick={() => {if (confirm('Hủy đơn và hoàn lại tồn kho?')) cancelOrder(order.id);}}>Hủy đơn hàng</button></aside></div>
     <AnimatePresence>{modal === 'fulfill' && <FulfillmentModal order={order} close={() => setModal(null)} onDone={saveFulfillment} />}{modal === 'refund' && <RefundModal order={order} close={() => setModal(null)} onDone={saveRefund} />}{modal === 'return' && <ReturnModal order={order} close={() => setModal(null)} onDone={saveReturn} />}</AnimatePresence>
   </div>;
@@ -141,7 +191,8 @@ const defaultSegments: CustomerSegment[] = [
   {id: 'marketing', name: 'Đã đăng ký email', description: 'Cho phép nhận email marketing.', criteria: {minimumSpent: 0, minimumOrders: 0, acceptsMarketing: 'yes', tag: '', inactiveDays: 0, purchasedProductIds: []}, createdAt: new Date().toISOString()},
   {id: 'at-risk', name: 'Có nguy cơ rời bỏ', description: 'Đã mua hàng nhưng hơn 90 ngày chưa quay lại.', criteria: {minimumSpent: 0, minimumOrders: 1, acceptsMarketing: 'all', tag: '', inactiveDays: 90, purchasedProductIds: []}, createdAt: new Date().toISOString()},
 ];
-const loadSegments = () => {try {const raw = localStorage.getItem(segmentKey); return raw ? JSON.parse(raw) as CustomerSegment[] : defaultSegments;} catch {return defaultSegments;}};
+const normalizeSegments = (value: unknown) => asList<CustomerSegment>(value).map((segment) => ({...segment, criteria: {...segment.criteria, purchasedProductIds: asStringList(segment.criteria?.purchasedProductIds)}}));
+const loadSegments = () => {try {const raw = localStorage.getItem(segmentKey); return raw ? normalizeSegments(JSON.parse(raw)) : defaultSegments;} catch {return defaultSegments;}};
 function membersFor(segment: CustomerSegment, customers: Customer[], orders: Order[]) {
   return customers.filter((customer) => {
     const relatedOrders = orders.filter((order) => order.customerId === customer.id || (!!customer.email && order.customerEmail.toLowerCase() === customer.email.toLowerCase()));
@@ -193,13 +244,16 @@ function SegmentModal({segment, close, save}: {segment: CustomerSegment | null; 
 export function CustomerSegmentsV11() {
   const {customers, orders} = useCommerce();
   const [segments, setSegments] = useState<CustomerSegment[]>(loadSegments);
-  useEffect(() => {if (!firebaseClient.enabled) return; void firebaseClient.read<CustomerSegment[]>('timeforge/customerSegments').then((remote) => {if (remote?.length) {setSegments(remote); localStorage.setItem(segmentKey, JSON.stringify(remote));}});}, []);
+  useEffect(() => {if (!firebaseClient.enabled) return; void firebaseClient.read<CustomerSegment[]|Record<string,CustomerSegment>>('timeforge/customerSegments').then((remote) => {const normalized=normalizeSegments(remote);if (normalized.length) {setSegments(normalized); localStorage.setItem(segmentKey, JSON.stringify(normalized));}});}, []);
   const [editing, setEditing] = useState<CustomerSegment | null | undefined>(undefined);
   const [selected, setSelected] = useState<CustomerSegment | null>(null);
   const [query, setQuery] = useState('');
   const save = (segment: CustomerSegment) => {const next = segments.some((item) => item.id === segment.id) ? segments.map((item) => item.id === segment.id ? segment : item) : [segment, ...segments]; setSegments(next); localStorage.setItem(segmentKey, JSON.stringify(next)); if (firebaseClient.enabled) void firebaseClient.write('timeforge/customerSegments', next); setEditing(undefined);};
-  const filtered = segments.filter((segment) => `${segment.name} ${segment.description}`.toLowerCase().includes(query.toLowerCase()));
-  return <div className="s11-page"><div className="s11-page-head"><div><small>CUSTOMER SEGMENTS</small><h2>Phân khúc khách hàng</h2><p>Tạo nhóm động dựa trên hành vi mua, giá trị khách hàng và mức độ tương tác.</p></div><button className="s11-primary" onClick={() => setEditing(null)}><Plus />Tạo phân khúc</button></div><section className="s11-index-card"><div className="s11-toolbar"><label><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm phân khúc" /></label></div><div className="s11-segment-grid">{filtered.map((segment) => {const members = membersFor(segment, customers, orders); return <article key={segment.id}><div className="s11-segment-icon"><UserRoundSearch /></div><div><button onClick={() => setSelected(segment)}>{segment.name}</button><p>{segment.description || 'Phân khúc khách hàng động.'}</p><div><Badge tone="info">{members.length} khách hàng</Badge><span>Cập nhật tự động</span></div></div><button className="s11-icon-button" onClick={() => setEditing(segment)}><MoreHorizontal /></button></article>;})}</div></section><AnimatePresence>{editing !== undefined && <SegmentModal segment={editing} close={() => setEditing(undefined)} save={save} />}{selected && <motion.div className="s11-drawer-shell" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} onMouseDown={() => setSelected(null)}><aside className="s11-segment-drawer" onMouseDown={(event) => event.stopPropagation()}><header><div><small>SEGMENT</small><h2>{selected.name}</h2><p>{selected.description}</p></div><button onClick={() => setSelected(null)}><X /></button></header><div className="s11-segment-members">{membersFor(selected, customers, orders).map((customer) => <article key={customer.id}><span>{customer.name.slice(0, 1).toUpperCase()}</span><div><b>{customer.name}</b><small>{customer.email || customer.phone}</small></div><div><b>{money(customer.totalSpent)}</b><small>{customer.ordersCount} đơn</small></div></article>)}</div></aside></motion.div>}</AnimatePresence></div>;
+  const normalizedQuery = query.toLowerCase();
+  const filtered = useMemo(() => segments.filter((segment) => `${segment.name} ${segment.description}`.toLowerCase().includes(normalizedQuery)), [normalizedQuery, segments]);
+  const membersBySegment = useMemo(() => new Map(segments.map((segment) => [segment.id, membersFor(segment, customers, orders)])), [customers, orders, segments]);
+  const selectedMembers = selected ? membersBySegment.get(selected.id) || [] : [];
+  return <div className="s11-page"><div className="s11-page-head"><div><small>CUSTOMER SEGMENTS</small><h2>Phân khúc khách hàng</h2><p>Tạo nhóm động dựa trên hành vi mua, giá trị khách hàng và mức độ tương tác.</p></div><button className="s11-primary" onClick={() => setEditing(null)}><Plus />Tạo phân khúc</button></div><section className="s11-index-card"><div className="s11-toolbar"><label className="tf55-admin-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm phân khúc" aria-label="Tìm phân khúc khách hàng" />{query && <button type="button" className="tf55-search-clear" onClick={() => setQuery('')} aria-label="Xóa từ khóa tìm kiếm"><X /></button>}</label></div><div className="s11-segment-grid">{filtered.map((segment) => <article key={segment.id}><div className="s11-segment-icon"><UserRoundSearch /></div><div><button onClick={() => setSelected(segment)}>{segment.name}</button><p>{segment.description || 'Phân khúc khách hàng động.'}</p><div><Badge tone="info">{membersBySegment.get(segment.id)?.length || 0} khách hàng</Badge><span>Cập nhật tự động</span></div></div><button className="s11-icon-button" onClick={() => setEditing(segment)}><MoreHorizontal /></button></article>)}</div></section><AnimatePresence>{editing !== undefined && <SegmentModal segment={editing} close={() => setEditing(undefined)} save={save} />}{selected && <motion.div className="s11-drawer-shell" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} onMouseDown={() => setSelected(null)}><aside className="s11-segment-drawer" onMouseDown={(event) => event.stopPropagation()}><header><div><small>SEGMENT</small><h2>{selected.name}</h2><p>{selected.description}</p></div><button onClick={() => setSelected(null)}><X /></button></header><div className="s11-segment-members">{selectedMembers.map((customer) => <article key={customer.id}><span>{customer.name.slice(0, 1).toUpperCase()}</span><div><b>{customer.name}</b><small>{customer.email || customer.phone}</small></div><div><b>{money(customer.totalSpent)}</b><small>{customer.ordersCount} đơn</small></div></article>)}</div></aside></motion.div>}</AnimatePresence></div>;
 }
 
 const presetSections: Array<{id: string; name: string; description: string; build: () => Section[]}> = [

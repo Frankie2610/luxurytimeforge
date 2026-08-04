@@ -1,5 +1,5 @@
 import{createContext,useCallback,useContext,useEffect,useMemo,useState,type ReactNode}from'react';
-import type{Activity,CartLine,CheckoutPayload,Collection,Customer,Discount,DiscountEvaluation,InventoryAdjustment,NewsletterSubscriber,Order,OrderStatus,Product,ProductGroup,StoreProfile,Theme,ThemeState,ThemeVersion}from'./types';
+import type{Activity,CartLine,CheckoutPayload,Collection,Customer,Discount,DiscountEvaluation,InventoryAdjustment,NewsletterSubscriber,Order,OrderLine,OrderStatus,Product,ProductGroup,ShippingAddress,StoreProfile,Theme,ThemeState,ThemeVersion}from'./types';
 import{seedCollections,seedCustomers}from'./seed-lite';
 import{seedActivities,seedAdjustments,seedDiscounts,seedOrders}from'./operations-seed';
 import{firebaseClient}from'./firebase';
@@ -12,11 +12,41 @@ import{createStorefrontOrder,readIntegrationSettings}from'./integrations';
 import{useAuth}from'./auth';
 import{resolvesCollectionProducts}from'./collection-utils';
 import{applyStoreProfileToTheme,DEFAULT_STORE_PROFILE,normalizeStoreProfile,storeProfileFromTheme}from'./store-profile';
+import{asList}from'./data-normalize';
 
 const K={p:'tf.react.products',c:'tf.react.collections',groups:'tf.react.product-groups',u:'tf.react.customers',cart:'tf.react.cart',theme:'tf.react.theme.v2',themeLegacy:'tf.react.theme',profile:'tf.react.store-profile',headers:'tf.react.headers',orders:'tf.react.orders',discounts:'tf.react.discounts',adjustments:'tf.react.inventory-adjustments',activities:'tf.react.activities',newsletter:'tf.react.newsletter-subscribers'};
 const load=<T,>(k:string,f:T)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r) as T:f}catch{return f}};
-const firebaseList=<T,>(value:T[]|Record<string,T>|null)=>Array.isArray(value)?value.filter(Boolean):value?Object.values(value).filter(Boolean):[];
-const firebaseOrders=(value:Order[]|Record<string,Order>|null)=>firebaseList(value).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+const firebaseList=<T,>(value:T[]|Record<string,T>|null)=>asList<T>(value);
+const safeNumber=(value:unknown,fallback=0)=>{const parsed=Number(value);return Number.isFinite(parsed)?parsed:fallback};
+const emptyShippingAddress:ShippingAddress={fullName:'',phone:'',email:'',address1:'',address2:'',ward:'',district:'',city:'',country:'Việt Nam',postalCode:''};
+export const normalizeOrder=(input:Order):Order=>{
+ const source=(input||{}) as Partial<Order>;
+ const id=String(source.id||source.number||'').trim();
+ const lines=asList<OrderLine>(source.lines).map((line,index)=>({
+  ...line,
+  id:String(line.id||`${id||'order'}-line-${index}`),
+  productId:String(line.productId||''),variantId:String(line.variantId||''),title:String(line.title||'Sản phẩm'),variantTitle:String(line.variantTitle||'Mặc định'),sku:String(line.sku||''),image:String(line.image||''),
+  quantity:Math.max(0,safeNumber(line.quantity)),unitPrice:Math.max(0,safeNumber(line.unitPrice)),lineTotal:Math.max(0,safeNumber(line.lineTotal,safeNumber(line.quantity)*safeNumber(line.unitPrice))),
+ }));
+ const subtotal=Math.max(0,safeNumber(source.subtotal,lines.reduce((sum,line)=>sum+line.lineTotal,0)));
+ const discountAmount=Math.max(0,safeNumber(source.discountAmount));
+ const shippingAmount=Math.max(0,safeNumber(source.shippingAmount));
+ const taxAmount=Math.max(0,safeNumber(source.taxAmount));
+ return{
+  ...source,
+  id,number:String(source.number||id||'Đơn hàng'),createdAt:String(source.createdAt||new Date(0).toISOString()),updatedAt:String(source.updatedAt||source.createdAt||new Date(0).toISOString()),
+  customerId:String(source.customerId||''),customerName:String(source.customerName||'Khách hàng'),customerEmail:String(source.customerEmail||''),customerPhone:String(source.customerPhone||''),
+  shippingAddress:{...emptyShippingAddress,...(source.shippingAddress||{})},lines,subtotal,discountCode:String(source.discountCode||''),discountAmount,shippingAmount,taxAmount,
+  total:Math.max(0,safeNumber(source.total,subtotal-discountAmount+shippingAmount+taxAmount)),currency:'VND',
+  status:['open','confirmed','completed','cancelled'].includes(String(source.status))?source.status as Order['status']:'open',
+  paymentStatus:['pending','paid','refunded','failed'].includes(String(source.paymentStatus))?source.paymentStatus as Order['paymentStatus']:'pending',
+  fulfillmentStatus:['unfulfilled','processing','fulfilled','returned'].includes(String(source.fulfillmentStatus))?source.fulfillmentStatus as Order['fulfillmentStatus']:'unfulfilled',
+  paymentMethod:['cod','bank_transfer','payos','online'].includes(String(source.paymentMethod))?source.paymentMethod as Order['paymentMethod']:'bank_transfer',
+  note:String(source.note||''),source:source.source==='admin'?'admin':'storefront',
+ } as Order;
+};
+export const normalizeOrders=(value:unknown)=>asList<Order>(value).map(normalizeOrder).filter(order=>order.id).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+const firebaseOrders=(value:Order[]|Record<string,Order>|null)=>normalizeOrders(value);
 const loadTheme=()=>{const next=localStorage.getItem(K.theme);if(next){try{return migrateTheme(JSON.parse(next))}catch{}}const legacy=localStorage.getItem(K.themeLegacy);if(legacy){try{return migrateTheme(JSON.parse(legacy))}catch{}}return createThemeState()};
 const newsletterKey=(email:string)=>{let hash=2166136261;for(let i=0;i<email.length;i++){hash^=email.charCodeAt(i);hash=Math.imul(hash,16777619)}return`subscriber_${(hash>>>0).toString(36)}`};
 const orderNumber=()=>{const d=new Date(),stamp=`${String(d.getFullYear()).slice(-2)}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;return `TF-${stamp}-${Math.floor(1000+Math.random()*9000)}`};
@@ -52,15 +82,15 @@ const C=createContext<V|null>(null);
 export function CommerceProvider({children}:{children:ReactNode}){
  const{user,loading:authLoading}=useAuth();
  const[products,setProducts]=useState<Product[]>(()=>productsFromFirebase(load<Product[]>(K.p,[])));
- const[collections,setCollections]=useState(()=>load(K.c,seedCollections));
- const[productGroups,setProductGroups]=useState<ProductGroup[]>(()=>load(K.groups,[]));
- const[customers,setCustomers]=useState(()=>load(K.u,seedCustomers));
- const[newsletterSubscribers,setNewsletterSubscribers]=useState<NewsletterSubscriber[]>(()=>load(K.newsletter,[]));
- const[cart,setCart]=useState<CartLine[]>(()=>load(K.cart,[]));
- const[orders,setOrders]=useState<Order[]>(()=>load(K.orders,seedOrders));
- const[discounts,setDiscounts]=useState<Discount[]>(()=>load(K.discounts,seedDiscounts));
- const[adjustments,setAdjustments]=useState<InventoryAdjustment[]>(()=>load(K.adjustments,seedAdjustments));
- const[activities,setActivities]=useState<Activity[]>(()=>load(K.activities,seedActivities));
+ const[collections,setCollections]=useState(()=>asList<Collection>(load(K.c,seedCollections)));
+ const[productGroups,setProductGroups]=useState<ProductGroup[]>(()=>asList<ProductGroup>(load(K.groups,[])));
+ const[customers,setCustomers]=useState(()=>asList<Customer>(load(K.u,seedCustomers)));
+ const[newsletterSubscribers,setNewsletterSubscribers]=useState<NewsletterSubscriber[]>(()=>asList<NewsletterSubscriber>(load(K.newsletter,[])));
+ const[cart,setCart]=useState<CartLine[]>(()=>asList<CartLine>(load(K.cart,[])));
+ const[orders,setOrders]=useState<Order[]>(()=>normalizeOrders(load(K.orders,seedOrders)));
+ const[discounts,setDiscounts]=useState<Discount[]>(()=>asList<Discount>(load(K.discounts,seedDiscounts)));
+ const[adjustments,setAdjustments]=useState<InventoryAdjustment[]>(()=>asList<InventoryAdjustment>(load(K.adjustments,seedAdjustments)));
+ const[activities,setActivities]=useState<Activity[]>(()=>asList<Activity>(load(K.activities,seedActivities)));
  const[themeState,setThemeState]=useState<ThemeState>(loadTheme);
  const[storeProfile,setStoreProfile]=useState<StoreProfile>(()=>normalizeStoreProfile(load<StoreProfile>(K.profile,storeProfileFromTheme(themeState.published)),storeProfileFromTheme(themeState.published)));
  const[previewTheme,setPreviewTheme]=useState<Theme|null>(()=>isThemePreviewV26()?readThemePreviewV26():null);

@@ -39,11 +39,14 @@ export function WishlistProvider({children}: {children: ReactNode}) {
   const [ids, setIds] = useState<string[]>(readWishlist);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
-    } catch {
-      // Wishlist is a progressive enhancement; shopping remains available when storage is blocked.
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
+      } catch {
+        // Wishlist is a progressive enhancement; shopping remains available when storage is blocked.
+      }
+    }, 90);
+    return () => window.clearTimeout(timer);
   }, [ids]);
 
   useEffect(() => {

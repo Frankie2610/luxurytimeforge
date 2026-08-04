@@ -1,10 +1,11 @@
-import {useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
+import {useDeferredValue,useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
 import {Link,useNavigate} from 'react-router-dom';
-import {Archive,Check,ChevronDown,Copy,Download,Eye,FileUp,Filter,MoreHorizontal,PackageSearch,Pencil,Plus,Search,SlidersHorizontal,Trash2,X} from 'lucide-react';
+import {Archive,Check,ChevronDown,Copy,Download,Eye,FileUp,Filter,MoreHorizontal,PackageSearch,Pencil,Plus,Search,ShoppingBag,SlidersHorizontal,Trash2,X} from 'lucide-react';
 import {useCommerce} from './context';
 import type {Product,Status} from './types';
 import {money,slugify,uid} from './utils';
 import {AdminResourceFrame,AdminResourceSurface} from './admin-ui-v25';
+import {asList} from './data-normalize';
 
 const VIEW_KEY='tf.admin.product-views.v1';
 type StockFilter='all'|'in_stock'|'low_stock'|'out_of_stock';
@@ -17,7 +18,7 @@ const builtInViews:ProductView[]=[
  {id:'draft',name:'Bản nháp',status:'draft',vendor:'',productType:'',stock:'all',sort:'updated_desc'},
  {id:'low-stock',name:'Sắp hết hàng',status:'all',vendor:'',productType:'',stock:'low_stock',sort:'inventory_asc'}
 ];
-const loadViews=():ProductView[]=>{try{const raw=localStorage.getItem(VIEW_KEY);return raw?JSON.parse(raw):[]}catch{return[]}};
+const loadViews=():ProductView[]=>{try{const raw=localStorage.getItem(VIEW_KEY);return asList<ProductView>(raw?JSON.parse(raw):null)}catch{return[]}};
 
 export function AdminRouteSkeleton(){return <div className="admin-route-skeleton" aria-label="Đang tải"><div className="skeleton-line lg"/><div className="skeleton-actions"><span/><span/></div><section className="skeleton-card"><div className="skeleton-tabs"><span/><span/><span/></div>{Array.from({length:7}).map((_,i)=><div className="skeleton-row" key={i}><span/><span/><span/><span/></div>)}</section></div>}
 
@@ -28,6 +29,7 @@ function sortProducts(list:Product[],sort:SortKey){return [...list].sort((a,b)=>
 export function ProductsV9(){
  const{products,saveProduct,deleteProducts}=useCommerce();
  const[q,setQ]=useState('');
+ const deferredQ=useDeferredValue(q);
  const[customViews,setCustomViews]=useState<ProductView[]>(loadViews);
  const[view,setView]=useState<ProductView>(defaultView);
  const[selected,setSelected]=useState<string[]>([]);
@@ -42,8 +44,8 @@ export function ProductsV9(){
  const productTypes=useMemo(()=>[...new Set(products.map(p=>p.productType).filter(Boolean))].sort(),[products]);
  const shown=useMemo(()=>sortProducts(products.filter(p=>{
   const text=`${p.title} ${p.vendor} ${p.sku} ${p.productType}`.toLowerCase();
-  return(!q||text.includes(q.toLowerCase()))&&(view.status==='all'||p.status===view.status)&&(!view.vendor||p.vendor===view.vendor)&&(!view.productType||p.productType===view.productType)&&stockMatches(p,view.stock)
- }),view.sort),[products,q,view]);
+  return(!deferredQ||text.includes(deferredQ.toLowerCase()))&&(view.status==='all'||p.status===view.status)&&(!view.vendor||p.vendor===view.vendor)&&(!view.productType||p.productType===view.productType)&&stockMatches(p,view.stock)
+ }),view.sort),[products,deferredQ,view]);
  const all=shown.length>0&&shown.every(p=>selected.includes(p.id));
  const activeFilterCount=[view.vendor,view.productType,view.stock!=='all',view.status!=='all'].filter(Boolean).length;
  const setStatus=(status:Status)=>{selected.forEach(id=>{const p=products.find(x=>x.id===id);if(p)saveProduct({...p,status,published:status==='active',updatedAt:new Date().toISOString()})});setSelected([]);window.dispatchEvent(new CustomEvent('timeforge:toast',{detail:{message:`Đã cập nhật ${selected.length} sản phẩm.`,tone:'success'}}))};
@@ -65,7 +67,7 @@ export function ProductsV9(){
    </div>
    {activeFilterCount>0&&<div className="v9-filter-chips">{view.status!=='all'&&<button onClick={()=>setView(x=>({...x,status:'all'}))}>Trạng thái: {view.status}<X/></button>}{view.vendor&&<button onClick={()=>setView(x=>({...x,vendor:''}))}>Thương hiệu: {view.vendor}<X/></button>}{view.productType&&<button onClick={()=>setView(x=>({...x,productType:''}))}>Loại: {view.productType}<X/></button>}{view.stock!=='all'&&<button onClick={()=>setView(x=>({...x,stock:'all'}))}>Tồn kho: {view.stock}<X/></button>}<button className="clear" onClick={resetFilters}>Xóa tất cả</button></div>}
    <div className="v9-result-meta"><span>{shown.length} sản phẩm</span>{selected.length>0&&<span>Đã chọn {selected.length}</span>}</div>
-   <div className="table-wrap v9-table-wrap"><table className="v9-index-table"><thead><tr><th className="check-col"><input aria-label="Chọn tất cả" type="checkbox" checked={all} onChange={e=>setSelected(e.target.checked?shown.map(p=>p.id):[])}/></th><th>Sản phẩm</th><th>Trạng thái</th><th>Tồn kho</th><th>Loại</th><th>Thương hiệu</th><th>Giá</th><th className="action-col"/></tr></thead><tbody>{shown.map(p=><tr key={p.id} className={selected.includes(p.id)?'selected':''}><td><input aria-label={`Chọn ${p.title}`} type="checkbox" checked={selected.includes(p.id)} onChange={e=>setSelected(e.target.checked?[...selected,p.id]:selected.filter(id=>id!==p.id))}/></td><td><Link className="product-cell" to={`/admin/products/${p.id}`}><img src={p.images[0]} alt=""/><div><b>{p.title}</b><span>{p.sku||'Chưa có SKU'}</span></div></Link></td><td><StatusBadge status={p.status}/></td><td><div className={`v9-stock ${p.inventory<=0?'out':p.inventory<=5?'low':''}`}><span/>{p.inventory<=0?'Hết hàng':`${p.inventory} trong kho`}</div></td><td>{p.productType||'—'}</td><td>{p.vendor||'—'}</td><td><b>{money(p.price)}</b></td><td className="v9-row-menu"><button aria-label="Thêm thao tác" onClick={e=>{e.stopPropagation();setMenuId(menuId===p.id?'':p.id)}}><MoreHorizontal/></button>{menuId===p.id&&<div className="v9-context-menu" onClick={e=>e.stopPropagation()}><Link to={`/admin/products/${p.id}`}><Pencil/>Chỉnh sửa</Link><Link to={`/products/${p.handle}`} target="_blank"><Eye/>Xem trên cửa hàng</Link><button onClick={()=>duplicate(p)}><Copy/>Nhân bản</button><button onClick={()=>saveProduct({...p,status:p.status==='archived'?'draft':'archived',published:false,updatedAt:new Date().toISOString()})}><Archive/>{p.status==='archived'?'Đưa về bản nháp':'Lưu trữ'}</button><hr/><button className="danger" onClick={()=>{if(confirm(`Xóa ${p.title}?`))deleteProducts([p.id])}}><Trash2/>Xóa sản phẩm</button></div>}</td></tr>)}</tbody></table>{shown.length===0&&<div className="v9-empty-index"><PackageSearch/><h3>Không tìm thấy sản phẩm</h3><p>Thử thay đổi từ khóa hoặc xóa bộ lọc hiện tại.</p><button className="btn secondary" onClick={()=>{setQ('');resetFilters()}}>Xóa bộ lọc</button></div>}</div>
+   <div className="table-wrap v9-table-wrap"><table className="v9-index-table"><thead><tr><th className="check-col"><input aria-label="Chọn tất cả" type="checkbox" checked={all} onChange={e=>setSelected(e.target.checked?shown.map(p=>p.id):[])}/></th><th>Sản phẩm</th><th>Trạng thái</th><th>Tồn kho</th><th>Loại</th><th>Thương hiệu</th><th>Giá</th><th className="action-col"/></tr></thead><tbody>{shown.map(p=><tr key={p.id} className={selected.includes(p.id)?'selected':''}><td><input aria-label={`Chọn ${p.title}`} type="checkbox" checked={selected.includes(p.id)} onChange={e=>setSelected(e.target.checked?[...selected,p.id]:selected.filter(id=>id!==p.id))}/></td><td><Link className="product-cell" to={`/admin/products/${p.id}`}><img src={p.images[0]} alt="" loading="lazy" decoding="async"/><div><b>{p.title}</b><span>{p.sku||'Chưa có SKU'}</span></div></Link></td><td><StatusBadge status={p.status}/></td><td><div className={`v9-stock ${p.inventory<=0?'out':p.inventory<=5?'low':''}`}><span/>{p.inventory<=0?'Hết hàng':`${p.inventory} trong kho`}</div></td><td>{p.productType||'—'}</td><td>{p.vendor||'—'}</td><td><b>{money(p.price)}</b></td><td className="v9-row-menu"><button aria-label="Thêm thao tác" onClick={e=>{e.stopPropagation();setMenuId(menuId===p.id?'':p.id)}}><MoreHorizontal/></button>{menuId===p.id&&<div className="v9-context-menu" onClick={e=>e.stopPropagation()}><Link to={`/admin/products/${p.id}`}><Pencil/>Chỉnh sửa</Link><Link to={`/products/${p.handle}`} target="_blank"><Eye/>Xem trên cửa hàng</Link><button onClick={()=>duplicate(p)}><Copy/>Nhân bản</button><button onClick={()=>saveProduct({...p,status:p.status==='archived'?'draft':'archived',published:false,updatedAt:new Date().toISOString()})}><Archive/>{p.status==='archived'?'Đưa về bản nháp':'Lưu trữ'}</button><hr/><button className="danger" onClick={()=>{if(confirm(`Xóa ${p.title}?`))deleteProducts([p.id])}}><Trash2/>Xóa sản phẩm</button></div>}</td></tr>)}</tbody></table>{shown.length===0&&<div className="v9-empty-index"><PackageSearch/><h3>Không tìm thấy sản phẩm</h3><p>Thử thay đổi từ khóa hoặc xóa bộ lọc hiện tại.</p><button className="btn secondary" onClick={()=>{setQ('');resetFilters()}}>Xóa bộ lọc</button></div>}</div>
   </AdminResourceSurface>
   {selected.length>0&&<div className="v9-bulk-bar"><div><span className="v9-bulk-check"><Check/></span><b>{selected.length} sản phẩm được chọn</b><button onClick={()=>setSelected([])}>Bỏ chọn</button></div><div><button onClick={()=>setStatus('active')}>Đặt đang hoạt động</button><button onClick={()=>setStatus('draft')}>Chuyển thành bản nháp</button><button onClick={()=>setStatus('archived')}>Lưu trữ</button><button className="danger" onClick={()=>{if(confirm(`Xóa ${selected.length} sản phẩm?`)){deleteProducts(selected);setSelected([])}}}><Trash2/>Xóa</button></div></div>}
   {saveOpen&&<div className="v9-modal-backdrop" onMouseDown={()=>setSaveOpen(false)}><section className="v9-modal" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true"><header><div><h2>Lưu chế độ xem</h2><p>Lưu bộ lọc và sắp xếp hiện tại để dùng lại.</p></div><button onClick={()=>setSaveOpen(false)}><X/></button></header><div className="v9-modal-body"><label>Tên chế độ xem<input autoFocus value={viewName} onChange={e=>setViewName(e.target.value)} placeholder="Ví dụ: Đồng hồ sắp hết hàng" onKeyDown={e=>{if(e.key==='Enter')saveView()}}/></label><div className="v9-view-summary"><span>Trạng thái: {view.status}</span><span>Tồn kho: {view.stock}</span><span>Sắp xếp: {view.sort}</span></div></div><footer><button className="btn secondary" onClick={()=>setSaveOpen(false)}>Hủy</button><button className="btn primary" disabled={!viewName.trim()} onClick={saveView}>Lưu chế độ xem</button></footer></section></div>}
@@ -74,7 +76,7 @@ export function ProductsV9(){
 
 type Command={id:string;label:string;hint:string;path:string;group:string;icon:ReactNode};
 export function AdminCommandPalette(){
- const{products}=useCommerce();const nav=useNavigate();const[open,setOpen]=useState(false),[q,setQ]=useState(''),[active,setActive]=useState(0);const input=useRef<HTMLInputElement>(null);
+ const{products,orders}=useCommerce();const nav=useNavigate();const[open,setOpen]=useState(false),[q,setQ]=useState(''),[active,setActive]=useState(0);const input=useRef<HTMLInputElement>(null);
  useEffect(()=>{const key=(e:KeyboardEvent)=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setOpen(true)}if(e.key==='Escape')setOpen(false)};const custom=()=>setOpen(true);window.addEventListener('keydown',key);window.addEventListener('timeforge:open-command',custom);return()=>{window.removeEventListener('keydown',key);window.removeEventListener('timeforge:open-command',custom)}},[]);
  useEffect(()=>{if(open){setQ('');setActive(0);setTimeout(()=>input.current?.focus(),30)}},[open]);
  const base:Command[]=[
@@ -90,8 +92,9 @@ export function AdminCommandPalette(){
   {id:'integrations',label:'Thanh toán & giao hàng',hint:'Payment, tracking và Customer Account',path:'/admin/settings/integrations',group:'Cài đặt',icon:<Search/>},
   {id:'settings',label:'Thông tin cửa hàng',hint:'Tên shop, liên hệ, MST, social và tuyển dụng',path:'/admin/settings',group:'Cài đặt',icon:<Search/>}
  ];
- const productCommands=products.slice(0,40).map(p=>({id:p.id,label:p.title,hint:`${p.sku||'Chưa SKU'} · ${money(p.price)}`,path:`/admin/products/${p.id}`,group:'Sản phẩm',icon:<img src={p.images[0]} alt=""/>}));
- const commands=[...base,...productCommands].filter(c=>`${c.label} ${c.hint}`.toLowerCase().includes(q.toLowerCase())).slice(0,12);
+ const productCommands=products.slice(0,40).map(p=>({id:p.id,label:p.title,hint:`${p.sku||'Chưa SKU'} · ${money(p.price)}`,path:`/admin/products/${p.id}`,group:'Sản phẩm',icon:<img src={p.images[0]} alt="" loading="lazy" decoding="async"/>}));
+ const orderCommands=orders.slice(0,40).map(order=>({id:`order-${order.id}`,label:order.number,hint:`${order.customerName} · ${money(order.total)}`,search:`${order.customerEmail} ${order.customerPhone}`,path:`/admin/orders/${order.id}`,group:'Đơn hàng',icon:<ShoppingBag/>}));
+ const commands=[...base,...orderCommands,...productCommands].filter(c=>`${c.label} ${c.hint} ${'search' in c?c.search:''}`.toLowerCase().includes(q.toLowerCase())).slice(0,12);
  const choose=(c?:Command)=>{if(!c)return;nav(c.path);setOpen(false)};
  if(!open)return null;
  return <div className="command-backdrop" onMouseDown={()=>setOpen(false)}><section className="command-palette" onMouseDown={e=>e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Tìm kiếm trong admin"><label><Search/><input ref={input} value={q} onChange={e=>{setQ(e.target.value);setActive(0)}} placeholder="Tìm sản phẩm, đơn hàng hoặc trang..." onKeyDown={e=>{if(e.key==='ArrowDown'){e.preventDefault();setActive(x=>Math.min(commands.length-1,x+1))}if(e.key==='ArrowUp'){e.preventDefault();setActive(x=>Math.max(0,x-1))}if(e.key==='Enter'){e.preventDefault();choose(commands[active])}}}/><kbd>ESC</kbd></label><div className="command-results">{commands.length?commands.map((c,i)=><button key={c.id} className={active===i?'active':''} onMouseEnter={()=>setActive(i)} onClick={()=>choose(c)}><span className="command-icon">{c.icon}</span><span><b>{c.label}</b><small>{c.hint}</small></span><em>{c.group}</em></button>):<div className="command-empty"><Search/><b>Không có kết quả</b><span>Thử tìm theo tên sản phẩm hoặc khu vực admin.</span></div>}</div><footer><span><kbd>↑</kbd><kbd>↓</kbd> di chuyển</span><span><kbd>↵</kbd> mở</span></footer></section></div>

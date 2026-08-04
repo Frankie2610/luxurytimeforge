@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {firebaseClient} from './firebase';
+import {asList} from './data-normalize';
 
 export type BlogStatus='draft'|'published';
 export interface BlogPostV18 {id:string;title:string;handle:string;excerpt:string;contentHtml:string;image:string;author:string;publishedAt:string;updatedAt:string;status:BlogStatus;featured:boolean;}
@@ -12,11 +13,12 @@ const seedPosts:BlogPostV18[]=[
   {id:'blog-3',title:'Giữ đồng hồ luôn bền đẹp trong quá trình sử dụng',handle:'cham-soc-dong-ho',excerpt:'Hướng dẫn vệ sinh, bảo quản và kiểm tra định kỳ cho đồng hồ dây da, dây kim loại.',contentHtml:'<p>Tránh để đồng hồ tiếp xúc kéo dài với hóa chất, nhiệt độ cao và độ ẩm vượt quá mức chống nước được công bố.</p><h2>Bảo quản đúng cách</h2><p>Lau nhẹ sau khi sử dụng, giữ dây da khô ráo và kiểm tra gioăng định kỳ là những bước đơn giản nhưng hiệu quả.</p>',image:'',author:'TimeForge Care',publishedAt:new Date(Date.now()-86400000*18).toISOString(),updatedAt:now,status:'published',featured:false},
 ];
 
-function readPosts(){try{const raw=localStorage.getItem(BLOG_KEY);return raw?JSON.parse(raw) as BlogPostV18[]:seedPosts}catch{return seedPosts}}
+function normalizePosts(value:unknown){return asList<BlogPostV18>(value)}
+function readPosts(){try{const raw=localStorage.getItem(BLOG_KEY);return raw?normalizePosts(JSON.parse(raw)):seedPosts}catch{return seedPosts}}
 
 export function useBlogPostsV18(){
   const[posts,setPosts]=useState<BlogPostV18[]>(readPosts);
-  useEffect(()=>{if(!firebaseClient.enabled)return;void firebaseClient.read<BlogPostV18[]>('timeforge/blogPosts').then(remote=>{if(remote?.length){setPosts(remote);localStorage.setItem(BLOG_KEY,JSON.stringify(remote));}})},[]);
+  useEffect(()=>{if(!firebaseClient.enabled)return;void firebaseClient.read<BlogPostV18[]|Record<string,BlogPostV18>>('timeforge/blogPosts').then(remote=>{const normalized=normalizePosts(remote);if(normalized.length){setPosts(normalized);localStorage.setItem(BLOG_KEY,JSON.stringify(normalized));}})},[]);
   useEffect(()=>{const sync=()=>setPosts(readPosts());window.addEventListener('timeforge:blogs-updated',sync);return()=>window.removeEventListener('timeforge:blogs-updated',sync)},[]);
   const commit=(next:BlogPostV18[])=>{setPosts(next);localStorage.setItem(BLOG_KEY,JSON.stringify(next));window.dispatchEvent(new Event('timeforge:blogs-updated'));if(firebaseClient.enabled)void firebaseClient.write('timeforge/blogPosts',next)};
   return{posts,commit};

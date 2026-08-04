@@ -12,6 +12,7 @@ import {useAuth} from './auth';
 import{hasPermission,routePermission,roleLabels}from'./permissions';
 import {useReturns} from './returns-v13';
 import {AdminCommandPalette} from './admin-v9';
+import {AdminRouteBoundary} from './admin-route-boundary';
 import './admin-v4938.css';
 import './v50-admin-polish.css';
 import './v504-admin-final.css';
@@ -22,6 +23,8 @@ import './v521-ui-polish.css';
 import './v522-ui-refinement.css';
 import './v523-product-admin-fix.css';
 import './v531-admin-dashboard.css';
+import './v540-admin-refinement.css';
+import './v550-admin-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -29,6 +32,27 @@ import {
 
 type NavItem={to:string;label:string;icon:ComponentType<{className?:string}>;count?:number};
 type NavSection={label?:string;items:NavItem[]};
+
+const adminRoutePrefetchers:Record<string,()=>Promise<unknown>>={
+  orders:()=>Promise.all([import('./admin-sprint11'),import('./admin-sprint12')]),
+  'draft-orders':()=>import('./admin-sprint12'),
+  products:()=>Promise.all([import('./admin-v9'),import('./product-editor-v39')]),
+  collections:()=>import('./admin'),
+  'product-groups':()=>import('./product-groups-admin-v504'),
+  inventory:()=>import('./admin-operations-v10'),
+  customers:()=>import('./admin-operations-v10'),
+  'customer-segments':()=>import('./admin-sprint11'),
+  analytics:()=>import('./analytics-v15'),
+  discounts:()=>import('./admin-operations-v10'),
+  returns:()=>import('./returns-v13'),
+  blogs:()=>import('./blog-v18'),
+  pages:()=>import('./content-pages-admin-v23'),
+  'online-store':()=>import('./online-store-v19'),
+  settings:()=>Promise.all([import('./admin'),import('./integrations-v13'),import('./team-v20')]),
+  activity:()=>import('./operations'),
+  'import-export':()=>import('./admin'),
+};
+const prefetchAdminRoute=(path:string)=>{const section=path.split('/')[2]||'';void adminRoutePrefetchers[section]?.();};
 
 type PageMeta={title:string;eyebrow:string;description:string;fullBleed?:boolean};
 const pageMap:Record<string,PageMeta>={
@@ -74,9 +98,12 @@ export function AdminLayoutV16(){
   const{items:returns}=useReturns();
   const{user,logout}=useAuth();
   const meta=routeMeta(location.pathname);
-  const pendingOrders=orders.filter(item=>item.status==='open').length;
-  const pendingReturns=returns.filter(item=>item.status==='requested').length;
-  const lowStock=products.filter(item=>item.inventory<=3).length;
+  const operationalCounts=useMemo(()=>({
+    pendingOrders:orders.reduce((count,item)=>count+(item.status==='open'?1:0),0),
+    pendingReturns:returns.reduce((count,item)=>count+(item.status==='requested'?1:0),0),
+    lowStock:products.reduce((count,item)=>count+(item.inventory<=3?1:0),0),
+  }),[orders,products,returns]);
+  const{pendingOrders,pendingReturns,lowStock}=operationalCounts;
   const sections=useMemo<NavSection[]>(()=>[
     {items:[{to:'/admin',label:'Trang chủ',icon:Home}]},
     {label:'Đơn hàng',items:[
@@ -124,7 +151,7 @@ export function AdminLayoutV16(){
       </div>
       <button className="v16-store-switcher"><span className="v16-store-avatar">TF</span><span><b>TimeForge</b><small>Cửa hàng chính</small></span><ChevronDown/></button>
       <nav className="v16-admin-nav">
-        {sections.map((section,index)=><section key={section.label||index}>{section.label&&<p>{section.label}</p>}{section.items.map(({to,label,icon:Icon,count})=><NavLink key={to} to={to} end={to==='/admin'} title={label}><Icon/><span>{label}</span>{Boolean(count)&&<em>{count}</em>}</NavLink>)}</section>)}
+        {sections.map((section,index)=><section key={section.label||index}>{section.label&&<p>{section.label}</p>}{section.items.map(({to,label,icon:Icon,count})=><NavLink key={to} to={to} end={to==='/admin'} title={label} onPointerEnter={()=>prefetchAdminRoute(to)} onFocus={()=>prefetchAdminRoute(to)}><Icon/><span>{label}</span>{Boolean(count)&&<em>{count}</em>}</NavLink>)}</section>)}
       </nav>
       <div className="v16-admin-sidebar-footer">
         <NavLink to="/admin/settings/integrations" title="Tích hợp"><Wrench/><span>Tích hợp</span></NavLink>
@@ -146,7 +173,7 @@ export function AdminLayoutV16(){
       </header>
       <div className={`v16-admin-page ${meta.fullBleed?'is-fullbleed':''}`}>
         {!meta.fullBleed&&<header className="v16-page-header"><div><div className="v35-page-breadcrumb"><Link to="/admin">TimeForge</Link><ChevronRight/><span>{meta.title}</span></div><small>{meta.eyebrow}</small><h1>{meta.title}</h1><p>{meta.description}</p></div><ChevronRight aria-hidden="true"/></header>}
-        <main className="v16-admin-content"><Outlet/></main>
+        <main className="v16-admin-content"><AdminRouteBoundary key={location.pathname}><Outlet/></AdminRouteBoundary></main>
       </div>
     </div>
     <ToastBridge/><AdminCommandPalette/>

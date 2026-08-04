@@ -6,9 +6,11 @@ const storefront = read('src/storefront-v10.tsx')
 const admin = read('src/admin-shell-v16.tsx')
 const storefrontAdditions = read('src/v531-storefront-additions.css')
 const adminDashboard = read('src/v531-admin-dashboard.css')
+const [major, minor, patch] = JSON.parse(read('package.json')).version.split('.').map(Number)
+const preservesV531 = major > 0 || minor > 53 || (minor === 53 && patch >= 1)
 
 const checks = [
-  ['package version is 0.53.1', JSON.parse(read('package.json')).version === '0.53.1'],
+  ['package version preserves the 0.53.1 baseline', preservesV531],
   ['wishlist provider wraps the app', read('src/main.tsx').includes('<WishlistProvider><App/>')],
   ['wishlist route remains available', read('src/App.tsx').includes('path="/wishlist"')],
   ['wishlist remains persistent', read('src/wishlist.tsx').includes('tf:wishlist:v1')],

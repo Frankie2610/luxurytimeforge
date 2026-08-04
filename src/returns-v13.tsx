@@ -12,16 +12,18 @@ import {money,uid} from './utils';
 import {trackCommerceEvent} from './commerce-events';
 import {Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuTrigger,Tabs,TabsList,TabsTrigger} from './ui';
 import {toast} from 'sonner';
+import {asList} from './data-normalize';
 
 const KEY='tf.v13.return-requests';
 const SESSION_KEY='tf.v12.customer-session';
-const load=():ReturnRequest[]=>{try{const raw=localStorage.getItem(KEY);return raw?JSON.parse(raw):[]}catch{return[]}};
+const normalizeReturns=(value:unknown)=>asList<ReturnRequest>(value).map(item=>({...item,lines:asList<ReturnRequest['lines'][number]>(item.lines)}));
+const load=():ReturnRequest[]=>{try{const raw=localStorage.getItem(KEY);return normalizeReturns(raw?JSON.parse(raw):null)}catch{return[]}};
 const save=(items:ReturnRequest[])=>{localStorage.setItem(KEY,JSON.stringify(items));if(firebaseClient.enabled)void firebaseClient.write('timeforge/returnRequests',items)};
 const statusLabel:Record<ReturnStatus,string>={requested:'Đã yêu cầu',approved:'Đã duyệt',received:'Đã nhận hàng',refunded:'Đã hoàn tiền',rejected:'Từ chối',closed:'Đã đóng'};
 const statusTone:Record<ReturnStatus,string>={requested:'warning',approved:'info',received:'info',refunded:'success',rejected:'critical',closed:'neutral'};
 const fmt=(value:string)=>new Date(value).toLocaleString('vi-VN',{dateStyle:'medium',timeStyle:'short'});
 function currentCustomerId(){try{const raw=localStorage.getItem(SESSION_KEY);return raw?(JSON.parse(raw) as {customerId:string}).customerId:''}catch{return''}}
-export function useReturns(){const[items,setItems]=useState<ReturnRequest[]>(load);useEffect(()=>{if(!firebaseClient.enabled)return;void firebaseClient.read<ReturnRequest[]>('timeforge/returnRequests').then(remote=>{if(remote){setItems(remote);localStorage.setItem(KEY,JSON.stringify(remote))}})},[]);const commit=(next:ReturnRequest[])=>{setItems(next);save(next)};return{items,commit}}
+export function useReturns(){const[items,setItems]=useState<ReturnRequest[]>(load);useEffect(()=>{if(!firebaseClient.enabled)return;void firebaseClient.read<ReturnRequest[]|Record<string,ReturnRequest>>('timeforge/returnRequests').then(remote=>{if(remote){const normalized=normalizeReturns(remote);setItems(normalized);localStorage.setItem(KEY,JSON.stringify(normalized))}})},[]);const commit=(next:ReturnRequest[])=>{const normalized=normalizeReturns(next);setItems(normalized);save(normalized)};return{items,commit}}
 
 function ExchangeSelector({products,productId,variantId,onProduct,onVariant}:{products:Product[];productId:string;variantId:string;onProduct:(id:string)=>void;onVariant:(id:string)=>void}){
  const product=products.find(item=>item.id===productId);

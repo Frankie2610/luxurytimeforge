@@ -51,8 +51,8 @@ export function DashboardV3(){
  },[orders,products]);
  const maxDaily=Math.max(1,...insight.daily.map(item=>item.value));
  const priorityItems=[
-  {to:'/admin/orders',icon:<ShoppingBag/>,value:insight.pendingOrders,label:'Đơn đang mở',note:'Cần xác nhận hoặc xử lý'},
-  {to:'/admin/orders',icon:<CircleDollarSign/>,value:insight.pendingPayment,label:'Chờ thanh toán',note:'Kiểm tra trạng thái giao dịch'},
+  {to:'/admin/orders?status=open',icon:<ShoppingBag/>,value:insight.pendingOrders,label:'Đơn đang mở',note:'Cần xác nhận hoặc xử lý'},
+  {to:'/admin/orders?payment=pending',icon:<CircleDollarSign/>,value:insight.pendingPayment,label:'Chờ thanh toán',note:'Kiểm tra trạng thái giao dịch'},
   {to:'/admin/inventory',icon:<PackageSearch/>,value:insight.lowStock+insight.outOfStock,label:'Cảnh báo tồn kho',note:`${insight.outOfStock} sản phẩm đã hết`},
   {to:'/admin/products',icon:<Boxes/>,value:insight.draftProducts,label:'Sản phẩm chưa bán',note:'Đang nháp hoặc chưa xuất bản'},
  ];
@@ -85,7 +85,7 @@ export function DashboardV3(){
   <section className="admin-two tf53-dashboard-lists"><article className="card"><CardHead small="ORDERS" title="Đơn hàng mới" link="/admin/orders"/><div className="recent-orders">{orders.length?orders.slice(0,6).map(o=><Link to={`/admin/orders/${o.id}`} key={o.id}><div><b>{o.number}</b><span>{o.customerName} · {fmt(o.createdAt)}</span></div><strong>{money(o.total)}</strong><Badge tone={orderTone(o.status)}>{statusLabel[o.status]}</Badge></Link>):<EmptyInline text="Chưa có đơn hàng mới."/>}</div></article><article className="card"><CardHead small="ACTIVITY" title="Hoạt động gần đây" link="/admin/activity"/><div className="activity-mini">{activities.slice(0,7).map(a=><div key={a.id}><span><ActivityIcon/></span><p><b>{a.action}</b><small>{a.detail} · {fmt(a.createdAt)}</small></p></div>)}{!activities.length&&<EmptyInline text="Chưa có hoạt động được ghi nhận."/>}</div></article></section>
  </div>
 }
-function DashboardMetric({icon,label,value,note,trend,tone='neutral'}:{icon:ReactNode;label:string;value:string;note:string;trend?:number;tone?:'neutral'|'warning'|'success'}){return <article className={`tf53-dashboard-metric ${tone}`}><span>{icon}</span><div><small>{label}</small><strong>{value}</strong><p>{note}</p></div>{trend!==undefined&&<em className={trend<0?'negative':'positive'}>{trend<0?<ArrowDownRight/>:<ArrowUpRight/>}{Math.abs(trend)}%</em>}</article>}
+function DashboardMetric({icon,label,value,note,trend,tone='neutral'}:{icon:ReactNode;label:string;value:string;note:string;trend?:number;tone?:'neutral'|'warning'|'success'}){return <article className={`tf53-dashboard-metric ${tone}${trend!==undefined?' has-trend':''}`}><span>{icon}</span><div><small>{label}</small><strong>{value}</strong><p>{note}</p></div>{trend!==undefined&&<em className={trend<0?'negative':'positive'}>{trend<0?<ArrowDownRight/>:<ArrowUpRight/>}{Math.abs(trend)}%</em>}</article>}
 function Metric({icon,label,value,note}:{icon:ReactNode;label:string;value:string;note:string}){return <article><span>{icon}</span><div><small>{label}</small><b>{value}</b><p>{note}</p></div></article>}
 function CardHead({small,title,link}:{small:string;title:string;link?:string}){return <header className="card-head"><div><small>{small}</small><h3>{title}</h3></div>{link&&<Link to={link}>Xem tất cả</Link>}</header>}
 function EmptyInline({text}:{text:string}){return <div className="empty-inline"><Clock3/><p>{text}</p></div>}

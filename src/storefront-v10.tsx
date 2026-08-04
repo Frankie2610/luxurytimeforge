@@ -55,6 +55,7 @@ import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreIcon, resolveStoreLogo, resolveStoreName} from './store-profile';
 import {useWishlist} from './wishlist';
+import {useRecentlyViewedProduct} from './recently-viewed';
 import {
   BankCardMark,
   FacebookMark,
@@ -95,6 +96,10 @@ import './v521-ui-polish.css';
 import './v522-ui-refinement.css';
 import './v523-product-admin-fix.css';
 import './v531-storefront-additions.css';
+import './v540-storefront-refinement.css';
+import './v550-storefront-polish.css';
+
+const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -180,7 +185,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
               <Search />
               <span>Tìm kiếm</span>
             </button>
-            <Link className="lux-icon-button tf53-wishlist-link" to="/wishlist" aria-label={`Danh sách yêu thích, ${wishlistIds.length} sản phẩm`}>
+            <Link className="lux-icon-button tf53-wishlist-link" to="/wishlist" onPointerEnter={prefetchWishlistRoute} onFocus={prefetchWishlistRoute} aria-label={`Danh sách yêu thích, ${wishlistIds.length} sản phẩm`}>
               <Heart fill={wishlistIds.length ? 'currentColor' : 'none'} />
               {wishlistIds.length > 0 && <span>{wishlistIds.length}</span>}
             </Link>
@@ -246,7 +251,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
               <nav>
                 <Link to="/" onClick={() => setMobileOpen(false)}>Trang chủ</Link>
                 <Link to="/collections" onClick={() => setMobileOpen(false)}>Tất cả đồng hồ</Link>
-                <Link to="/wishlist" onClick={() => setMobileOpen(false)}>Yêu thích {wishlistIds.length > 0 ? `(${wishlistIds.length})` : ''}</Link>
+                <Link to="/wishlist" onPointerEnter={prefetchWishlistRoute} onFocus={prefetchWishlistRoute} onClick={() => setMobileOpen(false)}>Yêu thích {wishlistIds.length > 0 ? `(${wishlistIds.length})` : ''}</Link>
                 {activeCollections.map((collection) => (
                   <Link key={collection.id} to={`/collections/${collection.handle}`} onClick={() => setMobileOpen(false)}>
                     {collection.title}
@@ -421,7 +426,7 @@ export function StoreLayoutV10() {
       window.history.scrollRestoration = previousRestoration;
       document.documentElement.style.scrollBehavior = previousBehavior;
     };
-  }, [location.pathname, location.search]);
+  }, [location.pathname]);
   useEffect(() => {
     captureCommerceAttribution();
     trackCommerceEvent('page_view');
@@ -488,7 +493,7 @@ export function StoreLayoutV10() {
       {previewMode && <ThemePreviewBridgeV26 />}
       {showStandaloneCountdown && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
       <LuxuryHeader openCart={requestCart} />
-      <main><div className="tf-route-view-v4910" key={`${location.pathname}${location.search}`}><Outlet context={{openCart: requestCart}} /></div></main>
+      <main><div className="tf-route-view-v4910" key={location.pathname}><Outlet context={{openCart: requestCart}} /></div></main>
       {(extras.footerVisible || location.pathname === '/checkout') && <LuxuryFooter />}
       {extras.cartDrawer && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
       {extras.newsletterPopup && !newsletterDismissed && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
@@ -1223,6 +1228,7 @@ export function ProductPageV10() {
   const [quantity, setQuantity] = useState(1);
   const [variantId, setVariantId] = useState(product?.variants[0]?.id || '');
   const {has, toggle} = useWishlist();
+  const {ids: recentlyViewedIds, clear: clearRecentlyViewed} = useRecentlyViewedProduct(product?.id || '');
 
   useEffect(() => {
     setImageIndex(0);
@@ -1265,6 +1271,7 @@ export function ProductPageV10() {
   const showProductMain = productMain?.visible !== false;
   const relatedLimit = Number(recommendationSection?.settings.limit || 4);
   const related = products.filter((item) => item.id !== product.id && item.status === 'active' && item.published && (item.vendor === product.vendor || item.productType === product.productType)).slice(0, relatedLimit);
+  const recentlyViewed = recentlyViewedIds.filter((id) => id !== product.id).map((id) => products.find((item) => item.id === id)).filter((item): item is Product => Boolean(item?.published && item.status === 'active')).slice(0, 4);
   const add = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('add_to_cart',{productId:product.id,value:price*quantity}); toast.success('Đã thêm sản phẩm vào giỏ hàng'); openCart();};
   const buyNow = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('checkout_started',{productId:product.id,value:price*quantity});};
   const changeImage = (direction: number) => setImageIndex((current) => (current + direction + images.length) % images.length);
@@ -1351,6 +1358,7 @@ export function ProductPageV10() {
       </> : <section className="v23-template-hidden"><h1>Trang sản phẩm đang được ẩn trong Cửa hàng online</h1><p>Mở trình chỉnh sửa theme để bật lại section Thông tin sản phẩm.</p></section>}
 
       {recommendationSection?.visible !== false && !!related.length && <section data-theme-section-id={recommendationSection?.id} data-theme-section-label={recommendationSection ? sectionLabels[recommendationSection.type] : 'Sản phẩm liên quan'} className="lux-section lux-related tf-related-v4916"><LuxurySectionHeading eyebrow="GỢI Ý PHÙ HỢP" title={String(recommendationSection?.settings.title || 'Sản phẩm liên quan')} /><div className={`lux-product-grid v23-columns-${Number(recommendationSection?.settings.columns || 4)}`}>{related.map((item) => <LuxuryProductCard key={item.id} product={item} />)}</div></section>}
+      {!!recentlyViewed.length && <section className="lux-section tf54-recently-viewed" aria-label="Sản phẩm vừa xem"><header><div><small>LỊCH SỬ KHÁM PHÁ</small><h2>Sản phẩm bạn vừa xem</h2><p>Quay lại nhanh những thiết kế đã xem trên thiết bị này.</p></div><button type="button" onClick={clearRecentlyViewed}><Trash2/>Xóa lịch sử</button></header><div className="lux-product-grid v23-columns-4">{recentlyViewed.map((item) => <LuxuryProductCard key={item.id} product={item}/>)}</div></section>}
       {productTemplate.sections.filter((section) => isSharedThemeSectionV27(section)).map((section) => <ThemeSectionV27 key={section.id} section={section}/>)}
       <div className="tf-pdp492-mobile-bar" aria-label="Mua sản phẩm nhanh">
         <div className="tf-pdp492-mobile-copy"><small>{product.vendor || 'TIMEFORGE'}</small><b>{money(price)}</b></div>
@@ -1373,11 +1381,14 @@ export function SearchPageV10() {
   const resultsSection = searchTemplate.sections.find((section) => section.type === 'searchResults');
   const columns = Number(resultsSection?.settings.columns || 4);
   const showSuggestions = resultsSection?.settings.showSuggestions !== false;
-  const found = products.filter((product) => `${product.title} ${product.vendor} ${product.sku} ${product.tags.join(' ')}`.toLowerCase().includes(query.toLowerCase()));
+  const found = useMemo(() => {
+    const normalizedQuery = query.toLowerCase();
+    return products.filter((product) => `${product.title} ${product.vendor} ${product.sku} ${product.tags.join(' ')}`.toLowerCase().includes(normalizedQuery));
+  }, [products, query]);
   const [visibleCount, setVisibleCount] = useState(24);
   useEffect(() => setVisibleCount(24), [query]);
-  const visibleFound = found.slice(0, visibleCount);
-  const suggested = products.filter((product) => product.status === 'active' && product.published).slice(0, 4);
+  const visibleFound = useMemo(() => found.slice(0, visibleCount), [found, visibleCount]);
+  const suggested = useMemo(() => products.filter((product) => product.status === 'active' && product.published).slice(0, 4), [products]);
   return <div className="lux-search-page v27-search-template">
     {resultsSection?.visible !== false && <div data-theme-section-id={resultsSection?.id} data-theme-section-label={resultsSection ? sectionLabels[resultsSection.type] : 'Kết quả tìm kiếm'}>
       <section className="v27-search-hero"><small>DISCOVER</small><h1>Tìm kiếm TimeForge</h1><p>Khám phá theo tên sản phẩm, thương hiệu hoặc mã SKU.</p><form onSubmit={(event) => {event.preventDefault(); setParams(value ? {q: value} : {});}}><Search /><input autoFocus value={value} onChange={(event) => setValue(event.target.value)} placeholder="Tên, thương hiệu hoặc SKU" /><button>Tìm kiếm</button></form></section>

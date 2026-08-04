@@ -15,13 +15,14 @@ import {readIntegrationSettings} from './integrations';
 import {resolveStoreLogo,resolveStoreName} from './store-profile';
 import type {Customer, Order} from './types';
 import {money} from './utils';
+import {asList} from './data-normalize';
 
 const SESSION_KEY = 'tf.v12.customer-session';
 const workflowKey = 'tf.s11.order-workflows';
 type Session = {customerId: string; signedInAt: string; expiresAt?: string};
 type WorkflowStore = {events: Array<{id:string;orderId:string;type:string;title:string;detail:string;createdAt:string;actor:string}>; fulfillments: Array<{id:string;orderId:string;carrier:string;trackingNumber:string;trackingUrl:string;status:string;createdAt:string}>};
 const readSession = (): Session | null => {try {const value = localStorage.getItem(SESSION_KEY);if(!value)return null;const session=JSON.parse(value) as Session;if(session.expiresAt&&new Date(session.expiresAt).getTime()<=Date.now()){localStorage.removeItem(SESSION_KEY);return null}return session;} catch {return null;}};
-const readWorkflow = (): WorkflowStore => {try {const value=localStorage.getItem(workflowKey);return value?JSON.parse(value):{events:[],fulfillments:[]};}catch{return{events:[],fulfillments:[]};}};
+const readWorkflow = (): WorkflowStore => {try {const value=localStorage.getItem(workflowKey);const parsed=value?JSON.parse(value):null;return{events:asList<WorkflowStore['events'][number]>(parsed?.events),fulfillments:asList<WorkflowStore['fulfillments'][number]>(parsed?.fulfillments)};}catch{return{events:[],fulfillments:[]};}};
 const fmt = (value: string) => new Date(value).toLocaleDateString('vi-VN', {day:'2-digit', month:'2-digit', year:'numeric'});
 const statusLabel: Record<Order['status'], string> = {open:'Đang tiếp nhận',confirmed:'Đã xác nhận',completed:'Hoàn tất',cancelled:'Đã hủy'};
 const fulfillmentLabel: Record<Order['fulfillmentStatus'], string> = {unfulfilled:'Chưa xử lý',processing:'Đang chuẩn bị',fulfilled:'Đã giao',returned:'Đã hoàn trả'};
