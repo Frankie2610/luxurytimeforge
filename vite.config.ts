@@ -6,7 +6,7 @@ import {fileURLToPath,URL} from 'node:url';
 export default defineConfig({
   plugins:[react(),tailwindcss()],
   resolve:{alias:{'@':fileURLToPath(new URL('./src',import.meta.url))}},
-  server:{host:'0.0.0.0',port:5173,strictPort:false,allowedHosts:['timeforge.local','terminal.local']},
+  server:{host:'0.0.0.0',allowedHosts:['timeforge.local','terminal.local']},
   build:{
     target:'es2022',
     cssCodeSplit:true,

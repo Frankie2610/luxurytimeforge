@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.53.1 — Layout stability correction
+
+- Removed the two broad V0.53 visual override stylesheets that were competing with established storefront and Admin breakpoints.
+- Restored the proven storefront compatibility layer and the original Atelier theme defaults.
+- Replaced 37.7 KB of global visual overrides with 9.9 KB of narrowly scoped CSS for the wishlist control and the new Admin dashboard only.
+- Kept the persistent wishlist, `/wishlist` page, Operations Pulse, Priority Center and quick actions.
+- Added explicit shrink protection and isolated responsive rules for the new dashboard at desktop, tablet, mobile and narrow-mobile widths.
+- Hid the extra wishlist icon from the compact mobile header while retaining it in the mobile navigation drawer.
+- Added a layout-stability regression suite that prevents the removed global override files from returning.
+
 ## 0.53.0 — Storefront, Admin and performance polish
 
 - Introduced a warmer deep-forest/ivory visual system with clearer type scale, spacing, cards, navigation, forms and focus states across customer and Admin screens.

@@ -1,3 +1,4 @@
+import './legacy.css';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft,
@@ -93,7 +94,7 @@ import './v513-storefront-enhancements.css';
 import './v521-ui-polish.css';
 import './v522-ui-refinement.css';
 import './v523-product-admin-fix.css';
-import './v53-storefront-polish.css';
+import './v531-storefront-additions.css';
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>

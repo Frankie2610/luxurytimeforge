@@ -40,8 +40,13 @@ collect(entryKey)
 const reachableCss = [...cssFiles].sort()
 const legacyCss = reachableCss.filter((file) => file.includes('legacy'))
 
-if (legacyCss.length > 0) {
-  console.error(`FAIL storefront still reaches legacy CSS: ${legacyCss.join(', ')}`)
+if (legacyCss.length === 0) {
+  console.error('FAIL storefront compatibility CSS is missing from the static graph.')
+  process.exit(1)
+}
+
+if (fs.existsSync(new URL('../src/v53-storefront-polish.css', import.meta.url)) || fs.existsSync(new URL('../src/v53-admin-polish.css', import.meta.url))) {
+  console.error('FAIL deprecated global V0.53 override stylesheets still exist.')
   process.exit(1)
 }
 
@@ -51,6 +56,6 @@ const gzipBytes = reachableCss.reduce((total, file) => {
   return total + gzipSync(source).byteLength
 }, 0)
 
-console.log(`PASS storefront static graph contains ${visited.size} chunks without legacy CSS.`)
+console.log(`PASS storefront static graph contains ${visited.size} chunks with compatibility CSS and no deprecated global V0.53 override sources.`)
 console.log(`Reachable CSS: ${reachableCss.join(', ')}`)
 console.log(`Storefront route CSS: ${(gzipBytes / 1024).toFixed(2)} KiB gzip`)
