@@ -27,6 +27,8 @@ import './v540-admin-refinement.css';
 import './v550-admin-polish.css';
 import './v560-admin-features.css';
 import './v563-admin-scroll-polish.css';
+import './v564-admin-polish.css';
+import './v565-admin-performance.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,

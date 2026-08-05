@@ -12,9 +12,11 @@ const storefront = read('src/storefront-v10.tsx');
 const menuCss = read('src/v563-storefront-menu.css');
 const wishlist = read('src/wishlist-page-v53.tsx');
 const wishlistCss = read('src/v563-wishlist-control.css');
+const [major, minor, patch] = String(packageJson.version || '').split('.').map(Number);
+const preservesV563 = major > 0 || minor > 56 || (minor === 56 && patch >= 3);
 
 const checks = [
-  ['package version is 0.56.3', packageJson.version === '0.56.3'],
+  ['package version preserves the V0.56.3 baseline', preservesV563],
   ['V0.56.3 regression command is registered', packageJson.scripts?.['v563:check'] === 'node scripts/check-v563-scroll-menu-polish.mjs'],
   ['final Admin scroll polish loads after V0.56.0 features', adminShell.indexOf("'./v563-admin-scroll-polish.css'") > adminShell.indexOf("'./v560-admin-features.css'")],
   ['Product Editor route class is applied before paint', productEditor.includes('useLayoutEffect') && productEditor.includes("classList.add('tf-product-editor-route-v4915')")],

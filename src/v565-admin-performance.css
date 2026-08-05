@@ -1,0 +1,34 @@
+/* V0.56.5 — lightweight Admin overlays and a direct product-link action. */
+.tf-admin-v499 :is(
+  .s11-modal-shell,
+  .v12-modal-shell,
+  .collection-modal-backdrop,
+  .drawer-overlay,
+  .tf-picker-shell,
+  .v13-drawer-shell,
+  .tf510-group-editor-overlay
+){
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+.tf-product-editor-v4915 .tf565-editor-copy-link{
+  border:1px solid #b8c7bd;background:#f4f8f5;color:#254d34;box-shadow:0 2px 7px rgba(31,66,43,.04);
+}
+.tf-product-editor-v4915 .tf565-editor-copy-link:hover{border-color:#789384;background:#e9f2ec;color:#173923}
+.tf-product-editor-v4915 .tf565-editor-copy-link:focus-visible{outline:3px solid rgba(55,106,72,.18);outline-offset:2px}
+
+@media(max-width:1120px) and (min-width:641px){
+  .tf-product-editor-v4915 .tf39-editor-header-actions{gap:6px}
+  .tf-product-editor-v4915 .tf39-editor-header-actions>a,
+  .tf-product-editor-v4915 .tf39-editor-header-actions>button{padding-inline:10px;font-size:10px}
+}
+@media(max-width:640px){
+  .tf-product-editor-v4915 .tf39-editor-header-actions{grid-template-columns:repeat(3,34px)}
+  .tf-product-editor-v4915 .tf39-editor-header-actions>a,
+  .tf-product-editor-v4915 .tf39-editor-header-actions>button{width:34px;min-width:34px;padding:0!important;font-size:0!important}
+  .tf-product-editor-v4915 .tf39-editor-header-actions svg{margin:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .tf-product-editor-v4915 .tf565-editor-copy-link{transition:none!important}
+}

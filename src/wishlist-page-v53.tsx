@@ -22,6 +22,7 @@ import './v560-wishlist-features.css';
 import './v561-wishlist-hotfix.css';
 import './v562-wishlist-refinement.css';
 import './v563-wishlist-control.css';
+import './v564-wishlist-control.css';
 
 type WishlistSort = 'recent' | 'price-asc' | 'price-desc' | 'name';
 const WISHLIST_SORT_KEY = 'tf:wishlist:sort:v1';

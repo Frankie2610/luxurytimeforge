@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.56.3",
+  "version": "0.56.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,7 +42,9 @@
     "v560:check": "node scripts/check-v560-useful-features.mjs",
     "v561:check": "node scripts/check-v561-legacy-data-wishlist.mjs",
     "v562:check": "node scripts/check-v562-cart-menu-wishlist.mjs",
-    "v563:check": "node scripts/check-v563-scroll-menu-polish.mjs"
+    "v563:check": "node scripts/check-v563-scroll-menu-polish.mjs",
+    "v564:check": "node scripts/check-v564-wishlist-sidebar-footer-performance.mjs",
+    "v565:check": "node scripts/check-v565-performance-features.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -85,7 +87,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury Timeforge V0.56.3: single-scroll Admin routes, synchronized storefront menu and refined responsive controls.",
+  "description": "Luxury TimeForge V0.56.5: isolated cart and Wishlist rendering, lighter storefront motion, recent searches and one-click Admin product links.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

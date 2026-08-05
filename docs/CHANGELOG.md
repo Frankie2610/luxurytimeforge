@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.56.5 — Isolated storefront rendering and practical shortcuts
+
+- Stabilized the published and draft theme objects so cart quantity changes no longer invalidate the main commerce context or re-render unrelated storefront routes.
+- Moved Wishlist state to a small external store with item-level subscriptions; changing one heart now updates that product card instead of every visible card.
+- Memoized repeated product cards and removed the storefront's static Framer Motion import, replacing three simple reveals with short opacity/transform CSS animations.
+- Disabled expensive live background blur on the sticky header, newsletter/privacy layers and mobile purchase bars while preserving their visual contrast.
+- Added device-local recent-search chips with duplicate removal, a six-term cap and a clear-history action on responsive customer search.
+- Added one-click copying of the public product URL in Product Editor, including a browser fallback and compact tablet/mobile styling.
+- Added V0.56.5 regression coverage for render isolation, bundle guards, responsive utilities, reduced motion and scoped Admin polish.
+
+## 0.56.4 — Responsive Wishlist typography and focused product editing
+
+- Set the Wishlist sort value and its native options to 12px on desktop, 11px on tablet and 10px on mobile, using the same UI sans-serif stack so the default value no longer appears oversized.
+- Restored an intentional, thin vertical scrollbar for the Product Detail right column on desktop while retaining one normal document scrollbar on tablet and mobile.
+- Added a live Product Readiness checklist with quick links for product content, media, price, inventory, organization, SEO and storefront filters.
+- Increased and strengthened the dynamic footer store name; the value continues to be edited from Admin and is synchronized with the header, invoices and shipping labels.
+- Fixed the storefront header/navigation text at 13px and added native product sharing with a clipboard fallback.
+- Removed redundant commerce-context subscriptions from repeated logo instances and disabled expensive blur repainting on fixed search/filter overlays.
+- Added V0.56.4 regression coverage for all responsive sizes, Admin scroll boundaries, editable identity, utility features and performance guards.
+
 ## 0.56.3 — Admin scroll cleanup and synchronized storefront menu
 
 - Changed Product Detail and the Online Store overview to use one document-level vertical scrollbar instead of nested page/panel scrollbars.

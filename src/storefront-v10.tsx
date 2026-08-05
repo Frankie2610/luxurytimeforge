@@ -1,5 +1,4 @@
 import './legacy.css';
-import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
@@ -16,6 +15,7 @@ import {
   MapPin,
   Plus,
   Search,
+  Share2,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
@@ -25,7 +25,7 @@ import {
   X,
   ZoomIn,
 } from 'lucide-react';
-import {useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent} from 'react';
+import {memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent} from 'react';
 import {createPortal} from 'react-dom';
 import {
   Link,
@@ -54,7 +54,7 @@ import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreIcon, resolveStoreLogo, resolveStoreName} from './store-profile';
-import {useWishlist} from './wishlist';
+import {useWishlist, useWishlistItem} from './wishlist';
 import {useRecentlyViewedProduct} from './recently-viewed';
 import {
   BankCardMark,
@@ -100,8 +100,31 @@ import './v540-storefront-refinement.css';
 import './v550-storefront-polish.css';
 import './v562-storefront-interactions.css';
 import './v563-storefront-menu.css';
+import './v564-storefront-polish.css';
+import './v565-storefront-performance.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
+const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
+const MAX_RECENT_SEARCHES = 6;
+
+function readRecentSearches() {
+  if (typeof window === 'undefined') return [] as string[];
+  try {
+    const value = JSON.parse(window.localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+    return Array.isArray(value) ? value.map((item) => String(item || '').trim()).filter(Boolean).slice(0, MAX_RECENT_SEARCHES) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeRecentSearches(value: string[]) {
+  try {
+    if (value.length) window.localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(value));
+    else window.localStorage.removeItem(SEARCH_HISTORY_KEY);
+  } catch {
+    // Search remains fully available when browser storage is blocked.
+  }
+}
 
 function useOverlayScrollLock(open: boolean) {
   useLayoutEffect(() => {
@@ -128,10 +151,9 @@ const getBlocks = (section: Section | undefined, type: ThemeBlock['type']) =>
   flattenThemeBlocks(section?.blocks || []).filter((item) => item.type === type);
 const themeBlockProps = (block?: ThemeBlock) => block ? ({'data-theme-block-id': block.id, 'data-theme-block-label': blockLabels[block.type]}) : {};
 
-function LuxuryLogo() {
-  const {theme} = useCommerce();
-  const storeName = resolveStoreName(theme.settings.storeName);
-  const customLogo = resolveCustomStoreLogo(theme.settings.logoImage);
+const LuxuryLogo = memo(function LuxuryLogo({name, logoImage}: {name: unknown; logoImage: unknown}) {
+  const storeName = resolveStoreName(name);
+  const customLogo = resolveCustomStoreLogo(logoImage);
   const logoSource = customLogo ? optimizedImage(customLogo, 220, 220, 'fit') : DEFAULT_STORE_LOGO;
   return (
     <Link className="lux-logo tf522-store-brand" to="/" aria-label={storeName}>
@@ -150,7 +172,7 @@ function LuxuryLogo() {
       </span>
     </Link>
   );
-}
+});
 
 function LuxuryHeader({openCart}: {openCart: () => void}) {
   const {collections, theme, products} = useCommerce();
@@ -197,7 +219,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
           <button className="lux-icon-button lux-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Mở menu" aria-expanded={mobileOpen} aria-controls="tf-storefront-navigation-drawer">
             <Menu />
           </button>
-          <LuxuryLogo />
+          <LuxuryLogo name={theme.settings.storeName} logoImage={theme.settings.logoImage} />
           <nav className="lux-main-nav" aria-label="Điều hướng chính">
             <NavLink to="/collections">Tất cả đồng hồ</NavLink>
             {activeCollections.map((collection) => (
@@ -268,7 +290,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
               aria-label="Menu điều hướng"
             >
               <header>
-                <LuxuryLogo />
+                <LuxuryLogo name={theme.settings.storeName} logoImage={theme.settings.logoImage} />
                 <button onClick={() => setMobileOpen(false)} aria-label="Đóng menu"><X /></button>
               </header>
               <form onSubmit={submitSearch}>
@@ -405,6 +427,7 @@ function NewsletterSignupForm({source, onSuccess, className = ''}: {source: stri
 function LuxuryFooter() {
   const {theme}=useCommerce();
   const settings=theme.settings;
+  const storeName=resolveStoreName(settings.storeName);
   const hasSocial=Boolean(settings.facebookUrl||settings.instagramUrl||settings.tiktokUrl);
   const contactItems=[
     settings.storePhone&&<a key="phone" href={`tel:${settings.storePhone.replace(/\s+/g,'')}`}>{settings.storePhone}</a>,
@@ -425,7 +448,7 @@ function LuxuryFooter() {
         <NewsletterSignupForm source="footer" className="tf-footer-signup-v4910" />
       </div>
       <div className="tf-footer-grid-v4910">
-        <section className="tf-footer-brand-v4910"><LuxuryLogo /><div className="tf-footer-brand-copy-v4910"><p>{settings.storeDescription}</p>{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
+        <section className="tf-footer-brand-v4910"><LuxuryLogo name={storeName} logoImage={settings.logoImage} /><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910"><p>{settings.storeDescription}</p>{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
         <section><h4>Mua sắm</h4><Link to="/collections">Tất cả đồng hồ</Link><Link to="/search">Tìm kiếm</Link><Link to="/cart">Giỏ hàng</Link></section>
         <section><h4>Dịch vụ</h4><Link to="/pages/warranty">Bảo hành</Link><Link to="/pages/shipping">Giao hàng</Link><Link to="/pages/returns">Đổi trả</Link></section>
         <section><h4>TimeForge</h4><Link to="/pages/about">Câu chuyện</Link><Link to="/blogs">Tạp chí</Link><Link to="/pages/contact">Liên hệ</Link>{settings.recruitmentUrl&&<a href={settings.recruitmentUrl} target="_blank" rel="noreferrer">Tuyển dụng</a>}</section>
@@ -434,7 +457,7 @@ function LuxuryFooter() {
         <div><b>Hình thức thanh toán</b><span className="tf509-payment-marks"><BankCardMark/><VisaMark/><MastercardMark/><MomoMark/><ZalopayMark/><PayosMark/></span></div>
         {hasSocial&&<div><b>Kết nối với TimeForge</b><span className="tf509-social-marks">{settings.facebookUrl&&<a href={settings.facebookUrl} target="_blank" rel="noreferrer" aria-label="Facebook"><FacebookMark/></a>}{settings.instagramUrl&&<a href={settings.instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram"><InstagramMark/></a>}{settings.tiktokUrl&&<a href={settings.tiktokUrl} target="_blank" rel="noreferrer" aria-label="TikTok"><TiktokMark/></a>}</span></div>}
       </section>
-      <div className="tf-footer-bottom-v4910"><span>© 2026 {settings.storeName}</span><span>Authenticity · Craftsmanship · Service</span></div>
+      <div className="tf-footer-bottom-v4910"><span>© 2026 {storeName}</span><span>Authenticity · Craftsmanship · Service</span></div>
     </footer>
   );
 }
@@ -541,11 +564,10 @@ export function StoreLayoutV10() {
   );
 }
 
-export function LuxuryProductCard({product, priority = false}: {product: Product; priority?: boolean}) {
+export const LuxuryProductCard = memo(function LuxuryProductCard({product, priority = false}: {product: Product; priority?: boolean}) {
   const {productGroups, products} = useCommerce();
   const {addToCart} = useCartActions();
-  const {has, toggle} = useWishlist();
-  const wished = has(product.id);
+  const {wished, toggle} = useWishlistItem(product.id);
   const [secondaryRequested, setSecondaryRequested] = useState(false);
   const sale = discount(product.price, product.compareAtPrice);
   const primary = productImage(product);
@@ -563,7 +585,7 @@ export function LuxuryProductCard({product, priority = false}: {product: Product
           {sale > 0 && <span>–{sale}%</span>}
           {product.inventory <= 3 && product.inventory > 0 && <span className="low">Còn {product.inventory}</span>}
         </div>
-        <button type="button" className={`tf-product-wish-v4918 ${wished ? 'is-active' : ''}`} onClick={() => {toggle(product.id); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}>
+        <button type="button" className={`tf-product-wish-v4918 ${wished ? 'is-active' : ''}`} onClick={() => {toggle(); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}>
           <Heart fill={wished ? 'currentColor' : 'none'} />
         </button>
         <button className="tf-product-quick-add-v4918" onClick={() => {addToCart(product.id, product.variants[0]?.id || '', 1); trackCommerceEvent('add_to_cart',{productId:product.id,value:product.price}); toast.success('Đã thêm sản phẩm vào giỏ hàng');}} disabled={product.inventory <= 0}>
@@ -578,7 +600,7 @@ export function LuxuryProductCard({product, priority = false}: {product: Product
       </div>
     </article>
   );
-}
+});
 
 function LuxurySectionHeading({eyebrow, title, description, link = '/collections'}: {eyebrow: string; title: string; description?: string; link?: string}) {
   return (
@@ -614,7 +636,7 @@ export function HomeV10() {
       return <section key={section.id} {...boundary(section)} className={`lux-hero align-${section.settings.alignment || 'left'}`} style={{minHeight: Math.round(Number(section.settings.height || 680) * .64)}}>
         <img src={optimizedImage(String(section.settings.image || activeProducts[0]?.images[0] || ''), 1920, 1200)} alt="TimeForge luxury watches" width="1920" height="1200" fetchPriority="high" decoding="async" />
         <div className="lux-hero-shade" style={{opacity: Number(section.settings.overlay || 42) / 100}} />
-        <motion.div className="lux-hero-copy" initial={{opacity: 0, y: 30}} animate={{opacity: 1, y: 0}} transition={{duration: .7}}>
+        <div className="lux-hero-copy tf565-enter-up">
           <small {...themeBlockProps(heading)}>{String(heading?.settings.eyebrow || 'THE ART OF TIME')}</small>
           <h1 {...themeBlockProps(heading)}>{String(heading?.settings.text || 'Dấu ấn thời gian, được tuyển chọn.')}</h1>
           <p {...themeBlockProps(text)}>{String(text?.settings.text || 'Khám phá những thiết kế biểu tượng, thông tin minh bạch và dịch vụ hậu mãi dài lâu.')}</p>
@@ -624,7 +646,7 @@ export function HomeV10() {
             <span><PackageCheck />Bảo hiểm vận chuyển</span>
           </div>
           <div className="v33-hero-actions">{action && <Link {...themeBlockProps(action)} className="primary" to={String(action.settings.link || '/collections')}>{String(action.settings.label || 'Khám phá bộ sưu tập')}<ArrowRight /></Link>}<Link className="secondary tf-hero-story-v4912" to="/pages/about">Câu chuyện TimeForge</Link></div>
-        </motion.div>
+        </div>
         <div className="lux-hero-index"><span>{String(sectionIndex + 1).padStart(2, '0')}</span><i /><span>TIMEFORGE EDIT</span></div>
       </section>;
     }
@@ -636,7 +658,7 @@ export function HomeV10() {
       const limit = Number(section.settings.limit || 3);
       return <section key={section.id} {...boundary(section)} className="lux-section lux-collection-edit tf-curated-v4912">
         <LuxurySectionHeading eyebrow={String(section.settings.eyebrow || 'CURATED WORLDS')} title={String(section.settings.title || 'Bộ sưu tập tuyển chọn')} description={String(section.settings.description || 'Mỗi lựa chọn là một cách kể câu chuyện về phong cách, vật liệu và di sản.')} />
-        <div className="lux-collection-cards">{activeCollections.slice(0, limit).map((collection, index) => <motion.div key={collection.id} initial={{opacity: 0, y: 24}} whileInView={{opacity: 1, y: 0}} viewport={{once: true}} transition={{delay: index * .08}}><Link to={`/collections/${collection.handle}`}><img src={optimizedImage(collection.image || activeProducts[index]?.images[0] || '', 1000, 1200)} alt={collection.title} width="1000" height="1200" loading="lazy" decoding="async" /><div><span>{String(index + 1).padStart(2, '0')}</span><small>{collection.description || 'TIMEFORGE COLLECTION'}</small><h3>{collection.title}</h3><b>Khám phá<ArrowRight /></b></div></Link></motion.div>)}</div>
+        <div className="lux-collection-cards">{activeCollections.slice(0, limit).map((collection, index) => <div className="tf565-collection-card" key={collection.id}><Link to={`/collections/${collection.handle}`}><img src={optimizedImage(collection.image || activeProducts[index]?.images[0] || '', 1000, 1200)} alt={collection.title} width="1000" height="1200" loading="lazy" decoding="async" /><div><span>{String(index + 1).padStart(2, '0')}</span><small>{collection.description || 'TIMEFORGE COLLECTION'}</small><h3>{collection.title}</h3><b>Khám phá<ArrowRight /></b></div></Link></div>)}</div>
       </section>;
     }
     if (section.type === 'products') {
@@ -1268,7 +1290,7 @@ export function ProductPageV10() {
   const [zoom, setZoom] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [variantId, setVariantId] = useState(product?.variants[0]?.id || '');
-  const {has, toggle} = useWishlist();
+  const {wished, toggle} = useWishlistItem(product?.id || '');
   const {ids: recentlyViewedIds, clear: clearRecentlyViewed} = useRecentlyViewedProduct(product?.id || '');
 
   useEffect(() => {
@@ -1282,8 +1304,6 @@ export function ProductPageV10() {
   if (!product && isLoading) return <div className="route-loading tf-product-route-loading" aria-label="Đang tải đầy đủ dữ liệu sản phẩm" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><i/><b>Đang chuẩn bị sản phẩm</b></div></div>;
   if (!product) return <Navigate to="/404" replace />;
   if (product.status !== 'active' || !product.published) return <Navigate to="/404" replace />;
-  const wished = has(product.id);
-
   const images = product.images.length ? product.images : ['https://placehold.co/1200x1200/f0eee8/25231f?text=TimeForge'];
   const variant = product.variants.find((item) => item.id === variantId) || product.variants[0];
   const price = variant?.price ?? product.price;
@@ -1315,6 +1335,24 @@ export function ProductPageV10() {
   const recentlyViewed = recentlyViewedIds.filter((id) => id !== product.id).map((id) => products.find((item) => item.id === id)).filter((item): item is Product => Boolean(item?.published && item.status === 'active')).slice(0, 4);
   const add = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('add_to_cart',{productId:product.id,value:price*quantity}); toast.success('Đã thêm sản phẩm vào giỏ hàng'); openCart();};
   const buyNow = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('checkout_started',{productId:product.id,value:price*quantity});};
+  const shareProduct = async () => {
+    const url = new URL(`/products/${product.handle}`, window.location.origin).toString();
+    try {
+      if (navigator.share) {
+        await navigator.share({title: product.title, text: `${product.title} tại ${resolveStoreName(theme.settings.storeName)}`, url});
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        toast.success('Đã sao chép liên kết sản phẩm');
+        return;
+      }
+      window.prompt('Sao chép liên kết sản phẩm', url);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      toast.error('Chưa thể chia sẻ sản phẩm. Vui lòng thử lại.');
+    }
+  };
   const changeImage = (direction: number) => setImageIndex((current) => (current + direction + images.length) % images.length);
   const modelName = product.title.replace(/^Đồng Hồ\s+(?:Nam|Nữ|Unisex)?\s*/i, '').trim() || product.title;
 
@@ -1328,7 +1366,7 @@ export function ProductPageV10() {
             <div className="tf-pdp491-gallery">
               <div className="tf-pdp491-thumbnails" aria-label="Ảnh sản phẩm">{images.map((image, index) => <button key={`${image}-${index}`} className={imageIndex === index ? 'is-active' : ''} onClick={() => setImageIndex(index)} aria-label={`Xem ảnh ${index + 1}`}><img src={optimizedImage(image, 220, 220)} alt={`${product.title} ${index + 1}`} width="220" height="220" loading="lazy" decoding="async" /></button>)}</div>
               <div className="tf-pdp491-photo">
-                <motion.div key={images[imageIndex]} initial={{opacity: .55}} animate={{opacity: 1}} transition={{duration:.2}} className="tf-pdp491-image-stage"><SmartImage className="tf-pdp491-smart-image" priority src={images[imageIndex]} alt={product.title} width={1400} height={1400} /></motion.div>
+                <div key={images[imageIndex]} className="tf-pdp491-image-stage tf565-image-fade"><SmartImage className="tf-pdp491-smart-image" priority src={images[imageIndex]} alt={product.title} width={1400} height={1400} /></div>
                 {images.length > 1 && <div className="tf-pdp491-photo-nav"><button onClick={() => changeImage(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><span>{imageIndex + 1} / {images.length}</span><button onClick={() => changeImage(1)} aria-label="Ảnh tiếp theo"><ChevronRight /></button></div>}
                 <button className="tf-pdp491-zoom" onClick={() => setZoom(true)}><ZoomIn /><span>Phóng to</span></button>
               </div>
@@ -1362,10 +1400,11 @@ export function ProductPageV10() {
 
             <div className="tf-pdp491-purchase-meta">
               {infoBlock?.settings.showStock !== false && <div className={`tf-pdp491-stock ${inventory > 0 ? 'is-available' : 'is-sold-out'}`}><span><i />{inventory > 0 ? `Chỉ còn ${inventory} sản phẩm` : 'Tạm hết hàng'}</span></div>}
-              {(quantityBlock || Boolean(buyBlock?.settings.showWishlist)) && <div className="tf-pdp491-controls">
+              <div className="tf-pdp491-controls">
                 {quantityBlock && <div className="tf-pdp491-quantity" {...themeBlockProps(quantityBlock)}><span>Số lượng</span><div><button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={inventory <= 0} aria-label="Giảm số lượng"><Minus /></button><strong>{inventory > 0 ? quantity : 0}</strong><button onClick={() => setQuantity(Math.min(Math.max(inventory, 1), quantity + 1))} disabled={inventory <= 0 || quantity >= inventory} aria-label="Tăng số lượng"><Plus /></button></div></div>}
-                {Boolean(buyBlock?.settings.showWishlist) && <button type="button" className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => {toggle(product.id); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}><Heart fill={wished ? 'currentColor' : 'none'} /></button>}
-              </div>}
+                {Boolean(buyBlock?.settings.showWishlist) && <button type="button" className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => {toggle(); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}><Heart fill={wished ? 'currentColor' : 'none'} /></button>}
+                <button type="button" className="tf564-pdp-share" onClick={() => {void shareProduct();}} aria-label="Chia sẻ sản phẩm"><Share2 /></button>
+              </div>
             </div>
 
             {buyBlock && (buyBlock.settings.showAddToCart !== false || Boolean(buyBlock.settings.showBuyNow)) && <div className="tf-pdp491-actions" {...themeBlockProps(buyBlock)}>
@@ -1417,6 +1456,7 @@ export function SearchPageV10() {
   const {products, theme} = useCommerce();
   const [params, setParams] = useSearchParams();
   const [value, setValue] = useState(params.get('q') || '');
+  const [recentSearches, setRecentSearches] = useState(readRecentSearches);
   const query = params.get('q') || '';
   const searchTemplate = theme.templates.search;
   const resultsSection = searchTemplate.sections.find((section) => section.type === 'searchResults');
@@ -1428,11 +1468,26 @@ export function SearchPageV10() {
   }, [products, query]);
   const [visibleCount, setVisibleCount] = useState(24);
   useEffect(() => setVisibleCount(24), [query]);
+  useEffect(() => {
+    const normalized = query.trim();
+    if (!normalized) return;
+    setRecentSearches((current) => {
+      const next = [normalized, ...current.filter((item) => item.toLocaleLowerCase('vi-VN') !== normalized.toLocaleLowerCase('vi-VN'))].slice(0, MAX_RECENT_SEARCHES);
+      if (next.length === current.length && next.every((item, index) => item === current[index])) return current;
+      writeRecentSearches(next);
+      return next;
+    });
+  }, [query]);
   const visibleFound = useMemo(() => found.slice(0, visibleCount), [found, visibleCount]);
   const suggested = useMemo(() => products.filter((product) => product.status === 'active' && product.published).slice(0, 4), [products]);
+  const openSearch = (term: string) => {
+    const normalized = term.trim();
+    setValue(normalized);
+    setParams(normalized ? {q: normalized} : {});
+  };
   return <div className="lux-search-page v27-search-template">
     {resultsSection?.visible !== false && <div data-theme-section-id={resultsSection?.id} data-theme-section-label={resultsSection ? sectionLabels[resultsSection.type] : 'Kết quả tìm kiếm'}>
-      <section className="v27-search-hero"><small>DISCOVER</small><h1>Tìm kiếm TimeForge</h1><p>Khám phá theo tên sản phẩm, thương hiệu hoặc mã SKU.</p><form onSubmit={(event) => {event.preventDefault(); setParams(value ? {q: value} : {});}}><Search /><input autoFocus value={value} onChange={(event) => setValue(event.target.value)} placeholder="Tên, thương hiệu hoặc SKU" /><button>Tìm kiếm</button></form></section>
+      <section className="v27-search-hero"><small>DISCOVER</small><h1>Tìm kiếm TimeForge</h1><p>Khám phá theo tên sản phẩm, thương hiệu hoặc mã SKU.</p><form onSubmit={(event) => {event.preventDefault(); openSearch(value);}}><Search /><input autoFocus value={value} onChange={(event) => setValue(event.target.value)} placeholder="Tên, thương hiệu hoặc SKU" /><button>Tìm kiếm</button></form>{recentSearches.length > 0 && <div className="tf565-search-history" aria-label="Tìm kiếm gần đây"><span>Tìm gần đây</span><div>{recentSearches.map((item) => <button type="button" key={item} onClick={() => openSearch(item)}>{item}</button>)}</div><button type="button" className="clear" onClick={() => {setRecentSearches([]); writeRecentSearches([]);}} aria-label="Xóa lịch sử tìm kiếm"><Trash2/><span>Xóa</span></button></div>}</section>
       {query ? <section className="lux-section v27-search-results tf-search-results-v498"><LuxurySectionHeading eyebrow="SEARCH RESULTS" title={`${found.length} kết quả cho “${query}”`} />{found.length ? <><div className={`lux-product-grid v23-columns-${columns}`}>{visibleFound.map((product) => <LuxuryProductCard key={product.id} product={product} />)}</div>{visibleCount < found.length && <button className="tf-search-more-v496" type="button" onClick={() => setVisibleCount((count) => count + 24)}>Xem thêm sản phẩm<ArrowRight /></button>}</> : <div className="lux-no-results"><Search/><h2>Chưa tìm thấy thiết kế phù hợp</h2><p>Thử một từ khóa ngắn hơn hoặc khám phá các sản phẩm được tuyển chọn bên dưới.</p></div>}</section> : showSuggestions && <section className="lux-section v27-search-suggestions"><LuxurySectionHeading eyebrow="CURATED FOR YOU" title="Gợi ý để bắt đầu" /><div className={`lux-product-grid v23-columns-${columns}`}>{suggested.map((product) => <LuxuryProductCard key={product.id} product={product} />)}</div></section>}
     </div>}
     {searchTemplate.sections.filter((section) => isSharedThemeSectionV27(section)).map((section) => <ThemeSectionV27 key={section.id} section={section}/>)}

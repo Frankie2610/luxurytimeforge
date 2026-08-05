@@ -1,0 +1,49 @@
+/* V0.56.4 — a deliberate desktop sidebar scroller plus lightweight product readiness. */
+@media(min-width:921px){
+  .tf-product-editor-v4915 .tf39-editor-side{
+    position:sticky!important;
+    top:82px;
+    max-height:calc(100dvh - 102px)!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+    padding-right:8px!important;
+    scrollbar-gutter:stable;
+    scrollbar-width:thin!important;
+    scrollbar-color:#9ca8a0 #edf1ee;
+  }
+  .tf-product-editor-v4915 .tf39-editor-side::-webkit-scrollbar{width:7px}
+  .tf-product-editor-v4915 .tf39-editor-side::-webkit-scrollbar-track{border-radius:999px;background:#edf1ee}
+  .tf-product-editor-v4915 .tf39-editor-side::-webkit-scrollbar-thumb{border:2px solid #edf1ee;border-radius:999px;background:#8e9c93}
+}
+
+.tf-product-editor-v4915 .tf564-product-completion .tf39-panel-body{display:grid;gap:13px}
+.tf-product-editor-v4915 .tf564-completion-summary{display:grid;gap:9px}
+.tf-product-editor-v4915 .tf564-completion-summary>span{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.tf-product-editor-v4915 .tf564-completion-summary b{color:#254d34;font-size:22px;line-height:1}
+.tf-product-editor-v4915 .tf564-completion-summary small{color:#6c766f;font-size:11px}
+.tf-product-editor-v4915 .tf564-completion-summary>div{height:7px;overflow:hidden;border-radius:99px;background:#e5ebe7}
+.tf-product-editor-v4915 .tf564-completion-summary>div>i{height:100%;display:block;border-radius:inherit;background:linear-gradient(90deg,#315f40,#5e8b6d);transition:width .18s ease}
+.tf-product-editor-v4915 .tf564-completion-list{display:grid;gap:5px}
+.tf-product-editor-v4915 .tf564-completion-list>a{
+  min-width:0;min-height:34px;display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:7px;
+  padding:5px 7px;border:1px solid #e0e5e1;border-radius:8px;background:#fbfcfb;color:#3f4942;text-decoration:none;
+}
+.tf-product-editor-v4915 .tf564-completion-list>a:hover{border-color:#b9c8be;background:#f3f7f4}
+.tf-product-editor-v4915 .tf564-completion-list>a>i{width:18px;height:18px;display:grid;place-items:center;border:1px solid #c9d1cb;border-radius:50%;background:#fff}
+.tf-product-editor-v4915 .tf564-completion-list>a>i svg{width:11px;height:11px}
+.tf-product-editor-v4915 .tf564-completion-list>a>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;font-weight:680}
+.tf-product-editor-v4915 .tf564-completion-list>a>small{color:#9a6a31;font-size:9.5px;white-space:nowrap}
+.tf-product-editor-v4915 .tf564-completion-list>a.is-done>i{border-color:#7ba189;background:#e9f4ed;color:#28603c}
+.tf-product-editor-v4915 .tf564-completion-list>a.is-done>small{color:#4d7b5c}
+
+@media(max-width:920px){
+  .tf-product-editor-v4915 .tf39-editor-side{position:static!important;max-height:none!important;overflow:visible!important;padding-right:0!important}
+}
+@media(max-width:640px){
+  .tf-product-editor-v4915 .tf564-completion-summary b{font-size:20px}
+  .tf-product-editor-v4915 .tf564-completion-list>a{min-height:32px}
+}
+@media(prefers-reduced-motion:reduce){
+  .tf-product-editor-v4915 .tf564-completion-summary>div>i{transition:none}
+}

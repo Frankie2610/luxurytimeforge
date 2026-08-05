@@ -2488,7 +2488,7 @@ export function OnlineStore() {
                   onChange={(e) => commit({ ...theme, name: e.target.value })}
                 />
               </Field>
-              <Field label="Tên cửa hàng">
+              <Field label="Tên cửa hàng" hint="Tên này đồng bộ lên header, footer, hóa đơn và nhãn giao hàng sau khi bấm Lưu.">
                 <Input
                   value={theme.settings.storeName}
                   onChange={(e) =>

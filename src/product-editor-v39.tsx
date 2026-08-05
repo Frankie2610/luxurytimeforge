@@ -2,7 +2,7 @@ import {useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode} f
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import {
   AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowLeft, ArrowUp, Bold, Check,
-  Code2, Eye, Heading2, ImagePlus, Italic, Link2, List, ListOrdered, Minus,
+  Code2, Copy, Eye, Heading2, ImagePlus, Italic, Link2, List, ListOrdered, Minus,
   Plus, Quote, Redo2, RemoveFormatting, Save, Strikethrough, Trash2, Underline,
   Undo2, X,
 } from 'lucide-react';
@@ -194,6 +194,31 @@ export function ProductEditorV39() {
     const definition = filterDefinitionForMetafield(field);
     return definition && field.value.trim() ? [definition.id] : [];
   }));
+  const completionItems = [
+    {label: 'Tên và mô tả', done: Boolean(product.title.trim() && strip(product.descriptionHtml).trim()), target: 'tf-product-info'},
+    {label: 'Ảnh sản phẩm', done: product.images.length > 0, target: 'tf-product-media'},
+    {label: 'Giá bán', done: product.price > 0, target: 'tf-product-price'},
+    {label: 'SKU và tồn kho', done: Boolean(normalizeSku(product.sku || product.variants[0]?.sku)) && Number.isFinite(product.inventory) && product.inventory >= 0, target: 'tf-product-inventory'},
+    {label: 'Thương hiệu và danh mục', done: Boolean(product.vendor.trim() && product.category.trim()), target: 'tf-product-organization'},
+    {label: 'SEO', done: Boolean(product.seoTitle.trim() && product.seoDescription.trim()), target: 'tf-product-seo'},
+    {label: 'Bộ lọc storefront', done: configuredFilterIds.size >= Math.min(3, PRODUCT_FILTER_DEFINITIONS.length), target: 'tf-product-metafields'},
+  ];
+  const completedItems = completionItems.filter((item) => item.done).length;
+  const completionPercent = Math.round((completedItems / completionItems.length) * 100);
+  const copyPublicLink = async () => {
+    if (!product.handle) return;
+    const url = new URL(`/products/${product.handle}`, window.location.origin).toString();
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        toast.success('Đã sao chép link sản phẩm');
+        return;
+      }
+      window.prompt('Sao chép link sản phẩm', url);
+    } catch {
+      window.prompt('Sao chép link sản phẩm', url);
+    }
+  };
 
   return <div className="tf-product-editor-v39 tf-product-editor-v4915">
     <header className="tf39-editor-header">
@@ -203,6 +228,7 @@ export function ProductEditorV39() {
       </div>
       <div className="tf39-editor-header-actions">
         {product.handle && <Link className="tf39-editor-preview-link" to={`/products/${product.handle}`} target="_blank"><Eye />Xem trên cửa hàng</Link>}
+        {product.handle && <button className="tf565-editor-copy-link" type="button" onClick={copyPublicLink}><Copy />Sao chép link</button>}
         <button className="tf39-editor-save" type="button" onClick={save}><Save />Lưu</button>
       </div>
     </header>
@@ -295,10 +321,15 @@ export function ProductEditorV39() {
       </main>
 
       <aside className="tf39-editor-side">
+        <Panel title="Mức độ hoàn thiện" description="Kiểm tra nhanh trước khi xuất bản." className="tf564-product-completion">
+          <div className="tf564-completion-summary"><span><b>{completionPercent}%</b><small>{completedItems}/{completionItems.length} hạng mục đã đủ</small></span><div role="progressbar" aria-label="Mức độ hoàn thiện sản phẩm" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionPercent}><i style={{width: `${completionPercent}%`}} /></div></div>
+          <div className="tf564-completion-list">{completionItems.map((item) => <a key={item.label} className={item.done ? 'is-done' : ''} href={`#${item.target}`}><i>{item.done ? <Check /> : null}</i><span>{item.label}</span><small>{item.done ? 'Đã đủ' : 'Cần bổ sung'}</small></a>)}</div>
+        </Panel>
         <Panel id="tf-product-status" title="Trạng thái"><Field label="Trạng thái sản phẩm"><select value={product.status} onChange={(event) => patch('status', event.target.value as Product['status'])}><option value="active">Đang hoạt động</option><option value="draft">Bản nháp</option><option value="archived">Lưu trữ</option></select></Field><div className={`tf39-status-note is-${product.status}`}><i /><span><b>{product.status === 'active' ? 'Hiển thị trên cửa hàng' : product.status === 'draft' ? 'Chưa công khai' : 'Đã lưu trữ'}</b><small>Thay đổi có hiệu lực sau khi lưu.</small></span></div></Panel>
         <Panel id="tf-product-organization" title="Tổ chức sản phẩm"><div className="tf39-field-stack"><Field label="Danh mục"><input value={product.category} onChange={(event) => patch('category', event.target.value)} /></Field><Field label="Loại sản phẩm"><input value={product.productType} onChange={(event) => patch('productType', event.target.value)} /></Field><Field label="Nhà cung cấp / thương hiệu"><input value={product.vendor} onChange={(event) => patch('vendor', event.target.value)} /></Field><Field label="Tags"><div className="tf39-tag-input"><div>{product.tags.map((tag) => <button type="button" key={tag} onClick={() => patch('tags', product.tags.filter((item) => item !== tag))}>{tag}<X /></button>)}</div><input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => {if ((event.key === 'Enter' || event.key === ',') && tagInput.trim()) {event.preventDefault(); patch('tags', [...new Set([...product.tags, tagInput.trim()])]); setTagInput('');}}} placeholder="Nhập tag và Enter" /></div></Field><Field label="Bộ sưu tập"><div className="tf39-collection-list">{collectionNames.length ? collectionNames.map((name) => <span key={name}>{name}</span>) : <small>Gán từ trang Bộ sưu tập.</small>}</div></Field></div></Panel>
         <Panel id="tf-product-shipping" title="Vận chuyển"><div className="tf39-form-grid two"><Field label="Khối lượng"><input type="number" value={product.weight} onChange={(event) => patch('weight', Number(event.target.value))} /></Field><Field label="Đơn vị"><select value={product.weightUnit} onChange={(event) => patch('weightUnit', event.target.value)}><option value="g">g</option><option value="kg">kg</option></select></Field></div></Panel>
         <Panel
+          id="tf-product-metafields"
           title="Metafields bộ lọc"
           description="Dữ liệu tại đây tạo các hạng mục lọc trên trang bộ sưu tập."
           className="tf503-metafield-panel"
