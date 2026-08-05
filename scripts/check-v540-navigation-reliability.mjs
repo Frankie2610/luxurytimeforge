@@ -9,9 +9,11 @@ const read = (file) => fs.readFileSync(new URL(file, root), 'utf8');
 const exists = (file) => fs.existsSync(new URL(file, root));
 const toDataUrl = (source) => `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
 const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'timeforge-v540-'));
-const compile = spawnSync(process.execPath, [
-  fileURLToPath(new URL('../node_modules/typescript/bin/tsc', import.meta.url)),
-  '--ignoreConfig', '--pretty', 'false', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler',
+const localTsc = fileURLToPath(new URL('../node_modules/typescript/bin/tsc', import.meta.url));
+const hasLocalTsc = fs.existsSync(localTsc);
+const compile = spawnSync(hasLocalTsc ? process.execPath : 'tsc', [
+  ...(hasLocalTsc ? [localTsc] : []),
+  '--pretty', 'false', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler',
   '--rootDir', 'src', '--outDir', fixtureDir, 'src/data-normalize.ts', 'src/workflow-normalize.ts',
 ], {cwd: fileURLToPath(root), encoding: 'utf8'});
 if (compile.status !== 0) throw new Error(`Không thể biên dịch workflow fixture:\n${compile.stdout}${compile.stderr}`);
@@ -44,6 +46,9 @@ const packageJson = JSON.parse(read('package.json'));
 const [major, minor, patch] = packageJson.version.split('.').map(Number);
 const preservesV540 = major > 0 || minor > 54 || (minor === 54 && patch >= 0);
 
+const envLocal = exists('.env.local') ? read('.env.local') : '';
+const demoLoginIsDisabled = !envLocal || envLocal.includes('VITE_ENABLE_DEMO_LOGIN=false');
+
 const checks = [
   ['package version preserves the 0.54.0 baseline', preservesV540],
   ['legacy workflow always receives four arrays', ['events','fulfillments','refunds','returns'].every((key) => Array.isArray(legacy[key]))],
@@ -62,7 +67,7 @@ const checks = [
   ['new customer and Admin CSS include mobile rules', adminCss.includes('@media(max-width:680px)') && storefrontCss.includes('@media(max-width:700px)')],
   ['Admin product imagery is lazy decoded', read('src/admin-v9.tsx').includes('loading="lazy" decoding="async"')],
   ['large generated preview directories are ignored by Vite watch', read('vite.config.ts').includes("'**/.sites-runtime/**'")],
-  ['temporary preview authentication shim is absent', !exists('scripts/.preview-network-shim.cjs') && read('.env.local').includes('VITE_ENABLE_DEMO_LOGIN=false')],
+  ['temporary preview authentication shim is absent', !exists('scripts/.preview-network-shim.cjs') && demoLoginIsDisabled],
 ];
 
 let failed = 0;

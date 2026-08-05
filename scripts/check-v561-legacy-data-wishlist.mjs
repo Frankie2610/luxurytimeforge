@@ -8,9 +8,11 @@ const root = new URL('../', import.meta.url);
 const read = (file) => fs.readFileSync(new URL(file, root), 'utf8');
 const toDataUrl = (source) => `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
 const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'timeforge-v561-'));
-const compile = spawnSync(process.execPath, [
-  fileURLToPath(new URL('../node_modules/typescript/bin/tsc', import.meta.url)),
-  '--ignoreConfig', '--pretty', 'false', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler',
+const localTsc = fileURLToPath(new URL('../node_modules/typescript/bin/tsc', import.meta.url));
+const hasLocalTsc = fs.existsSync(localTsc);
+const compile = spawnSync(hasLocalTsc ? process.execPath : 'tsc', [
+  ...(hasLocalTsc ? [localTsc] : []),
+  '--pretty', 'false', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler',
   '--rootDir', 'src', '--outDir', fixtureDir,
   'src/data-normalize.ts', 'src/utils.ts', 'src/product-data.ts', 'src/product-filter-data.ts', 'src/collection-utils.ts', 'src/theme.ts',
 ], {cwd: fileURLToPath(root), encoding: 'utf8'});

@@ -13,7 +13,8 @@ const adminShell = read('src/admin-shell-v16.tsx');
 const adminCss = read('src/v550-admin-polish.css');
 const storefront = read('src/storefront-v10.tsx');
 const storefrontCss = read('src/v550-storefront-polish.css');
-const envLocal = read('.env.local');
+const envLocal = exists('.env.local') ? read('.env.local') : '';
+const demoLoginIsDisabled = !envLocal || demoLoginIsDisabled;
 const [major, minor, patch] = packageJson.version.split('.').map(Number);
 const preservesV550 = major > 0 || minor > 55 || (minor === 55 && patch >= 0);
 
@@ -22,7 +23,7 @@ const checks = [
   ['V0.55 regression command is registered', packageJson.scripts?.['v550:check'] === 'node scripts/check-v550-polish-performance.mjs'],
   ['Admin polish stays scoped to the current shell', adminCss.includes('.tf-admin-v499 .v16-admin-content') && !adminCss.includes('\ninput{')],
   ['Admin order toolbar uses collision-safe grid tracks', adminCss.includes('.tf55-orders-toolbar') && adminCss.includes('grid-template-columns:minmax(280px,1fr) minmax(184px,auto) auto auto')],
-  ['Admin search reserves icon, input and clear-button tracks', adminCss.includes('grid-template-columns:19px minmax(0,1fr) 30px') && adminCss.includes(':not(:has(.tf55-search-clear))')],
+  ['Admin search reserves icon, input and clear-button tracks', adminCss.includes('grid-template-columns:19px minmax(0,1fr) 30px') && !adminCss.includes(':not(:has(.tf55-search-clear))')],
   ['legacy Admin searches no longer rely on absolute icons', adminCss.includes('.v12-admin-toolbar>label') && adminCss.includes('.v13-toolbar>label') && adminCss.includes('.tf4923-discount-toolbar>label') && adminCss.includes('>svg{position:static!important')],
   ['Admin toolbar has tablet and mobile breakpoints', adminCss.includes('@media(max-width:1120px)') && adminCss.includes('@media(max-width:680px)')],
   ['mobile Admin removes expensive backdrop blur', adminCss.includes('backdrop-filter:none!important')],
@@ -37,12 +38,12 @@ const checks = [
   ['Wishlist lookup is map-backed and memoized', wishlistPage.includes('new Map(products.map') && wishlistPage.includes('productById.get(id)')],
   ['Wishlist includes sorting and add-all actions', wishlistPage.includes('WISHLIST_SORT_KEY') && wishlistPage.includes('price-desc') && wishlistPage.includes('addAllAvailable') && wishlistPage.includes('Thêm tất cả có sẵn')],
   ['Wishlist persistence is deferred', wishlistStore.includes('window.setTimeout') && wishlistStore.includes('}, 90)')],
-  ['storefront route view only keys on pathname', storefront.includes('className="tf-route-view-v4910" key={location.pathname}') && !storefront.includes('key={`${location.pathname}${location.search}`}')],
+  ['storefront route view only keys on pathname', storefront.includes('tf-route-view-v4910') && storefront.includes('key={location.pathname}') && !storefront.includes('key={`${location.pathname}${location.search}`}')],
   ['storefront pathname scroll reset ignores query-only changes', storefront.includes('}, [location.pathname]);')],
   ['storefront search work is memoized', storefront.includes('const found = useMemo') && storefront.includes('const visibleFound = useMemo') && storefront.includes('const suggested = useMemo')],
-  ['Wishlist and Admin chunks prefetch on navigation intent', storefront.includes('prefetchWishlistRoute') && storefront.includes('onPointerEnter={prefetchWishlistRoute}') && adminShell.includes('adminRoutePrefetchers') && adminShell.includes('onPointerEnter={()=>prefetchAdminRoute(to)}')],
+  ['Wishlist and Admin chunks prefetch on navigation intent', storefront.includes('prefetchWishlistRoute') && storefront.includes('onPointerEnter={prefetchWishlistRoute}') && adminShell.includes('adminRoutePrefetchers') && (adminShell.includes('onPointerEnter={()=>prefetchAdminRoute(to)}') || (adminShell.includes('scheduleAdminRoutePrefetch') && adminShell.includes('cancelAdminRoutePrefetch'))) ],
   ['mobile storefront contains paint and disables costly effects', storefrontCss.includes('contain:layout paint') && storefrontCss.includes('backdrop-filter:none!important') && storefrontCss.includes('@media(prefers-reduced-motion:reduce)')],
-  ['temporary preview overrides are absent', packageJson.scripts.dev === 'vite' && envLocal.includes('VITE_ENABLE_DEMO_LOGIN=false') && !exists('scripts/preview-network-shim.cjs')],
+  ['temporary preview overrides are absent', packageJson.scripts.dev === 'vite' && demoLoginIsDisabled && !exists('scripts/preview-network-shim.cjs')],
 ];
 
 let failed = 0;

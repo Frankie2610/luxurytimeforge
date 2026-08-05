@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.56.7 — Footer logo correction and targeted performance pass
+
+- Restored the footer logo while keeping only one editable shop-name line.
+- Suppressed the store description when it duplicates the store name.
+- Added responsive Cloudinary image sources for the largest storefront media.
+- Cached product-family resolution instead of scanning groups for every product card.
+- Replaced broad checkout and Admin-body `:has(...)` selectors with explicit lifecycle/route classes.
+- Delayed and cancelled incidental Admin sidebar prefetch requests.
+- Added V0.56.7 regression checks and preserved V0.56.4–V0.56.6 checks.
+
 ## 0.56.6 — Footer identity, compact About and faster Admin navigation
 
 - Removed the duplicated footer logo/name lockup so the editable shop name appears only once.

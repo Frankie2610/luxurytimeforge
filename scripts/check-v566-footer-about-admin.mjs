@@ -13,12 +13,15 @@ const footerStart = storefront.indexOf('function LuxuryFooter()');
 const footerEnd = storefront.indexOf('function StoreCatalogLoading', footerStart);
 const footerSource = storefront.slice(footerStart, footerEnd);
 
+const [major, minor, patch] = String(packageJson.version || '').split('.').map(Number);
+const preservesV566 = major > 0 || minor > 56 || (minor === 56 && patch >= 6);
+
 const checks = [
-  ['package version is 0.56.6', packageJson.version === '0.56.6'],
+  ['package version preserves the V0.56.6 baseline', preservesV566],
   ['V0.56.6 check command is registered', packageJson.scripts?.['v566:check'] === 'node scripts/check-v566-footer-about-admin.mjs'],
-  ['footer no longer renders the duplicated LuxuryLogo lockup', footerStart >= 0 && footerEnd > footerStart && !footerSource.includes('<LuxuryLogo')],
+  ['footer keeps the logo mark and suppresses its duplicate name', footerStart >= 0 && footerEnd > footerStart && footerSource.includes('<LuxuryLogo') && footerSource.includes('showName={false}')],
   ['footer keeps the editable resolved store name', footerSource.includes('resolveStoreName(settings.storeName)') && footerSource.includes('tf564-footer-store-name')],
-  ['footer name is black, substantially larger and extra bold', storefrontCss.includes('color:#111!important') && storefrontCss.includes('font-size:clamp(24px,2.25vw,30px)!important') && storefrontCss.includes('font-weight:950!important')],
+  ['footer name is black, substantially larger and extra bold', storefrontCss.includes('color:#111!important') && storefrontCss.includes('font-size:clamp(27px,2.4vw,33px)!important') && storefrontCss.includes('font-weight:950!important')],
   ['footer offers direct order tracking', footerSource.includes('<Link to="/track-order">Theo dõi đơn hàng</Link>')],
   ['About page includes a trust layer and smaller heading scale', storefront.includes('tf566-about-trust') && storefrontCss.includes('font-size:clamp(38px,5vw,66px)') && storefrontCss.includes('.tf4941-about-story h2')],
   ['About page provides warranty and tracking shortcuts', storefront.includes('tf566-about-footer-links') && storefront.includes('Chính sách bảo hành') && storefront.includes('Theo dõi đơn hàng')],

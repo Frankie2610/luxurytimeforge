@@ -24,7 +24,7 @@ check('Firebase rule restricts store write',rules.rules.timeforge.settings.store
 check('Header logo uses Firebase-backed logoImage',storefront.includes('settings.logoImage')&&storefront.includes('tf-store-logo-image-v513'));
 check('Favicon is updated from logoImage',storefront.includes('link[rel="icon"]')&&storefront.includes('touchHref'));
 check('Desktop header has final ID selectors',storeCss.includes('#tf-storefront-header .lux-main-nav>a')&&storeCss.includes('font-size:13px!important'));
-check('Desktop header has runtime important safeguard',storefront.includes("style.setProperty('font-size', '13px', 'important')"));
+check('Desktop header avoids runtime style mutation',!storefront.includes("style.setProperty('font-size', '13px', 'important')"));
 check('Requested editorial badges share green treatment',storeCss.includes('.tf-journal-v4912')&&storeCss.includes('.tf-related-v4916')&&storeCss.includes('.tf-search-results-v498')&&storeCss.includes('.v27-search-hero>small'));
 check('Payment marks are smaller',storeCss.includes('height:42px')&&storeCss.includes('.tf509-payment-marks'));
 check('V51.3 stylesheet is imported last',storefront.indexOf("import './v513-storefront-enhancements.css';")>storefront.indexOf("import './v512-storefront-corrections.css';"));

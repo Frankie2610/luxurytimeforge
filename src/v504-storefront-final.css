@@ -7,7 +7,7 @@
 .tf-storefront-v4912 .lux-announcement svg{width:13px;height:13px;flex:none;color:#f2d8a4}
 .tf-storefront-v4912 .lux-announcement-copy--compact{display:none}
 .tf-storefront-v4912 .lux-announcement-side{display:none}
-.tf-storefront-v4912 .tf-route-view-v4910:has(.tf4912-checkout-page){min-height:0}
+.tf-storefront-v4912 .tf-route-view-v4910.is-checkout-route{min-height:0}
 
 /* One calm, high-contrast assurance rail instead of three unrelated cards. */
 .tf-storefront-v4912 .lux-assurance-strip{

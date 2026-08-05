@@ -90,7 +90,6 @@
   color:#6a766e;
   box-shadow:inset 0 1px 1px rgba(28,49,35,.025),0 1px 2px rgba(28,49,35,.025);
 }
-.tf-admin-v499 .v16-admin-content .tf55-admin-search:not(:has(.tf55-search-clear)){grid-template-columns:19px minmax(0,1fr)}
 .tf-admin-v499 .v16-admin-content .tf55-admin-search:focus-within{border-color:var(--tf55-control-focus)!important;box-shadow:0 0 0 3px var(--tf55-control-ring)!important}
 .tf-admin-v499 .v16-admin-content .tf55-admin-search>svg{
   position:static!important;

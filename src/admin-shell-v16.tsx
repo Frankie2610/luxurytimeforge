@@ -1,5 +1,5 @@
 import './legacy.css';
-import {useEffect,useMemo,useState,type ComponentType} from 'react';
+import {useEffect,useLayoutEffect,useMemo,useState,type ComponentType} from 'react';
 import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
   Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,History,Link2,
@@ -68,6 +68,12 @@ const adminRoutePrefetchers:Record<string,()=>Promise<unknown>>={
   'import-export':()=>import('./admin'),
 };
 const prefetchAdminRoute=(path:string)=>{const section=path.split('/')[2]||'';void adminRoutePrefetchers[section]?.();};
+let adminPrefetchTimer:number|undefined;
+const scheduleAdminRoutePrefetch=(path:string)=>{
+  if(adminPrefetchTimer)window.clearTimeout(adminPrefetchTimer);
+  adminPrefetchTimer=window.setTimeout(()=>{adminPrefetchTimer=undefined;prefetchAdminRoute(path)},140);
+};
+const cancelAdminRoutePrefetch=()=>{if(adminPrefetchTimer){window.clearTimeout(adminPrefetchTimer);adminPrefetchTimer=undefined}};
 
 type PageMeta={title:string;eyebrow:string;description:string;fullBleed?:boolean};
 const pageMap:Record<string,PageMeta>={
@@ -153,6 +159,7 @@ export function AdminLayoutV16(){
       {to:'/admin/activity',label:'Hoạt động',icon:Activity},
     ]},
   ].map(section=>({...section,items:section.items.filter(item=>hasPermission(user?.role,routePermission(item.to)))})).filter(section=>section.items.length),[pendingOrders,pendingReturns,lowStock,user?.role]);
+  useLayoutEffect(()=>{document.body.classList.add('tf-admin-mounted');return()=>document.body.classList.remove('tf-admin-mounted')},[]);
   useEffect(()=>{setOpen(false)},[location.pathname]);
   useEffect(()=>{
     const entry:RecentAdminPage={path:location.pathname,title:meta.title,visitedAt:Date.now()};
@@ -162,7 +169,7 @@ export function AdminLayoutV16(){
       return next;
     });
   },[location.pathname,meta.title]);
-  useEffect(()=>{window.localStorage.setItem('tf:admin-sidebar-collapsed',collapsed?'1':'0')},[collapsed]);
+  useEffect(()=>{try{window.localStorage.setItem('tf:admin-sidebar-collapsed',collapsed?'1':'0')}catch{/* Sidebar state remains available for this session. */}},[collapsed]);
   useEffect(()=>{try{window.localStorage.setItem('tf:admin-density',density)}catch{/* Density remains available for the current session when storage is blocked. */}},[density]);
   useEffect(()=>{if(!open)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[open]);
   const initials=(user?.name||user?.email||'A').trim().slice(0,1).toUpperCase();
@@ -188,7 +195,7 @@ export function AdminLayoutV16(){
       </div>
       <button className="v16-store-switcher"><span className="v16-store-avatar">TF</span><span><b>TimeForge</b><small>Cửa hàng chính</small></span><ChevronDown/></button>
       <nav className="v16-admin-nav">
-        {sections.map((section,index)=><section key={section.label||index}>{section.label&&<p>{section.label}</p>}{section.items.map(({to,label,icon:Icon,count})=><NavLink key={to} to={to} end={to==='/admin'} title={label} onPointerEnter={()=>prefetchAdminRoute(to)} onFocus={()=>prefetchAdminRoute(to)}><Icon/><span>{label}</span>{Boolean(count)&&<em>{count}</em>}</NavLink>)}</section>)}
+        {sections.map((section,index)=><section key={section.label||index}>{section.label&&<p>{section.label}</p>}{section.items.map(({to,label,icon:Icon,count})=><NavLink key={to} to={to} end={to==='/admin'} title={label} onPointerEnter={(event)=>{if(event.pointerType==='mouse'||event.pointerType==='pen')scheduleAdminRoutePrefetch(to)}} onPointerLeave={cancelAdminRoutePrefetch} onFocus={()=>prefetchAdminRoute(to)}><Icon/><span>{label}</span>{Boolean(count)&&<em>{count}</em>}</NavLink>)}</section>)}
       </nav>
       <div className="v16-admin-sidebar-footer">
         <NavLink to="/admin/settings/integrations" title="Tích hợp"><Wrench/><span>Tích hợp</span></NavLink>

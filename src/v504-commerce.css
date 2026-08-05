@@ -1,8 +1,8 @@
 .tf4912-checkout-page{min-height:0;background:linear-gradient(180deg,#fbfaf7,#f2eee8)}
 .tf4912-checkout-layout{min-height:0;margin-bottom:0;padding-bottom:20px}
-.tf-storefront-v4912 .tf-route-view-v4910:has(.tf4912-checkout-page){min-height:0;height:auto}
-.tf-storefront-v4912:has(.tf4912-checkout-main)>main{min-height:0;height:auto}
-.tf-storefront-v4912:has(.tf4912-checkout-main)>.tf-footer-v4910{display:block;margin-top:0}
+.tf-storefront-v4912 .tf-route-view-v4910.is-checkout-route{min-height:0;height:auto}
+.tf-storefront-v4912.is-checkout-route>main{min-height:0;height:auto}
+.tf-storefront-v4912.is-checkout-route>.tf-footer-v4910{display:block;margin-top:0}
 @media(min-width:681px) and (max-width:1024px){
   .tf4912-checkout-layout{width:min(760px,calc(100% - 36px));gap:20px;padding:28px 0 20px}
   .tf4912-checkout-section h2{font-size:24px}.tf4912-checkout-section header p{font-size:11px}

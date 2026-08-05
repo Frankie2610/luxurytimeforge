@@ -51,6 +51,17 @@ export function optimizedImage(url: string, width = 900, height?: number, crop: 
   return source;
 }
 
+export function optimizedImageSrcSet(url: string, widths: number[], aspectRatio?: number, crop: 'fill' | 'fit' | 'limit' = 'fill') {
+  const source = String(url || '').trim();
+  if (!/^https?:\/\/res\.cloudinary\.com\//i.test(source) || !source.includes('/image/upload/')) return undefined;
+  const candidates = [...new Set(widths.map((width) => Math.max(80, Math.min(2400, Math.round(width)))))]
+    .sort((a, b) => a - b);
+  return candidates.map((width) => {
+    const height = aspectRatio ? Math.round(width / aspectRatio) : undefined;
+    return `${optimizedImage(source, width, height, crop)} ${width}w`;
+  }).join(', ');
+}
+
 export function SmartImage({src = '', alt = '', className = '', width, height, priority = false, ...props}: ImgHTMLAttributes<HTMLImageElement> & {priority?: boolean}) {
   const normalizedSource = String(src || '').trim() || DEFAULT_PRODUCT_IMAGE;
   const [loaded, setLoaded] = useState(false);
