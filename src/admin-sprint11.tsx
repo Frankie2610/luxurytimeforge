@@ -56,10 +56,12 @@ export function OrdersV11() {
   const searchRef = useRef<HTMLInputElement>(null);
   const requestedStatus = params.get('status');
   const requestedPayment = params.get('payment');
+  const requestedRange = params.get('range');
   const view: 'all' | Order['status'] = ['open','confirmed','completed','cancelled'].includes(requestedStatus || '') ? requestedStatus as Order['status'] : 'all';
   const payment: 'all' | PaymentStatus = ['pending','paid','refunded','failed'].includes(requestedPayment || '') ? requestedPayment as PaymentStatus : 'all';
+  const range: 'all' | 'today' | '7d' | '30d' = ['today','7d','30d'].includes(requestedRange || '') ? requestedRange as 'today' | '7d' | '30d' : 'all';
   const [selected, setSelected] = useState<string[]>([]);
-  const setFilter = (key: 'q' | 'status' | 'payment', value: string) => setParams((current) => {
+  const setFilter = (key: 'q' | 'status' | 'payment' | 'range', value: string) => setParams((current) => {
     const next = new URLSearchParams(current);
     if (!value || value === 'all') next.delete(key); else next.set(key, value);
     return next;
@@ -87,11 +89,25 @@ export function OrdersV11() {
     window.addEventListener('keydown', focusSearch);
     return () => window.removeEventListener('keydown', focusSearch);
   }, [query]);
-  const filtered = useMemo(() => orders.filter((order) => {
-    if (view !== 'all' && order.status !== view) return false;
-    if (payment !== 'all' && order.paymentStatus !== payment) return false;
-    return `${order.number} ${order.customerName} ${order.customerEmail} ${order.customerPhone}`.toLowerCase().includes(deferredQuery.toLowerCase());
-  }), [orders, deferredQuery, view, payment]);
+  const filtered = useMemo(() => {
+    const now = new Date();
+    let cutoff = Number.NEGATIVE_INFINITY;
+    if (range === 'today') {
+      now.setHours(0, 0, 0, 0);
+      cutoff = now.getTime();
+    } else if (range === '7d') cutoff = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+    else if (range === '30d') cutoff = now.getTime() - 30 * 24 * 60 * 60 * 1000;
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+    return orders.filter((order) => {
+      if (view !== 'all' && order.status !== view) return false;
+      if (payment !== 'all' && order.paymentStatus !== payment) return false;
+      if (range !== 'all') {
+        const createdAt = new Date(order.createdAt).getTime();
+        if (!Number.isFinite(createdAt) || createdAt < cutoff) return false;
+      }
+      return `${order.number} ${order.customerName} ${order.customerEmail} ${order.customerPhone}`.toLowerCase().includes(normalizedQuery);
+    });
+  }, [orders, deferredQuery, view, payment, range]);
   const selectedSet = useMemo(() => new Set(selected), [selected]);
   const allVisibleSelected = filtered.length > 0 && filtered.every((item) => selectedSet.has(item.id));
   const toggleAll = () => setSelected((current) => {
@@ -113,13 +129,24 @@ export function OrdersV11() {
     download([['Mã đơn','Ngày tạo','Khách hàng','Email','Điện thoại','Tổng tiền','Phương thức','Thanh toán','Giao hàng','Trạng thái'].map(escape).join(','), ...rows].join('\n'), `timeforge-orders-${new Date().toISOString().slice(0, 10)}.csv`);
     window.dispatchEvent(new CustomEvent('timeforge:toast', {detail: {message: `Đã xuất ${filtered.length} đơn hàng`, tone: 'success'}}));
   };
+  const copyFilteredView = async () => {
+    const url = new URL(window.location.href);
+    if (query.trim()) url.searchParams.set('q', query.trim()); else url.searchParams.delete('q');
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard is unavailable');
+      await navigator.clipboard.writeText(url.toString());
+      window.dispatchEvent(new CustomEvent('timeforge:toast', {detail: {message: 'Đã sao chép liên kết chế độ xem đơn hàng', tone: 'success'}}));
+    } catch {
+      window.dispatchEvent(new CustomEvent('timeforge:toast', {detail: {message: 'Không thể sao chép liên kết trên trình duyệt này', tone: 'danger'}}));
+    }
+  };
   return <AdminResourceFrame className="s11-page tf4921-orders-page"><section className="tf4921-ops-banner">
     <div className="tf4921-ops-banner-copy"><span><ShoppingBag/>TRUNG TÂM VẬN HÀNH</span><h2>Xử lý đơn hàng theo từng trạng thái</h2><p>Kiểm soát thanh toán, đóng gói, giao hàng, hoàn trả và hoàn tiền trong cùng một luồng.</p></div>
     <div className="tf4921-ops-banner-side"><div className="tf4921-ops-kpis"><article><b>{orders.length}</b><span>Tổng đơn</span></article><article><b>{metrics.paid}</b><span>Đã thanh toán</span></article><article><b>{metrics.waiting}</b><span>Chờ xử lý</span></article></div><Link className="s11-primary tf4921-draft-order" to="/admin/draft-orders/new"><Plus />Tạo đơn nháp</Link></div>
   </section>
     <AdminResourceSurface className="s11-index-card tf4921-ops-surface"><div className="s11-view-tabs">{([['all', 'Tất cả'], ['open', 'Đang mở'], ['confirmed', 'Đã xác nhận'], ['completed', 'Hoàn tất'], ['cancelled', 'Đã hủy']] as const).map(([id, label]) => <button key={id} className={view === id ? 'active' : ''} onClick={() => setFilter('status', id)}>{label}<span>{id === 'all' ? orders.length : metrics.status[id]}</span></button>)}</div>
-      <div className="s11-toolbar tf55-orders-toolbar"><label className="tf55-admin-search"><Search aria-hidden="true"/><input ref={searchRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm mã đơn, khách hàng, email hoặc số điện thoại" aria-label="Tìm kiếm đơn hàng"/>{query && <button type="button" className="tf55-search-clear" onClick={() => {setQuery(''); searchRef.current?.focus();}} aria-label="Xóa từ khóa tìm kiếm"><X/></button>}</label><select value={payment} onChange={(event) => setFilter('payment', event.target.value)} aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả thanh toán</option>{Object.entries(paymentStatus).map(([id, label]) => <option value={id} key={id}>{label}</option>)}</select><button type="button" className={view !== 'all' || payment !== 'all' || query ? 'is-active' : ''} onClick={clearFilters}><Filter />{view !== 'all' || payment !== 'all' || query ? 'Xóa bộ lọc' : 'Bộ lọc'}</button><button type="button" className="tf55-export-orders" disabled={!filtered.length} onClick={exportFiltered}><Download/>Xuất kết quả</button></div>
-      <div className="tf55-order-results"><span>Hiển thị <b>{filtered.length}</b> / {orders.length} đơn hàng</span><kbd>/</kbd><small>để tìm nhanh</small></div>
+      <div className="s11-toolbar tf55-orders-toolbar"><label className="tf55-admin-search"><Search aria-hidden="true"/><input ref={searchRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm mã đơn, khách hàng, email hoặc số điện thoại" aria-label="Tìm kiếm đơn hàng"/>{query && <button type="button" className="tf55-search-clear" onClick={() => {setQuery(''); searchRef.current?.focus();}} aria-label="Xóa từ khóa tìm kiếm"><X/></button>}</label><select value={payment} onChange={(event) => setFilter('payment', event.target.value)} aria-label="Lọc theo trạng thái thanh toán"><option value="all">Tất cả thanh toán</option>{Object.entries(paymentStatus).map(([id, label]) => <option value={id} key={id}>{label}</option>)}</select><select className="tf56-order-range" value={range} onChange={(event) => setFilter('range', event.target.value)} aria-label="Lọc đơn theo thời gian"><option value="all">Mọi thời gian</option><option value="today">Hôm nay</option><option value="7d">7 ngày gần đây</option><option value="30d">30 ngày gần đây</option></select><button type="button" className={view !== 'all' || payment !== 'all' || range !== 'all' || query ? 'is-active' : ''} onClick={clearFilters}><Filter />{view !== 'all' || payment !== 'all' || range !== 'all' || query ? 'Xóa bộ lọc' : 'Bộ lọc'}</button><button type="button" className="tf55-export-orders" disabled={!filtered.length} onClick={exportFiltered}><Download/>Xuất kết quả</button></div>
+      <div className="tf55-order-results"><span>Hiển thị <b>{filtered.length}</b> / {orders.length} đơn hàng</span><button className="tf56-copy-order-view" type="button" onClick={() => void copyFilteredView()} title="Sao chép liên kết gồm bộ lọc hiện tại"><Copy/>Sao chép chế độ xem</button><kbd>/</kbd><small>để tìm nhanh</small></div>
       <div className="s11-table-wrap"><table><thead><tr><th><input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} aria-label="Chọn tất cả đơn đang hiển thị" /></th><th>Đơn hàng</th><th>Ngày</th><th>Khách hàng</th><th>Tổng tiền</th><th>Phương thức</th><th>Thanh toán</th><th>Giao hàng</th><th>Trạng thái</th><th /></tr></thead><tbody>{filtered.map((order) => <tr key={order.id} className={selectedSet.has(order.id) ? 'selected' : ''}><td><input type="checkbox" checked={selectedSet.has(order.id)} onChange={() => setSelected((current) => current.includes(order.id) ? current.filter((id) => id !== order.id) : [...current, order.id])} aria-label={`Chọn đơn hàng ${order.number}`} /></td><td><Link className="s11-link" to={`/admin/orders/${order.id}`}>{order.number}</Link></td><td>{fmt(order.createdAt)}</td><td><div className="s11-person"><span>{order.customerName.slice(0, 1).toUpperCase()}</span><div><b>{order.customerName}</b><small>{order.customerEmail}</small></div></div></td><td><b>{money(order.total)}</b></td><td><Badge tone={order.paymentMethod==='bank_transfer'?'info':order.paymentMethod==='cod'?'neutral':'success'}>{paymentMethodLabel[order.paymentMethod]||order.paymentMethod}</Badge></td><td><Badge tone={order.paymentStatus === 'paid' ? 'success' : order.paymentStatus === 'failed' ? 'critical' : order.paymentStatus === 'refunded' ? 'info' : 'warning'}>{paymentStatus[order.paymentStatus]}</Badge></td><td><Badge tone={order.fulfillmentStatus === 'fulfilled' ? 'success' : order.fulfillmentStatus === 'processing' ? 'info' : 'neutral'}>{fulfillmentStatus[order.fulfillmentStatus]}</Badge></td><td><Badge tone={order.status === 'completed' ? 'success' : order.status === 'cancelled' ? 'critical' : 'info'}>{orderStatus[order.status]}</Badge></td><td><Link className="s11-icon-button" to={`/admin/orders/${order.id}`} aria-label={`Mở đơn hàng ${order.number}`}><ChevronRight /></Link></td></tr>)}</tbody></table>{!filtered.length && <div className="s11-empty"><ShoppingBag /><h3>Không có đơn hàng phù hợp</h3><p>Thử thay đổi từ khóa hoặc chế độ xem.</p></div>}</div>
     </AdminResourceSurface>
     <AnimatePresence>{!!selected.length && <motion.div className="s11-bulk" initial={{y: 20, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{y: 20, opacity: 0}}><b>{selected.length} đơn đã chọn</b><button onClick={() => bulk({status: 'confirmed'})}><Check />Xác nhận</button><button onClick={() => bulk({paymentStatus: 'paid'})}><CircleDollarSign />Đã thanh toán</button><button onClick={() => bulk({fulfillmentStatus: 'fulfilled', status: 'completed'})}><PackageCheck />Đã giao</button><button className="danger" onClick={() => {selected.forEach(cancelOrder); setSelected([]);}}><Undo2 />Hủy & hoàn kho</button><button onClick={() => setSelected([])}><X /></button></motion.div>}</AnimatePresence>

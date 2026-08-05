@@ -38,7 +38,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import {useCommerce} from './context';
+import {useCartActions, useCartState, useCommerce} from './context';
 import type {Collection, Product, ProductGroup, ProductGroupItem, Section, ThemeBlock} from './types';
 import {discount, money} from './utils';
 import {optimizedImage, productImage, SmartImage} from './image-utils';
@@ -98,8 +98,28 @@ import './v523-product-admin-fix.css';
 import './v531-storefront-additions.css';
 import './v540-storefront-refinement.css';
 import './v550-storefront-polish.css';
+import './v562-storefront-interactions.css';
+import './v563-storefront-menu.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
+
+function useOverlayScrollLock(open: boolean) {
+  useLayoutEffect(() => {
+    if (!open) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    if (scrollbarWidth) document.body.style.paddingRight = `${scrollbarWidth}px`;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+    };
+  }, [open]);
+}
 
 const flattenThemeBlocks = (blocks: ThemeBlock[] = []): ThemeBlock[] => blocks.flatMap((item) => item.type === 'group' ? (item.visible ? flattenThemeBlocks(item.children || []) : []) : item.visible ? [item] : []);
 const getBlock = (section: Section | undefined, type: ThemeBlock['type']) =>
@@ -133,12 +153,20 @@ function LuxuryLogo() {
 }
 
 function LuxuryHeader({openCart}: {openCart: () => void}) {
-  const {collections, cart, theme, products} = useCommerce();
+  const {collections, theme, products} = useCommerce();
+  const cart = useCartState();
   const {ids: wishlistIds} = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  useOverlayScrollLock(mobileOpen);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {if (event.key === 'Escape') setMobileOpen(false);};
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [mobileOpen]);
   const count = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
   const activeCollections = useMemo(() => collections.filter((item) => item.status === 'active').slice(0, 4), [collections]);
   const activeVendors = useMemo(() => [...new Set(products.filter((item) => item.status === 'active' && item.published).map((item) => item.vendor).filter(Boolean))].slice(0, 8), [products]);
@@ -166,7 +194,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
       )}
       <header id="tf-storefront-header" className={`lux-header ${theme.settings.stickyHeader ? 'is-sticky' : ''}`}>
         <div className="lux-header-inner">
-          <button className="lux-icon-button lux-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Mở menu">
+          <button className="lux-icon-button lux-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Mở menu" aria-expanded={mobileOpen} aria-controls="tf-storefront-navigation-drawer">
             <Menu />
           </button>
           <LuxuryLogo />
@@ -229,16 +257,15 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
         </DialogContent>
       </Dialog>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div className="lux-mobile-shell" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} onClick={() => setMobileOpen(false)}>
-            <motion.aside
-              className="lux-mobile-drawer"
-              initial={{x: '-100%'}}
-              animate={{x: 0}}
-              exit={{x: '-100%'}}
-              transition={{type: 'spring', stiffness: 320, damping: 32}}
+      {mobileOpen && (
+          <div className="lux-mobile-shell tf563-menu-shell" onClick={() => setMobileOpen(false)}>
+            <aside
+              id="tf-storefront-navigation-drawer"
+              className="lux-mobile-drawer tf563-mobile-menu"
               onClick={(event) => event.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu điều hướng"
             >
               <header>
                 <LuxuryLogo />
@@ -259,6 +286,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
                 ))}
                 <Link to="/pages/warranty" onClick={() => setMobileOpen(false)}>Bảo hành</Link>
                 <Link to="/pages/shipping" onClick={() => setMobileOpen(false)}>Giao hàng</Link>
+                <Link to="/track-order" onClick={() => setMobileOpen(false)}>Theo dõi đơn hàng</Link>
                 <Link to="/pages/about" onClick={() => setMobileOpen(false)}>Về TimeForge</Link>
                 <Link to="/blogs" onClick={() => setMobileOpen(false)}>Tạp chí TimeForge</Link>
               </nav>
@@ -266,32 +294,43 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
                 <ShieldCheck />
                 <span><b>Cam kết chính hãng</b>Thông tin nguồn hàng minh bạch</span>
               </div>
-            </motion.aside>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </aside>
+          </div>
+      )}
     </>
   );
 }
 
 function LuxuryCartDrawer({open, close}: {open: boolean; close: () => void}) {
-  const {cart, products, updateCart} = useCommerce();
-  const items = cart
-    .map((line) => ({line, product: products.find((product) => product.id === line.productId)}))
-    .filter((item) => item.product);
-  const total = items.reduce((sum, item) => sum + (item.product?.price || 0) * item.line.quantity, 0);
+  const {products} = useCommerce();
+  const cart = useCartState();
+  const {updateCart} = useCartActions();
+  useOverlayScrollLock(open);
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {if (event.key === 'Escape') close();};
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [close, open]);
+  const productById = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
+  const items = useMemo(() => cart.flatMap((line) => {
+    const product = productById.get(line.productId);
+    if (!product) return [];
+    const variant = product.variants.find((item) => item.id === line.variantId) || product.variants[0];
+    return [{line, product, unitPrice: variant?.price || product.price}];
+  }), [cart, productById]);
+  const total = useMemo(() => items.reduce((sum, item) => sum + item.unitPrice * item.line.quantity, 0), [items]);
 
   return (
-    <AnimatePresence>
+    <>
       {open && (
-        <motion.div className="tf-cart-overlay-v4910" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} onClick={close}>
-          <motion.aside
-            className="tf-cart-drawer-v4910"
-            initial={{x: '100%'}}
-            animate={{x: 0}}
-            exit={{x: '100%'}}
-            transition={{type: 'spring', stiffness: 320, damping: 34}}
+        <div className="tf-cart-overlay-v4910 tf562-overlay-enter" onClick={close}>
+          <aside
+            className="tf-cart-drawer-v4910 tf562-cart-drawer-enter"
             onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Giỏ hàng"
           >
             <header className="tf-cart-header-v4910">
               <div><h2>Giỏ hàng</h2><span className="tf-cart-count-v4910">{items.length} sản phẩm</span></div>
@@ -306,13 +345,13 @@ function LuxuryCartDrawer({open, close}: {open: boolean; close: () => void}) {
                   <Link to="/collections" onClick={close}>Khám phá bộ sưu tập</Link>
                 </div>
               ) : (
-                items.map(({line, product}) => product && (
+                items.map(({line, product, unitPrice}) => (
                   <article className="tf-cart-item-v4910" key={`${product.id}-${line.variantId}`}>
-                    <img className="tf-cart-item-image-v4910" src={optimizedImage(productImage(product), 900, 900, 'fit')} alt={product.title} width="900" height="900" decoding="async" />
+                    <img className="tf-cart-item-image-v4910" src={optimizedImage(productImage(product), 320, 320, 'fit')} alt={product.title} width="320" height="320" loading="lazy" fetchPriority="low" decoding="async" />
                     <div className="tf-cart-item-copy-v4910">
                       <small>{product.vendor}</small>
                       <Link to={`/products/${product.handle}`} onClick={close}>{product.title}</Link>
-                      <b>{money(product.price)}</b>
+                      <b>{money(unitPrice)}</b>
                       <div className="tf-cart-line-actions-v4910">
                         <div className="tf-cart-qty-v4910" aria-label="Số lượng sản phẩm">
                           <button onClick={() => updateCart(line.productId, line.variantId, line.quantity - 1)} aria-label="Giảm số lượng"><Minus /></button>
@@ -334,10 +373,10 @@ function LuxuryCartDrawer({open, close}: {open: boolean; close: () => void}) {
                 <Link className="primary" to="/checkout" onClick={close}>Thanh toán an toàn</Link>
               </footer>
             )}
-          </motion.aside>
-        </motion.div>
+          </aside>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 }
 
@@ -503,7 +542,8 @@ export function StoreLayoutV10() {
 }
 
 export function LuxuryProductCard({product, priority = false}: {product: Product; priority?: boolean}) {
-  const {addToCart, productGroups, products} = useCommerce();
+  const {productGroups, products} = useCommerce();
+  const {addToCart} = useCartActions();
   const {has, toggle} = useWishlist();
   const wished = has(product.id);
   const [secondaryRequested, setSecondaryRequested] = useState(false);
@@ -1220,7 +1260,8 @@ function ProductFamilySelector({group,products,current}:{group:ProductGroup;prod
 
 export function ProductPageV10() {
   const {handle} = useParams();
-  const {products, productGroups, addToCart, theme, isLoading} = useCommerce();
+  const {products, productGroups, theme, isLoading} = useCommerce();
+  const {addToCart} = useCartActions();
   const {openCart} = useOutletContext<{openCart: () => void}>();
   const product = findProductByRoute(products, handle);
   const [imageIndex, setImageIndex] = useState(0);

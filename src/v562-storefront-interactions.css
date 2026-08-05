@@ -1,0 +1,66 @@
+/* V0.56.2 — compositor-only drawers and isolated cart rendering. */
+.tf-storefront-v4912 :is(.lux-mobile-shell,.tf-cart-overlay-v4910){
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  background:rgba(13,24,17,.56)!important;
+  overscroll-behavior:contain;
+  touch-action:manipulation;
+}
+.tf562-overlay-enter{animation:tf562-overlay-in .16s ease-out both}
+.tf562-mobile-menu-enter{animation:tf562-menu-in .19s cubic-bezier(.22,.72,.25,1) both}
+.tf562-cart-drawer-enter{animation:tf562-cart-in .19s cubic-bezier(.22,.72,.25,1) both}
+@keyframes tf562-overlay-in{from{opacity:0}to{opacity:1}}
+@keyframes tf562-menu-in{from{transform:translate3d(-100%,0,0)}to{transform:translate3d(0,0,0)}}
+@keyframes tf562-cart-in{from{transform:translate3d(100%,0,0)}to{transform:translate3d(0,0,0)}}
+
+.tf-storefront-v4912 .lux-mobile-drawer{
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  contain:layout paint style;
+  box-shadow:18px 0 46px rgba(7,19,11,.2);
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
+.tf-storefront-v4912 .lux-mobile-drawer :is(a,button,input){touch-action:manipulation}
+
+.tf-storefront-v4912 .tf-cart-drawer-v4910{
+  contain:layout paint style;
+  box-shadow:-22px 0 54px rgba(7,19,11,.2);
+  transform:translateZ(0);
+  backface-visibility:hidden;
+}
+.tf-storefront-v4912 .tf-cart-body-v4910{overscroll-behavior:contain;scrollbar-gutter:stable}
+.tf-storefront-v4912 .tf-cart-item-v4910{
+  grid-template-columns:96px minmax(0,1fr);
+  align-items:center;
+  gap:14px;
+  contain:layout paint style;
+  border-radius:15px;
+  box-shadow:0 7px 20px rgba(35,28,23,.045);
+}
+.tf-storefront-v4912 .tf-cart-item-image-v4910{
+  align-self:center;
+  justify-self:center;
+  width:96px;
+  height:96px;
+  margin:auto;
+  padding:0;
+  border-radius:11px;
+  object-fit:contain;
+  object-position:center;
+}
+.tf-storefront-v4912 .tf-cart-item-copy-v4910{align-self:center;align-content:center}
+.tf-storefront-v4912 :is(.tf-cart-qty-v4910 button,.tf-cart-remove-v4910,.tf-cart-header-v4910 button){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tf-storefront-v4912 .tf-cart-qty-v4910 button{transition:background-color .12s ease,color .12s ease}
+
+@media(max-width:640px){
+  .tf-storefront-v4912 .tf-cart-item-v4910{grid-template-columns:82px minmax(0,1fr);gap:10px;padding:9px}
+  .tf-storefront-v4912 .tf-cart-item-image-v4910{width:82px;height:82px;border-radius:10px}
+  .tf-storefront-v4912 .tf-cart-item-copy-v4910>a{font-size:12.5px;line-height:1.25}
+  .tf-storefront-v4912 .tf-cart-item-copy-v4910>b{font-size:14px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .tf562-overlay-enter,.tf562-mobile-menu-enter,.tf562-cart-drawer-enter{animation:none!important}
+}

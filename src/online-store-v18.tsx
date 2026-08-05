@@ -1,5 +1,5 @@
 import {BarChart3, CheckCircle2, ChevronDown, Code2, Copy, ExternalLink, Eye, Gauge, Globe2, Laptop, MoreHorizontal, Paintbrush, Plus, Smartphone, UploadCloud} from 'lucide-react';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useLayoutEffect, useMemo, useState} from 'react';
 import {Link, useSearchParams} from 'react-router-dom';
 import {useCommerce} from './context';
 import {OnlineStoreV12} from './admin-sprint12';
@@ -13,8 +13,15 @@ export function OnlineStoreV18(){
   const editor=params.get('view')==='editor';
   const[loadTime,setLoadTime]=useState('—');
   useEffect(()=>{const navigation=performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming|undefined;if(navigation?.duration)setLoadTime(`${Math.round(navigation.duration)} ms`)},[]);
+  useLayoutEffect(()=>{
+    const routeClass='tf-online-store-overview-route-v563';
+    document.documentElement.classList.add(routeClass);
+    document.body.classList.add(routeClass);
+    return()=>{document.documentElement.classList.remove(routeClass);document.body.classList.remove(routeClass)};
+  },[]);
   const published=themeState.published;
-  const templateCount=Object.keys(published.templates).length;
+  const templateCount=Object.keys(published.templates || {}).length;
+  const versions=themeState.versions || [];
   const updated=useMemo(()=>new Date(themeState.publishedAt).toLocaleString('vi-VN',{dateStyle:'medium',timeStyle:'short'}),[themeState.publishedAt]);
   const openEditor=()=>setParams({view:'editor'});
   const closeEditor=()=>setParams({});
@@ -36,10 +43,10 @@ export function OnlineStoreV18(){
 
     <section className="tf39-os-theme-card">
       <div className="tf39-os-preview-stage">
-        <div className="tf39-os-desktop-frame"><div className="tf39-os-browser-bar"><i/><i/><i/><span>timeforge.store</span></div><iframe title="Bản xem trước cửa hàng trên máy tính" src="/?theme_preview=1&tf_editor=1&surface=theme-card-desktop" tabIndex={-1} loading="lazy"/></div>
-        <div className="tf39-os-mobile-frame"><div className="tf39-os-mobile-notch"/><iframe title="Bản xem trước cửa hàng trên điện thoại" src="/?theme_preview=1&tf_editor=1&surface=theme-card-mobile" tabIndex={-1} loading="lazy"/></div>
+        <div className="tf39-os-desktop-frame"><div className="tf39-os-browser-bar"><i/><i/><i/><span>timeforge.store</span></div><iframe title="Bản xem trước cửa hàng trên máy tính" src="/?theme_preview=1&tf_editor=1&surface=theme-card-desktop" tabIndex={-1} loading="lazy" scrolling="no"/></div>
+        <div className="tf39-os-mobile-frame"><div className="tf39-os-mobile-notch"/><iframe title="Bản xem trước cửa hàng trên điện thoại" src="/?theme_preview=1&tf_editor=1&surface=theme-card-mobile" tabIndex={-1} loading="lazy" scrolling="no"/></div>
       </div>
-      <footer className="tf39-os-theme-footer"><div><div className="tf39-os-theme-name"><h2>{published.name}</h2><span><CheckCircle2/>Đang hoạt động</span></div><p>Lưu gần nhất: {updated}</p><button><i/> {themeState.versions.length?`${themeState.versions.length} phiên bản đã lưu`:'Chưa có phiên bản cũ'} <ChevronDown/></button></div><div className="tf39-os-theme-cta"><DropdownMenu><DropdownMenuTrigger asChild><Button variant="icon"><MoreHorizontal/></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onSelect={()=>navigator.clipboard?.writeText(JSON.stringify(published,null,2))}><Copy/>Sao chép dữ liệu</DropdownMenuItem><DropdownMenuItem onSelect={()=>window.open('/','_blank')}><ExternalLink/>Xem cửa hàng</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={openEditor}><Paintbrush/>Chỉnh sửa theme</Button></div></footer>
+      <footer className="tf39-os-theme-footer"><div><div className="tf39-os-theme-name"><h2>{published.name}</h2><span><CheckCircle2/>Đang hoạt động</span></div><p>Lưu gần nhất: {updated}</p><button><i/> {versions.length?`${versions.length} phiên bản đã lưu`:'Chưa có phiên bản cũ'} <ChevronDown/></button></div><div className="tf39-os-theme-cta"><DropdownMenu><DropdownMenuTrigger asChild><Button variant="icon"><MoreHorizontal/></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuItem onSelect={()=>navigator.clipboard?.writeText(JSON.stringify(published,null,2))}><Copy/>Sao chép dữ liệu</DropdownMenuItem><DropdownMenuItem onSelect={()=>window.open('/','_blank')}><ExternalLink/>Xem cửa hàng</DropdownMenuItem></DropdownMenuContent></DropdownMenu><Button onClick={openEditor}><Paintbrush/>Chỉnh sửa theme</Button></div></footer>
     </section>
 
     <section className="tf39-os-library"><header><div><h2>Thư viện theme</h2><p>Quản lý bản nháp, theme đã lưu và giao diện mới.</p></div><Button variant="secondary"><UploadCloud/>Thêm theme</Button></header><div className="tf39-os-library-grid"><article><span><Laptop/></span><div><small>BẢN NHÁP</small><h3>{draftTheme.name}</h3><p>{templateCount} template · section và block chưa xuất bản.</p></div><Button variant="secondary" onClick={openEditor}>Tùy chỉnh</Button></article><article className="is-add"><span><Plus/></span><div><small>THEME STORE</small><h3>Khám phá giao diện mới</h3><p>Chuẩn bị thêm theme cho chiến dịch hoặc bộ sưu tập khác.</p></div><Button variant="ghost"><Plus/>Thêm theme</Button></article></div></section>

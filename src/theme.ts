@@ -1,4 +1,5 @@
 import type {BlockType, Section, SectionType, TemplateKey, Theme, ThemeBlock, ThemeState, ThemeTemplate} from './types';
+import {asList} from './data-normalize';
 import {uid} from './utils';
 
 const b = (type: BlockType, settings: ThemeBlock['settings'] = {}): ThemeBlock => ({id: uid('b'), type, visible: true, settings});
@@ -171,50 +172,123 @@ export const createThemeState = (): ThemeState => {
   return {draft: structuredClone(theme), published: structuredClone(theme), publishedAt: new Date().toISOString(), versions: []};
 };
 
-function normalizeThemeV27(theme: Theme): Theme {
-  const next = structuredClone(theme);
-  const normalizeBlocksV41 = (blocks: ThemeBlock[]): ThemeBlock[] => blocks.map((block) => ({
-    ...block,
-    settings: block.type === 'buyButtons'
-      ? {showAddToCart: true, showBuyNow: true, showWishlist: true, ...(block.settings || {})}
-      : {...(block.settings || {})},
-    ...(block.children ? {children: normalizeBlocksV41(block.children)} : {}),
-  }));
-  next.version = Math.max(4, Number(next.version || 0));
-  next.settings = {...defaultSettings, ...(next.settings || {})};
-  const base = defaultTheme();
-  (Object.keys(base.templates) as TemplateKey[]).forEach((key) => {
-    if (!next.templates[key]) next.templates[key] = structuredClone(base.templates[key]);
-    next.templates[key].sections = next.templates[key].sections.map((section) => ({
-      ...section,
-      blocks: normalizeBlocksV41(section.blocks || []),
-    }));
+const themeRecord=(value:unknown):Record<string,unknown>=>value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
+const primitiveSettings=(value:unknown):Record<string,string|number|boolean>=>Object.fromEntries(Object.entries(themeRecord(value)).flatMap(([key,item])=>
+  typeof item==='string'||typeof item==='number'||typeof item==='boolean'?[[key,item]]:[]));
+const validSectionType=(value:unknown):value is SectionType=>typeof value==='string'&&value in sectionLabels;
+const validBlockType=(value:unknown):value is BlockType=>typeof value==='string'&&value in blockLabels;
+
+const normalizeBlocksV41=(value:unknown):ThemeBlock[]=>asList<unknown>(value).flatMap((item,index)=>{
+  const source=themeRecord(item);
+  if(!validBlockType(source.type))return[];
+  const settings=source.type==='buyButtons'
+    ?{showAddToCart:true,showBuyNow:true,showWishlist:true,...primitiveSettings(source.settings)}
+    :primitiveSettings(source.settings);
+  const children=source.children==null?(source.type==='group'?[]:undefined):normalizeBlocksV41(source.children);
+  return[{
+    id:String(source.id||`legacy-block-${index+1}`),
+    type:source.type,
+    visible:source.visible!==false,
+    settings,
+    ...(children?{children}:{}),
+  }];
+});
+
+const normalizeSectionV56=(value:unknown,index:number):Section|null=>{
+  const source=themeRecord(value);
+  if(!validSectionType(source.type))return null;
+  const fallback=createSection(source.type);
+  const blocks=source.blocks==null?structuredClone(fallback.blocks):normalizeBlocksV41(source.blocks);
+  return{
+    ...fallback,
+    id:String(source.id||fallback.id||`legacy-section-${index+1}`),
+    type:source.type,
+    visible:source.visible!==false,
+    settings:{...fallback.settings,...primitiveSettings(source.settings)},
+    blocks,
+  };
+};
+
+function normalizeThemeV27(value: unknown): Theme {
+  const source=themeRecord(value);
+  const base=defaultTheme();
+  const sourceTemplates=themeRecord(source.templates);
+  const templates={} as Record<TemplateKey,ThemeTemplate>;
+
+  (Object.keys(base.templates) as TemplateKey[]).forEach((key)=>{
+    const fallback=base.templates[key];
+    const rawTemplate=themeRecord(sourceTemplates[key]);
+    const rawSections=rawTemplate.sections==null?fallback.sections:asList<unknown>(rawTemplate.sections);
+    const sections=rawSections.map(normalizeSectionV56).filter((section):section is Section=>Boolean(section));
+    templates[key]={
+      key,
+      name:String(rawTemplate.name||fallback.name),
+      sections:sections.length?sections:structuredClone(fallback.sections),
+    };
   });
-  const home = next.templates.home;
-  const types = home.sections.map(section => section.type);
-  if (!types.includes('bestSellers')) {
-    const productIndex = home.sections.findIndex(section => section.type === 'products');
-    home.sections.splice(productIndex >= 0 ? productIndex + 1 : home.sections.length, 0, createSection('bestSellers'));
+
+  const parsedVersion=Number(source.version);
+  const next:Theme={
+    version:Math.max(4,Number.isFinite(parsedVersion)?parsedVersion:0),
+    name:String(source.name||base.name),
+    settings:{...defaultSettings,...primitiveSettings(source.settings)},
+    templates,
+  };
+  const home=next.templates.home;
+  const types=home.sections.map(section=>section.type);
+  if(!types.includes('bestSellers')){
+    const productIndex=home.sections.findIndex(section=>section.type==='products');
+    home.sections.splice(productIndex>=0?productIndex+1:home.sections.length,0,createSection('bestSellers'));
   }
-  if (!types.includes('blogPosts')) {
-    const imageIndex = home.sections.findIndex(section => section.type === 'imageText');
-    home.sections.splice(imageIndex >= 0 ? imageIndex + 1 : home.sections.length, 0, createSection('blogPosts'));
+  if(!types.includes('blogPosts')){
+    const imageIndex=home.sections.findIndex(section=>section.type==='imageText');
+    home.sections.splice(imageIndex>=0?imageIndex+1:home.sections.length,0,createSection('blogPosts'));
   }
   return next;
 }
 
+export const normalizeTheme=(value:unknown)=>normalizeThemeV27(value);
+
+export const normalizeThemeVersions=(value:unknown)=>asList<unknown>(value).map((item,index)=>{
+  const source=themeRecord(item);
+  return{
+    id:String(source.id||`theme-version-${index+1}`),
+    createdAt:String(source.createdAt||new Date(0).toISOString()),
+    note:String(source.note||'Phiên bản theme cũ'),
+    theme:normalizeThemeV27(source.theme),
+  };
+});
+
 export function migrateTheme(raw: unknown): ThemeState {
-  if (raw && typeof raw === 'object' && 'draft' in raw && 'published' in raw) {
-    const state = raw as ThemeState;
-    return {...state, draft: normalizeThemeV27(state.draft), published: normalizeThemeV27(state.published)};
+  const source=themeRecord(raw);
+  if('draft' in source||'published' in source){
+    const draft=normalizeThemeV27(source.draft||source.published);
+    const published=normalizeThemeV27(source.published||source.draft);
+    return{
+      draft,
+      published,
+      publishedAt:String(source.publishedAt||new Date(0).toISOString()),
+      versions:normalizeThemeVersions(source.versions),
+    };
   }
-  if (raw && typeof raw === 'object' && 'sections' in raw) {
-    const base = defaultTheme();
-    const old = raw as {storeName?: string; announcement?: string; accent?: string; background?: string; text?: string; radius?: number; sections?: Array<{id: string; type: SectionType; visible: boolean; settings: Record<string, string | number | boolean>}>};
-    base.settings = {...base.settings, storeName: old.storeName || base.settings.storeName, announcement: old.announcement || base.settings.announcement, accent: old.accent || base.settings.accent, background: old.background || base.settings.background, text: old.text || base.settings.text, radius: old.radius ?? base.settings.radius};
-    if (old.sections?.length) base.templates.home.sections = old.sections.map(item => ({...item, blocks: createSection(item.type).blocks}));
-    const normalized = normalizeThemeV27(base);
-    return {draft: structuredClone(normalized), published: structuredClone(normalized), publishedAt: new Date().toISOString(), versions: []};
+  if('templates' in source){
+    const normalized=normalizeThemeV27(source);
+    return{draft:structuredClone(normalized),published:structuredClone(normalized),publishedAt:new Date(0).toISOString(),versions:[]};
+  }
+  if('sections' in source){
+    const base=defaultTheme();
+    base.settings={...base.settings,...primitiveSettings({
+      storeName:source.storeName,
+      announcement:source.announcement,
+      accent:source.accent,
+      background:source.background,
+      text:source.text,
+      radius:source.radius,
+    })};
+    const sections=asList<unknown>(source.sections).map(normalizeSectionV56).filter((section):section is Section=>Boolean(section));
+    if(sections.length)base.templates.home.sections=sections;
+    const normalized=normalizeThemeV27(base);
+    return{draft:structuredClone(normalized),published:structuredClone(normalized),publishedAt:new Date(0).toISOString(),versions:[]};
   }
   return createThemeState();
 }

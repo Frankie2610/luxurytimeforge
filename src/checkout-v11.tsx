@@ -2,7 +2,7 @@ import {motion} from 'framer-motion';
 import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
 import {useEffect, useMemo, useState, type FormEvent, type ReactNode} from 'react';
 import {Link, Navigate, useNavigate, useParams, useSearchParams} from 'react-router-dom';
-import {useCommerce} from './context';
+import {useCartActions, useCartState, useCommerce} from './context';
 import {optimizedImage, productImage, SmartImage} from './image-utils';
 import {bankTransferDiscount,loadIntegrationSettings,preferredBankAccount,readIntegrationSettings} from './integrations';
 import {startPayment} from './payment-adapter';
@@ -24,6 +24,7 @@ import './v504-commerce.css';
 import './v509-commerce-final.css';
 import './v515-order-payment.css';
 import './v521-ui-polish.css';
+import './v562-cart-performance.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -46,7 +47,8 @@ function CommerceProductImageV32({product, alt, size = 220, priority = false}: {
 }
 
 function useSummary(discountCode = '', paymentMethod: CheckoutPayload['paymentMethod'] = 'cod', integration = readIntegrationSettings()) {
-  const {cart, products, evaluateDiscount} = useCommerce();
+  const {products, evaluateDiscount} = useCommerce();
+  const cart = useCartState();
   return useMemo(() => {
     const lines = cart.map((line) => {
       const product = products.find((item) => item.id === line.productId);
@@ -99,7 +101,8 @@ function ShippingProgress({subtotal}: {subtotal: number}) {
 }
 
 export function CartPageV11() {
-  const {updateCart, clearCart, theme} = useCommerce();
+  const {theme} = useCommerce();
+  const {updateCart, clearCart} = useCartActions();
   useEffect(() => {trackCommerceEvent('cart_view');}, []);
   const [params] = useSearchParams();
   const [code, setCode] = useState(params.get('discount') || '');
@@ -141,7 +144,7 @@ export function CartPageV11() {
       <div className="tf4912-cart-layout">
         <main className="tf4912-cart-main">
           <section className="tf4912-cart-lines" aria-label="Sản phẩm trong giỏ hàng">
-            {lines.map(({line, product, variant, unitPrice}, index) => <motion.article layout key={`${product.id}-${line.variantId}`} className="tf4912-cart-line">
+            {lines.map(({line, product, variant, unitPrice}, index) => <article key={`${product.id}-${line.variantId}`} className="tf4912-cart-line">
               <Link to={`/products/${product.handle}`} className="tf4912-cart-line-image"><CommerceProductImageV32 product={product} alt={product.title} size={360} priority={index < 2}/></Link>
               <div className="tf4912-cart-line-copy">
                 <small>{product.vendor || 'TIMEFORGE'}</small>
@@ -157,7 +160,7 @@ export function CartPageV11() {
                 </div>
               </div>
               <div className="tf4912-cart-line-price"><b>{money(unitPrice * line.quantity)}</b>{line.quantity > 1 && <small>{money(unitPrice)} / sản phẩm</small>}</div>
-            </motion.article>)}
+            </article>)}
           </section>
 
           <label className="tf4912-gift-option"><input type="checkbox" checked={gift} onChange={(event) => setGift(event.target.checked)}/><i><Gift/></i><span><b>Đây là một món quà</b><small>{gift ? 'TimeForge sẽ đóng gói tối giản và không đặt giá trong hộp.' : 'Thêm ghi chú quà tặng ở bước thanh toán.'}</small></span></label>
@@ -198,7 +201,8 @@ function CheckoutSection({number, title, description, children}: {number: string
 }
 
 export function CheckoutPageV11() {
-  const {cart, submitStorefrontOrder} = useCommerce();
+  const {submitStorefrontOrder} = useCommerce();
+  const cart = useCartState();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [payload, setPayload] = useState<CheckoutPayload>({...initialPayload, discountCode: params.get('discount') || ''});

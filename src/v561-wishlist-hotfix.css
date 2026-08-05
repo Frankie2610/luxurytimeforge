@@ -1,0 +1,124 @@
+/* V0.56.1 — full-bleed square Wishlist media and tighter mobile cards. */
+.tf53-wishlist-card{
+  border-color:#e2e6e2;
+  border-radius:15px;
+  box-shadow:0 8px 26px rgba(24,43,31,.052);
+}
+.tf53-wishlist-media-wrap{
+  position:relative;
+  min-height:0!important;
+  aspect-ratio:1;
+  overflow:hidden;
+  border:0!important;
+  background:#f2f1ed;
+}
+.tf53-wishlist-media-wrap .tf53-wishlist-media{
+  width:100%;
+  height:100%;
+  min-height:0!important;
+  display:block;
+  aspect-ratio:auto;
+  overflow:hidden;
+  border:0!important;
+  background:#f2f1ed;
+}
+.tf53-wishlist-media>.tf-smart-image{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  overflow:hidden;
+  border:0!important;
+  border-radius:0!important;
+  background:#f2f1ed!important;
+}
+.tf53-wishlist-media img{
+  width:100%;
+  height:100%;
+  display:block;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+.tf53-wishlist-media .tf-image-skeleton{position:absolute;inset:0;border-radius:0}
+.tf53-wishlist-copy{padding:16px 16px 12px}
+.tf53-wishlist-copy>a{font-size:clamp(17px,1.55vw,21px);letter-spacing:-.015em}
+.tf53-wishlist-card>footer{padding:0 12px 12px}
+
+@supports(content-visibility:auto){
+  .tf53-wishlist-card{contain-intrinsic-size:auto 475px}
+}
+
+@media(max-width:640px){
+  .tf53-wishlist-page{width:calc(100% - 16px);padding-top:10px}
+  .tf53-wishlist-hero{gap:14px;padding:21px 17px;border-radius:16px}
+  .tf53-wishlist-hero small{margin-bottom:8px;font-size:7px;letter-spacing:.16em}
+  .tf53-wishlist-hero h1{font-size:26px;line-height:1.04;letter-spacing:-.03em}
+  .tf53-wishlist-hero p{max-width:34rem;margin-top:9px;font-size:10.5px;line-height:1.52}
+  .tf53-wishlist-hero>span{padding:8px 11px;font-size:7px}
+  .tf53-wishlist-hero>span svg{width:17px;height:17px}
+  .tf53-wishlist-hero>span b{font-size:16px}
+
+  .tf53-wishlist-toolbar{margin-top:14px}
+  .tf53-wishlist-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .tf53-wishlist-card{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto 1fr auto;
+    border-radius:12px;
+    box-shadow:0 5px 18px rgba(24,43,31,.045);
+  }
+  .tf53-wishlist-media-wrap{
+    grid-row:auto;
+    min-height:0!important;
+    aspect-ratio:1;
+    border-right:0!important;
+  }
+  .tf53-wishlist-media-wrap .tf53-wishlist-media{
+    grid-row:auto;
+    height:100%;
+    min-height:0!important;
+    aspect-ratio:auto;
+    border-right:0!important;
+  }
+  .tf53-wishlist-media>span{top:7px;left:7px;min-height:21px;padding:0 6px;font-size:7px}
+  .tf56-compare-toggle{top:7px;right:7px;min-width:28px;min-height:27px;padding:0 6px;border-radius:7px}
+  .tf56-compare-toggle svg{width:12px;height:12px}
+
+  .tf53-wishlist-copy{min-height:99px;padding:10px 9px 8px}
+  .tf53-wishlist-copy>small{margin-bottom:4px;font-size:6.5px;letter-spacing:.12em}
+  .tf53-wishlist-copy>a{font-size:13px;line-height:1.2;letter-spacing:-.01em}
+  .tf53-wishlist-copy>div{gap:4px;margin-top:7px}
+  .tf53-wishlist-copy strong{font-size:10.5px}
+  .tf53-wishlist-copy del{font-size:8px}
+  .tf53-wishlist-copy>p{margin-top:5px;font-size:7.5px;line-height:1.25}
+  .tf53-wishlist-card>footer{
+    grid-column:auto;
+    grid-template-columns:34px minmax(0,1fr);
+    gap:5px;
+    padding:0 7px 7px;
+  }
+  .tf53-wishlist-card>footer button{min-height:34px;gap:4px;border-radius:8px;font-size:8.5px;white-space:nowrap}
+  .tf53-wishlist-card>footer button svg{width:13px;height:13px}
+  .tf53-wishlist-card>footer .remove{width:34px}
+
+  @supports(content-visibility:auto){
+    .tf53-wishlist-card{contain-intrinsic-size:auto 286px}
+  }
+}
+
+@media(max-width:380px){
+  .tf53-wishlist-hero h1{font-size:24px}
+  .tf53-wishlist-card{grid-template-columns:minmax(0,1fr)}
+  .tf53-wishlist-media-wrap,.tf53-wishlist-media-wrap .tf53-wishlist-media{min-height:0!important}
+  .tf53-wishlist-copy{min-height:94px;padding-inline:8px}
+  .tf53-wishlist-copy>a{font-size:12.5px}
+  .tf53-wishlist-card>footer{grid-column:auto;padding-inline:6px}
+  .tf53-wishlist-card>footer .add{font-size:8px}
+}
+
+@media(hover:hover){
+  .tf53-wishlist-card:hover .tf53-wishlist-media img{transform:scale(1.035)}
+}

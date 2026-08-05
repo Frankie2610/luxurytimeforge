@@ -4,7 +4,7 @@ import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
   Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,
   BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Menu,PackageSearch,Plus,
-  PanelLeftClose,PanelLeftOpen,RotateCcw,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,
+  PanelLeftClose,PanelLeftOpen,RotateCcw,Rows3,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,
 } from 'lucide-react';
 import {toast as sonnerToast} from 'sonner';
 import {useCommerce} from './context';
@@ -25,6 +25,8 @@ import './v523-product-admin-fix.css';
 import './v531-admin-dashboard.css';
 import './v540-admin-refinement.css';
 import './v550-admin-polish.css';
+import './v560-admin-features.css';
+import './v563-admin-scroll-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -92,6 +94,7 @@ function ToastBridge(){useEffect(()=>{const listener=(event:Event)=>{const detai
 export function AdminLayoutV16(){
   const[open,setOpen]=useState(false);
   const[collapsed,setCollapsed]=useState(()=>typeof window!=='undefined'&&window.localStorage.getItem('tf:admin-sidebar-collapsed')==='1');
+  const[density,setDensity]=useState<'comfortable'|'compact'>(()=>{try{return typeof window!=='undefined'&&window.localStorage.getItem('tf:admin-density')==='compact'?'compact':'comfortable'}catch{return'comfortable'}});
   const location=useLocation();
   const navigate=useNavigate();
   const{dataSource,orders,products}=useCommerce();
@@ -138,11 +141,13 @@ export function AdminLayoutV16(){
   ].map(section=>({...section,items:section.items.filter(item=>hasPermission(user?.role,routePermission(item.to)))})).filter(section=>section.items.length),[pendingOrders,pendingReturns,lowStock,user?.role]);
   useEffect(()=>{setOpen(false)},[location.pathname]);
   useEffect(()=>{window.localStorage.setItem('tf:admin-sidebar-collapsed',collapsed?'1':'0')},[collapsed]);
+  useEffect(()=>{try{window.localStorage.setItem('tf:admin-density',density)}catch{/* Density remains available for the current session when storage is blocked. */}},[density]);
   useEffect(()=>{if(!open)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[open]);
   const initials=(user?.name||user?.email||'A').trim().slice(0,1).toUpperCase();
   const liveData=dataSource==='firebase';
   const dataSourceLabel=dataSource==='loading'?'Đang tải Firebase':liveData?'Firebase live':dataSource==='error'?'Lỗi tải catalog':dataSource==='local'?'Local':'Dữ liệu mẫu';
-  return <div className={`v16-admin-shell tf-admin-v499 ${collapsed?'is-sidebar-collapsed':''}`}>
+  const toggleDensity=()=>{const next=density==='compact'?'comfortable':'compact';setDensity(next);sonnerToast.success(next==='compact'?'Đã chuyển bảng sang chế độ gọn':'Đã chuyển bảng sang chế độ thoáng')};
+  return <div className={`v16-admin-shell tf-admin-v499 ${collapsed?'is-sidebar-collapsed':''} ${density==='compact'?'is-density-compact':''}`}>
     {open&&<button className="v16-admin-backdrop" aria-label="Đóng menu" onClick={()=>setOpen(false)}/>} 
     <aside className={`v16-admin-sidebar ${open?'is-open':''}`} aria-label="Điều hướng quản trị">
       <div className="v16-admin-brand">
@@ -168,7 +173,7 @@ export function AdminLayoutV16(){
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="secondary" size="sm" className="v16-create-button"><Plus/>Tạo mới<ChevronDown/></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onSelect={()=>navigate('/admin/products/new')}><Boxes/>Sản phẩm</DropdownMenuItem><DropdownMenuItem onSelect={()=>navigate('/admin/draft-orders/new')}><FileText/>Đơn hàng nháp</DropdownMenuItem><DropdownMenuItem onSelect={()=>navigate('/admin/discounts')}><BadgePercent/>Mã giảm giá</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
           <Link className="v16-view-store" to="/" target="_blank">Xem cửa hàng<ArrowUpRight/></Link>
           <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-icon-action v35-notification-trigger" aria-label="Thông báo"><Bell/>{(pendingOrders+pendingReturns+lowStock)>0&&<span>{Math.min(pendingOrders+pendingReturns+lowStock,99)}</span>}</button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v35-notification-menu"><div className="v35-notification-heading"><b>Thông báo</b><small>Các việc cần xử lý</small></div>{pendingOrders>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/orders')}><ShoppingBag/><span><b>{pendingOrders} đơn hàng đang mở</b><small>Kiểm tra thanh toán và xử lý đơn</small></span></DropdownMenuItem>}{pendingReturns>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/returns')}><RotateCcw/><span><b>{pendingReturns} yêu cầu hoàn trả</b><small>Đang chờ xét duyệt</small></span></DropdownMenuItem>}{lowStock>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/inventory')}><PackageSearch/><span><b>{lowStock} sản phẩm sắp hết</b><small>Cần bổ sung hoặc điều chỉnh tồn kho</small></span></DropdownMenuItem>}{pendingOrders+pendingReturns+lowStock===0&&<div className="v35-notification-empty"><Bell/><b>Không có việc gấp</b><small>Cửa hàng đang hoạt động ổn định.</small></div>}</DropdownMenuContent></DropdownMenu>
-          <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-user-trigger"><span>{initials}</span><span><b>{user?.name||'Admin'}</b><small>{user?.role?roleLabels[user.role]:'Quản trị viên'}</small></span><ChevronDown/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v16-user-menu"><DropdownMenuItem onSelect={()=>navigate('/admin/settings')}><CircleUserRound/>Tài khoản quản trị</DropdownMenuItem><DropdownMenuSeparator/><DropdownMenuItem className="danger" onSelect={()=>void logout()}>Đăng xuất</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+          <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-user-trigger"><span>{initials}</span><span><b>{user?.name||'Admin'}</b><small>{user?.role?roleLabels[user.role]:'Quản trị viên'}</small></span><ChevronDown/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v16-user-menu"><DropdownMenuItem onSelect={()=>navigate('/admin/settings')}><CircleUserRound/>Tài khoản quản trị</DropdownMenuItem><DropdownMenuItem onSelect={toggleDensity}><Rows3/>{density==='compact'?'Chế độ bảng: Gọn':'Chế độ bảng: Thoáng'}</DropdownMenuItem><DropdownMenuSeparator/><DropdownMenuItem className="danger" onSelect={()=>void logout()}>Đăng xuất</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
         </div>
       </header>
       <div className={`v16-admin-page ${meta.fullBleed?'is-fullbleed':''}`}>

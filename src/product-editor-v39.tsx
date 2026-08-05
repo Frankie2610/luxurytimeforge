@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
+import {useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import {
   AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowLeft, ArrowUp, Bold, Check,
@@ -10,7 +10,7 @@ import {toast} from 'sonner';
 import {useCommerce} from './context';
 import type {Metafield, Product, ProductOption, Variant} from './types';
 import {money, slugify, strip, uid} from './utils';
-import {isFirebaseSafeSku, normalizeSku} from './product-data';
+import {isFirebaseSafeSku, normalizeProductRecord, normalizeSku} from './product-data';
 import {PRODUCT_FILTER_DEFINITIONS, type ProductFilterDefinition} from './product-filter-data';
 import './v503-admin-metafields.css';
 
@@ -38,8 +38,8 @@ const blankProduct = (): Product => {
 function Field({label, hint, children}: {label: string; hint?: string; children: ReactNode}) {
   return <label className="tf39-field"><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
 }
-function Panel({title, description, action, children, className = ''}: {title: string; description?: string; action?: ReactNode; children: ReactNode; className?: string}) {
-  return <section className={`tf39-editor-panel ${className}`}><header><div><h2>{title}</h2>{description && <p>{description}</p>}</div>{action}</header><div className="tf39-panel-body">{children}</div></section>;
+function Panel({id, title, description, action, children, className = ''}: {id?: string; title: string; description?: string; action?: ReactNode; children: ReactNode; className?: string}) {
+  return <section id={id} className={`tf39-editor-panel ${className}`}><header><div><h2>{title}</h2>{description && <p>{description}</p>}</div>{action}</header><div className="tf39-panel-body">{children}</div></section>;
 }
 function ToolbarButton({title, active = false, onMouseDown, children}: {title: string; active?: boolean; onMouseDown: (event: React.MouseEvent<HTMLButtonElement>) => void; children: ReactNode}) {
   return <button type="button" title={title} aria-label={title} className={active ? 'is-active' : ''} onMouseDown={onMouseDown}>{children}</button>;
@@ -50,22 +50,24 @@ export function ProductEditorV39() {
   const navigate = useNavigate();
   const {products, collections, saveProduct} = useCommerce();
   const source = products.find((item) => item.id === id);
-  const [product, setProduct] = useState<Product>(() => source ? structuredClone({...source, options: source.options || [], metafields: source.metafields || []}) : blankProduct());
+  const [product, setProduct] = useState<Product>(() => source ? structuredClone(normalizeProductRecord(source, source.id)) : blankProduct());
   const [mode, setMode] = useState<'visual' | 'html' | 'preview'>('visual');
   const [tagInput, setTagInput] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const editorRef = useRef<HTMLDivElement>(null);
   const snapshotRef = useRef('');
+  const dirtyRef = useRef(false);
+  const saveRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
-    const next = source ? structuredClone({...source, options: source.options || [], metafields: source.metafields || []}) : blankProduct();
+    const next = source ? structuredClone(normalizeProductRecord(source, source.id)) : blankProduct();
     setProduct(next);
     snapshotRef.current = JSON.stringify(next);
   }, [id, source?.id]);
   useEffect(() => {
     if (mode === 'visual' && editorRef.current && editorRef.current.innerHTML !== product.descriptionHtml) editorRef.current.innerHTML = product.descriptionHtml || '<p><br></p>';
   }, [mode, product.id]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.body.classList.add('tf-product-editor-route-v4915');
     document.documentElement.classList.add('tf-product-editor-route-v4915');
     return () => {
@@ -75,10 +77,11 @@ export function ProductEditorV39() {
   }, []);
 
   const dirty = JSON.stringify(product) !== snapshotRef.current;
+  dirtyRef.current = dirty;
   const isNew = !source;
   const profit = Math.max(0, product.price - product.cost);
   const margin = product.price > 0 ? Math.round((profit / product.price) * 100) : 0;
-  const collectionNames = useMemo(() => collections.filter((collection) => collection.productIds.includes(product.id)).map((collection) => collection.title), [collections, product.id]);
+  const collectionNames = useMemo(() => collections.filter((collection) => (collection.productIds || []).includes(product.id)).map((collection) => collection.title), [collections, product.id]);
 
   const patch = <K extends keyof Product>(key: K, value: Product[K]) => setProduct((current) => ({...current, [key]: value, updatedAt: new Date().toISOString()}));
   const patchPrimaryVariant = (value: Partial<Variant>) => setProduct((current) => ({
@@ -119,9 +122,30 @@ export function ProductEditorV39() {
     saveProduct(next);
     setProduct(next);
     snapshotRef.current = JSON.stringify(next);
+    dirtyRef.current = false;
     toast.success(isNew ? 'Đã tạo sản phẩm' : 'Đã lưu sản phẩm');
     if (isNew) navigate(`/admin/products/${next.id}`, {replace: true});
   };
+  saveRef.current = save;
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        saveRef.current();
+      }
+    };
+    const protectUnsavedChanges = (event: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('keydown', handleShortcut);
+    window.addEventListener('beforeunload', protectUnsavedChanges);
+    return () => {
+      window.removeEventListener('keydown', handleShortcut);
+      window.removeEventListener('beforeunload', protectUnsavedChanges);
+    };
+  }, []);
   const addImageUrls = () => {
     const urls = imageUrl.split(/[\n,]+/).map((value) => value.trim()).filter(Boolean);
     if (!urls.length) return;
@@ -185,9 +209,23 @@ export function ProductEditorV39() {
 
     {dirty && <div className="tf39-unsaved-bar"><span><i /><b>Chưa lưu thay đổi</b><small>Nội dung mới chỉ hiển thị sau khi bấm Lưu.</small></span><div><button type="button" onClick={() => {const next = source ? structuredClone({...source, options: source.options || [], metafields: source.metafields || []}) : blankProduct(); setProduct(next); snapshotRef.current = JSON.stringify(next);}}>Bỏ thay đổi</button><button type="button" onClick={save}><Check />Lưu</button></div></div>}
 
+    <div className="tf563-product-jump">
+      <span>Đi nhanh</span>
+      <nav aria-label="Đi nhanh đến phần chỉnh sửa sản phẩm">
+        <a href="#tf-product-info">Nội dung</a>
+        <a href="#tf-product-media">Ảnh</a>
+        <a href="#tf-product-price">Giá</a>
+        <a href="#tf-product-inventory">Kho</a>
+        <a href="#tf-product-variants">Phiên bản</a>
+        <a href="#tf-product-seo">SEO</a>
+        <a href="#tf-product-status">Trạng thái</a>
+      </nav>
+      <small><kbd>Ctrl/⌘ S</kbd> để lưu</small>
+    </div>
+
     <div className="tf39-editor-layout">
       <main className="tf39-editor-main">
-        <Panel title="Thông tin sản phẩm" description="Tên và nội dung khách hàng nhìn thấy trên storefront.">
+        <Panel id="tf-product-info" title="Thông tin sản phẩm" description="Tên và nội dung khách hàng nhìn thấy trên storefront.">
           <div className="tf39-field-stack">
             <Field label="Tên sản phẩm"><input value={product.title} onChange={(event) => {const value = event.target.value; setProduct((current) => ({...current, title: value, handle: current.handle || slugify(value), seoTitle: current.seoTitle || (value ? `${value} | TimeForge` : ''), updatedAt: new Date().toISOString()}));}} placeholder="Ví dụ: Đồng Hồ Nữ Medusa Infinite" /></Field>
             <Field label="Mô tả sản phẩm" hint="Có thể chỉnh trực quan, HTML hoặc xem trước kết quả.">
@@ -229,37 +267,37 @@ export function ProductEditorV39() {
           </div>
         </Panel>
 
-        <Panel title="Ảnh sản phẩm" description="Dùng URL CDN. Ảnh đầu tiên là ảnh đại diện và có thể sắp xếp bằng nút lên/xuống." action={<span className="tf39-cdn-badge"><ImagePlus />URL CDN</span>}>
+        <Panel id="tf-product-media" title="Ảnh sản phẩm" description="Dùng URL CDN. Ảnh đầu tiên là ảnh đại diện và có thể sắp xếp bằng nút lên/xuống." action={<span className="tf39-cdn-badge"><ImagePlus />URL CDN</span>}>
           <div className="tf39-media-url"><textarea rows={2} value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="Dán một hoặc nhiều URL CDN, cách nhau bằng dấu phẩy hoặc xuống dòng" /><button type="button" disabled={!imageUrl.trim()} onClick={addImageUrls}>Thêm ảnh</button></div>
           {product.images.length ? <div className="tf39-media-grid">{product.images.map((image, index) => <article key={`${image}-${index}`}><img src={image} alt="" loading="lazy" decoding="async" /><span>{index === 0 ? 'Ảnh đại diện' : `Ảnh ${index + 1}`}</span><div><button type="button" onClick={() => moveImage(index, -1)} disabled={index === 0}><ArrowUp /></button><button type="button" onClick={() => moveImage(index, 1)} disabled={index === product.images.length - 1}><ArrowDown /></button><button type="button" onClick={() => patch('images', product.images.filter((_, imageIndex) => imageIndex !== index))}><Trash2 /></button></div></article>)}</div> : <div className="tf39-dropzone tf39-cdn-empty"><ImagePlus /><b>Chưa có ảnh CDN</b><span>Dán URL phía trên để thêm ảnh sản phẩm.</span></div>}
         </Panel>
 
-        <Panel title="Giá" description="Giá bán, giá so sánh và biên lợi nhuận dự kiến.">
+        <Panel id="tf-product-price" title="Giá" description="Giá bán, giá so sánh và biên lợi nhuận dự kiến.">
           <div className="tf39-form-grid three"><Field label="Giá bán"><input type="number" value={product.price} onChange={(event) => {const value = Number(event.target.value); patch('price', value); patchPrimaryVariant({price: value});}} /></Field><Field label="Giá so sánh"><input type="number" value={product.compareAtPrice} onChange={(event) => {const value = Number(event.target.value); patch('compareAtPrice', value); patchPrimaryVariant({compareAtPrice: value});}} /></Field><Field label="Giá vốn"><input type="number" value={product.cost} onChange={(event) => patch('cost', Number(event.target.value))} /></Field></div>
           <div className="tf39-price-summary"><span><small>Lợi nhuận</small><b>{money(profit)}</b></span><span><small>Biên lợi nhuận</small><b>{margin}%</b></span></div>
         </Panel>
 
-        <Panel title="Kho hàng" description="Theo dõi SKU, barcode và số lượng có thể bán.">
+        <Panel id="tf-product-inventory" title="Kho hàng" description="Theo dõi SKU, barcode và số lượng có thể bán.">
           <div className="tf39-form-grid three"><Field label="SKU"><input value={product.sku} onChange={(event) => {patch('sku', event.target.value); patchPrimaryVariant({sku: event.target.value});}} /></Field><Field label="Barcode"><input value={product.barcode} onChange={(event) => patch('barcode', event.target.value)} /></Field><Field label="Số lượng"><input type="number" value={product.inventory} onChange={(event) => {const value = Number(event.target.value); patch('inventory', value); patchPrimaryVariant({inventory: value});}} /></Field></div>
           <label className="tf39-check-row"><input type="checkbox" checked={product.trackInventory} onChange={(event) => patch('trackInventory', event.target.checked)} /><span><b>Theo dõi số lượng</b><small>Tự động cập nhật tồn kho khi có đơn hàng.</small></span></label>
         </Panel>
 
-        <Panel title="Tùy chọn và phiên bản" description="Tạo lựa chọn như màu sắc, kích thước và quản lý từng phiên bản." action={<button className="tf39-secondary-action" type="button" onClick={addOption}><Plus />Thêm tùy chọn</button>}>
+        <Panel id="tf-product-variants" title="Tùy chọn và phiên bản" description="Tạo lựa chọn như màu sắc, kích thước và quản lý từng phiên bản." action={<button className="tf39-secondary-action" type="button" onClick={addOption}><Plus />Thêm tùy chọn</button>}>
           <div className="tf39-options-list">{(product.options || []).map((option) => <article key={option.id}><input value={option.name} onChange={(event) => updateOption(option.id, {name: event.target.value})} /><input value={option.values.join(', ')} onChange={(event) => updateOption(option.id, {values: event.target.value.split(',').map((value) => value.trim()).filter(Boolean)})} placeholder="Giá trị, cách nhau bằng dấu phẩy" /><button type="button" onClick={() => patch('options', (product.options || []).filter((item) => item.id !== option.id))}><Trash2 /></button></article>)}{!(product.options || []).length && <p className="tf39-empty-inline">Chưa có tùy chọn.</p>}</div>
           <div className="tf39-variant-list"><div className="tf39-variant-head"><span>Tên phiên bản</span><span>SKU</span><span>Giá</span><span>Tồn</span><span /></div>{product.variants.map((variant) => <div className="tf39-variant-row" key={variant.id}><input value={variant.title} onChange={(event) => patch('variants', product.variants.map((item) => item.id === variant.id ? {...item, title: event.target.value} : item))} /><input value={variant.sku} onChange={(event) => patch('variants', product.variants.map((item) => item.id === variant.id ? {...item, sku: event.target.value} : item))} /><input type="number" value={variant.price} onChange={(event) => patch('variants', product.variants.map((item) => item.id === variant.id ? {...item, price: Number(event.target.value)} : item))} /><input type="number" value={variant.inventory} onChange={(event) => patch('variants', product.variants.map((item) => item.id === variant.id ? {...item, inventory: Number(event.target.value)} : item))} /><button type="button" disabled={product.variants.length === 1} onClick={() => patch('variants', product.variants.filter((item) => item.id !== variant.id))}><Trash2 /></button></div>)}</div>
           <button className="tf39-add-variant" type="button" onClick={() => patch('variants', [...product.variants, {id: uid('v'), title: `Variant ${product.variants.length + 1}`, sku: '', price: product.price, compareAtPrice: product.compareAtPrice, inventory: 0}])}><Plus />Thêm phiên bản</button>
         </Panel>
 
-        <Panel title="Hiển thị trên công cụ tìm kiếm" description="Xem trước cách sản phẩm xuất hiện trên kết quả tìm kiếm.">
+        <Panel id="tf-product-seo" title="Hiển thị trên công cụ tìm kiếm" description="Xem trước cách sản phẩm xuất hiện trên kết quả tìm kiếm.">
           <div className="tf39-seo-preview"><b>{product.seoTitle || product.title || 'Tên sản phẩm'}</b><span>timeforge.vn/products/{product.handle || 'duong-dan-san-pham'}</span><p>{product.seoDescription || 'Mô tả SEO sẽ hiển thị tại đây.'}</p></div>
           <div className="tf39-field-stack"><Field label={`Tiêu đề trang · ${product.seoTitle.length}/70`}><input value={product.seoTitle} onChange={(event) => patch('seoTitle', event.target.value)} /></Field><Field label={`Mô tả meta · ${product.seoDescription.length}/160`}><textarea rows={3} value={product.seoDescription} onChange={(event) => patch('seoDescription', event.target.value)} /></Field><Field label="URL handle"><div className="tf39-handle"><span>products/</span><input value={product.handle} onChange={(event) => patch('handle', slugify(event.target.value))} /></div></Field></div>
         </Panel>
       </main>
 
       <aside className="tf39-editor-side">
-        <Panel title="Trạng thái"><Field label="Trạng thái sản phẩm"><select value={product.status} onChange={(event) => patch('status', event.target.value as Product['status'])}><option value="active">Đang hoạt động</option><option value="draft">Bản nháp</option><option value="archived">Lưu trữ</option></select></Field><div className={`tf39-status-note is-${product.status}`}><i /><span><b>{product.status === 'active' ? 'Hiển thị trên cửa hàng' : product.status === 'draft' ? 'Chưa công khai' : 'Đã lưu trữ'}</b><small>Thay đổi có hiệu lực sau khi lưu.</small></span></div></Panel>
-        <Panel title="Tổ chức sản phẩm"><div className="tf39-field-stack"><Field label="Danh mục"><input value={product.category} onChange={(event) => patch('category', event.target.value)} /></Field><Field label="Loại sản phẩm"><input value={product.productType} onChange={(event) => patch('productType', event.target.value)} /></Field><Field label="Nhà cung cấp / thương hiệu"><input value={product.vendor} onChange={(event) => patch('vendor', event.target.value)} /></Field><Field label="Tags"><div className="tf39-tag-input"><div>{product.tags.map((tag) => <button type="button" key={tag} onClick={() => patch('tags', product.tags.filter((item) => item !== tag))}>{tag}<X /></button>)}</div><input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => {if ((event.key === 'Enter' || event.key === ',') && tagInput.trim()) {event.preventDefault(); patch('tags', [...new Set([...product.tags, tagInput.trim()])]); setTagInput('');}}} placeholder="Nhập tag và Enter" /></div></Field><Field label="Bộ sưu tập"><div className="tf39-collection-list">{collectionNames.length ? collectionNames.map((name) => <span key={name}>{name}</span>) : <small>Gán từ trang Bộ sưu tập.</small>}</div></Field></div></Panel>
-        <Panel title="Vận chuyển"><div className="tf39-form-grid two"><Field label="Khối lượng"><input type="number" value={product.weight} onChange={(event) => patch('weight', Number(event.target.value))} /></Field><Field label="Đơn vị"><select value={product.weightUnit} onChange={(event) => patch('weightUnit', event.target.value)}><option value="g">g</option><option value="kg">kg</option></select></Field></div></Panel>
+        <Panel id="tf-product-status" title="Trạng thái"><Field label="Trạng thái sản phẩm"><select value={product.status} onChange={(event) => patch('status', event.target.value as Product['status'])}><option value="active">Đang hoạt động</option><option value="draft">Bản nháp</option><option value="archived">Lưu trữ</option></select></Field><div className={`tf39-status-note is-${product.status}`}><i /><span><b>{product.status === 'active' ? 'Hiển thị trên cửa hàng' : product.status === 'draft' ? 'Chưa công khai' : 'Đã lưu trữ'}</b><small>Thay đổi có hiệu lực sau khi lưu.</small></span></div></Panel>
+        <Panel id="tf-product-organization" title="Tổ chức sản phẩm"><div className="tf39-field-stack"><Field label="Danh mục"><input value={product.category} onChange={(event) => patch('category', event.target.value)} /></Field><Field label="Loại sản phẩm"><input value={product.productType} onChange={(event) => patch('productType', event.target.value)} /></Field><Field label="Nhà cung cấp / thương hiệu"><input value={product.vendor} onChange={(event) => patch('vendor', event.target.value)} /></Field><Field label="Tags"><div className="tf39-tag-input"><div>{product.tags.map((tag) => <button type="button" key={tag} onClick={() => patch('tags', product.tags.filter((item) => item !== tag))}>{tag}<X /></button>)}</div><input value={tagInput} onChange={(event) => setTagInput(event.target.value)} onKeyDown={(event) => {if ((event.key === 'Enter' || event.key === ',') && tagInput.trim()) {event.preventDefault(); patch('tags', [...new Set([...product.tags, tagInput.trim()])]); setTagInput('');}}} placeholder="Nhập tag và Enter" /></div></Field><Field label="Bộ sưu tập"><div className="tf39-collection-list">{collectionNames.length ? collectionNames.map((name) => <span key={name}>{name}</span>) : <small>Gán từ trang Bộ sưu tập.</small>}</div></Field></div></Panel>
+        <Panel id="tf-product-shipping" title="Vận chuyển"><div className="tf39-form-grid two"><Field label="Khối lượng"><input type="number" value={product.weight} onChange={(event) => patch('weight', Number(event.target.value))} /></Field><Field label="Đơn vị"><select value={product.weightUnit} onChange={(event) => patch('weightUnit', event.target.value)}><option value="g">g</option><option value="kg">kg</option></select></Field></div></Panel>
         <Panel
           title="Metafields bộ lọc"
           description="Dữ liệu tại đây tạo các hạng mục lọc trên trang bộ sưu tập."

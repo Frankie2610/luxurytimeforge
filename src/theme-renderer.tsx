@@ -1,11 +1,11 @@
 import{useMemo,useState,type ReactNode}from'react';
 import{Link,useOutletContext}from'react-router-dom';
 import{ArrowRight,ChevronDown,Clock3,Heart,Minus,Plus,ShieldCheck,ShoppingBag,Truck,X,ZoomIn}from'lucide-react';
-import{useCommerce}from'./context';
+import{useCartActions,useCommerce}from'./context';
 import type{Collection,Product,Section,TemplateKey,Theme,ThemeBlock}from'./types';
 import{discount,money}from'./utils';
 import{resolvesCollectionProducts}from'./collection-utils';
-export function ProductCard({p,compact=false}:{p:Product;compact?:boolean}){const{addToCart}=useCommerce(),off=discount(p.price,p.compareAtPrice);return <article className={`product-card ${compact?'compact':''}`}><div className="product-media"><Link to={`/products/${p.handle}`}><img src={p.images[0]} alt={p.title}/></Link>{off>0&&<span>-{off}%</span>}<button className="wish" aria-label="Yêu thích"><Heart/></button><button className="quick" onClick={()=>addToCart(p.id,p.variants[0]?.id||'',1)}><ShoppingBag/>Thêm nhanh</button></div><div className="product-meta"><small>{p.vendor}</small><Link to={`/products/${p.handle}`}>{p.title}</Link><div><b>{money(p.price)}</b>{p.compareAtPrice>p.price&&<del>{money(p.compareAtPrice)}</del>}</div></div></article>}
+export function ProductCard({p,compact=false}:{p:Product;compact?:boolean}){const{addToCart}=useCartActions(),off=discount(p.price,p.compareAtPrice);return <article className={`product-card ${compact?'compact':''}`}><div className="product-media"><Link to={`/products/${p.handle}`}><img src={p.images[0]} alt={p.title}/></Link>{off>0&&<span>-{off}%</span>}<button className="wish" aria-label="Yêu thích"><Heart/></button><button className="quick" onClick={()=>addToCart(p.id,p.variants[0]?.id||'',1)}><ShoppingBag/>Thêm nhanh</button></div><div className="product-meta"><small>{p.vendor}</small><Link to={`/products/${p.handle}`}>{p.title}</Link><div><b>{money(p.price)}</b>{p.compareAtPrice>p.price&&<del>{money(p.compareAtPrice)}</del>}</div></div></article>}
 const flattenBlocks=(items:ThemeBlock[]):ThemeBlock[]=>items.flatMap(item=>item.type==='group'?(item.visible?flattenBlocks(item.children||[]):[]):item.visible?[item]:[]);
 const block=(items:ThemeBlock[],type:ThemeBlock['type'])=>flattenBlocks(items).find(x=>x.type===type);
 const blocks=(items:ThemeBlock[],type:ThemeBlock['type'])=>flattenBlocks(items).filter(x=>x.type===type);
@@ -19,7 +19,7 @@ if(section.type==='richText'){const h=block(section.blocks,'heading'),text=block
 if(section.type==='newsletter'){const h=block(section.blocks,'heading'),text=block(section.blocks,'text');return <section className={`newsletter ${section.settings.background==='dark'?'dark':''}`}><div><small>{String(h?.settings.eyebrow||'')}</small><h2>{String(h?.settings.text||'')}</h2><p>{String(text?.settings.text||'')}</p></div><form onSubmit={e=>e.preventDefault()}><input placeholder="Địa chỉ email"/><button>Đăng ký</button></form></section>};return null}
 export function HomeTemplate({theme}:{theme:Theme}){return <>{theme.templates.home.sections.filter(s=>s.visible).map(s=><HomeSection key={s.id} section={s}/>)}</>}
 export function ProductMainSection({section,product}:{section:Section;product:Product}){
-  const{addToCart}=useCommerce();
+  const{addToCart}=useCartActions();
   let openCart=()=>{};
   try{openCart=useOutletContext<{openCart:()=>void}>().openCart}catch{}
   const images=product.images.length?product.images:['https://placehold.co/1200x1200/f3f1ec/777?text=TimeForge'];

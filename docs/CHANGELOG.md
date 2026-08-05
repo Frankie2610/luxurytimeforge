@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.56.3 — Admin scroll cleanup and synchronized storefront menu
+
+- Changed Product Detail and the Online Store overview to use one document-level vertical scrollbar instead of nested page/panel scrollbars.
+- Disabled scrolling inside the two non-interactive Online Store preview iframes and removed their pointer work.
+- Kept Theme Editor panels independently scrollable while hiding secondary scrollbar rails so only the main preview rail remains visible.
+- Synchronized storefront Menu locking and paint before the first frame, removed the expensive overlay blur, and disabled the drawer entrance delay on tablet/narrow desktop.
+- Reduced the Wishlist selected sort value to 11px desktop, 10.5px tablet and 10px mobile while retaining readable native option sizes.
+- Increased dense Product Editor and Theme Editor typography without broad global overrides.
+- Added Product Editor quick-jump links, `Ctrl/⌘ + S`, an unsaved-leave warning, expanded Menu accessibility state and a Track Order link.
+- Added V0.56.3 regression coverage for route scrolling, preview isolation, responsive Wishlist typography, menu synchronization and the new utility features.
+
+## 0.56.2 — Wishlist controls and cart/menu performance
+
+- Set the Wishlist sort select to exactly 12px on desktop, 11px on tablet and 10px on mobile, with a custom chevron, cleaner spacing and a visible keyboard focus state.
+- Refined the Wishlist hero hierarchy and tightened its mobile heading, description and product-count panel.
+- Added a final high-specificity media boundary that removes padding from the Wishlist image wrapper and product image while retaining square full-bleed cropping.
+- Split cart state and stable cart actions from the main commerce context so quantity changes no longer broadcast a re-render across the storefront catalog.
+- Replaced the mobile menu and cart drawer spring wrappers with short compositor-only opacity/transform animations and removed their expensive backdrop blur.
+- Memoized cart product lookup and totals, reduced drawer image requests from 900px to 320px, and enabled lazy low-priority decoding.
+- Removed per-line Framer layout measurement from the cart route and centered cart media/copy/actions at desktop, tablet and mobile sizes.
+- Added V0.56.2 regression checks covering exact responsive typography, full-bleed media, isolated cart state and low-cost drawer animation.
+
+## 0.56.1 — Legacy data recovery and Wishlist media correction
+
+- Added central product normalization for old or imported records missing `images`, `tags`, `variants`, `options` or `metafields`, including Firebase map-shaped fields and single-string media/tag values.
+- Kept products with historical Firebase-incompatible SKUs readable and editable while retaining explicit validation before saving.
+- Added collection normalization so old `productIds` and `conditions` values cannot crash collection membership checks.
+- Migrated draft, published and historical themes into complete render-safe templates, sections and block arrays before Admin state receives them.
+- Added route-level safety guards to Product Editor, Online Store overview and Theme Editor history for malformed legacy records.
+- Rebuilt Wishlist media as square, full-bleed, center-cropped imagery without the nested-card appearance.
+- Changed mobile Wishlist cards to a compact two-column grid, reduced the main heading to 26px (24px on narrow phones), and tightened product typography/actions.
+- Retained lazy image delivery and offscreen card containment while avoiding new blur-heavy effects.
+- Added executable legacy product/theme/collection fixtures plus direct-route, responsive, bundle and production-build regression coverage.
+
+## 0.56.0 — Shared Wishlist, comparison and reusable Admin views
+
+- Added shareable Wishlist links that import valid, published products into the recipient's device-local list without replacing existing saved items.
+- Added a responsive comparison flow for up to three Wishlist products, including price, brand, type, availability and SKU.
+- Added today, 7-day and 30-day filters to Admin orders and persisted each range in the URL.
+- Added one-click copying of the current order search/filter view for reopening or sharing the exact result set.
+- Added a device-persisted compact/comfortable Admin table density switch in the account menu.
+- Kept new visual rules isolated in V0.56 stylesheets, with tablet/mobile breakpoints, reduced-motion handling and square centered product media.
+- Added offscreen Wishlist-card rendering containment and avoided new blur-heavy effects to reduce scrolling and overlay jank.
+- Added V0.56 regression coverage while retaining V0.55 and V0.54 navigation/data-normalization checks.
+
 ## 0.55.0 — Admin forms, Wishlist and interaction performance
 
 - Rebuilt the Admin order search/filter toolbar with collision-safe grid tracks, consistent control sizing and focused tablet/mobile layouts.

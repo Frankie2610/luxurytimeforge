@@ -1,6 +1,40 @@
 import {readProductFilterValues} from './product-filter-data';
 import type {Collection, CollectionConditionField, CollectionConditionOperator, Condition, Product} from './types';
-import {discount} from './utils';
+import {asList, asStringList} from './data-normalize';
+import {discount, slugify} from './utils';
+
+const conditionFields:CollectionConditionField[]=['vendor','productType','tag','status','price','compareAtPrice','inventory','gender','discountPercent'];
+const conditionOperators:CollectionConditionOperator[]=['equals','not_equals','contains','not_contains','greater_than','less_than','greater_or_equal','less_or_equal','is_set','is_not_set'];
+const record=(value:unknown):Record<string,unknown>=>value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:{};
+const stringIds=(value:unknown)=>typeof value==='string'?value.split(',').map(item=>item.trim()).filter(Boolean):asStringList(value);
+
+export const normalizeCollectionRecord=(value:unknown,index=0):Collection=>{
+  const source=record(value) as Partial<Collection>;
+  const title=String(source.title||'Bộ sưu tập chưa đặt tên').trim();
+  const id=String(source.id||source.handle||`collection-${index+1}`).trim();
+  const handle=slugify(source.handle||title||id)||`collection-${index+1}`;
+  const conditions=asList<unknown>(source.conditions).map((item)=>{
+    const condition=record(item) as Partial<Condition>;
+    const field=conditionFields.includes(condition.field as CollectionConditionField)?condition.field as CollectionConditionField:'vendor';
+    const operator=conditionOperators.includes(condition.operator as CollectionConditionOperator)?condition.operator as CollectionConditionOperator:'equals';
+    return{field,operator,value:String(condition.value??'')};
+  });
+  return{
+    ...source,
+    id,
+    handle,
+    title,
+    description:String(source.description??''),
+    type:source.type==='automatic'?'automatic':'manual',
+    status:source.status==='draft'?'draft':'active',
+    image:String(source.image??''),
+    productIds:stringIds(source.productIds),
+    conditions,
+    conditionMatch:source.conditionMatch==='any'?'any':'all',
+  };
+};
+
+export const normalizeCollections=(value:unknown)=>asList<unknown>(value).map(normalizeCollectionRecord).filter((item)=>item.id);
 
 const plain=(value:unknown)=>String(value??'').trim().toLocaleLowerCase('vi-VN');
 const numberValue=(value:unknown)=>{
@@ -65,10 +99,11 @@ export const matchesCollectionCondition=(product:Product,condition:Condition)=>{
 };
 
 export const resolvesCollectionProducts=(collection:Collection,products:Product[])=>{
-  if(collection.type==='manual')return products.filter(product=>collection.productIds.includes(product.id));
-  const conditions=collection.conditions||[];
+  const normalized=normalizeCollectionRecord(collection);
+  if(normalized.type==='manual')return products.filter(product=>normalized.productIds.includes(product.id));
+  const conditions=normalized.conditions;
   if(!conditions.length)return[];
-  const matchMode=collection.conditionMatch||'all';
+  const matchMode=normalized.conditionMatch||'all';
   return products.filter(product=>{
     const results=conditions.map(condition=>matchesCollectionCondition(product,condition));
     return matchMode==='any'?results.some(Boolean):results.every(Boolean);

@@ -14,9 +14,11 @@ const adminCss = read('src/v550-admin-polish.css');
 const storefront = read('src/storefront-v10.tsx');
 const storefrontCss = read('src/v550-storefront-polish.css');
 const envLocal = read('.env.local');
+const [major, minor, patch] = packageJson.version.split('.').map(Number);
+const preservesV550 = major > 0 || minor > 55 || (minor === 55 && patch >= 0);
 
 const checks = [
-  ['package version is 0.55.0', packageJson.version === '0.55.0'],
+  ['package version preserves the 0.55.0 baseline', preservesV550],
   ['V0.55 regression command is registered', packageJson.scripts?.['v550:check'] === 'node scripts/check-v550-polish-performance.mjs'],
   ['Admin polish stays scoped to the current shell', adminCss.includes('.tf-admin-v499 .v16-admin-content') && !adminCss.includes('\ninput{')],
   ['Admin order toolbar uses collision-safe grid tracks', adminCss.includes('.tf55-orders-toolbar') && adminCss.includes('grid-template-columns:minmax(280px,1fr) minmax(184px,auto) auto auto')],

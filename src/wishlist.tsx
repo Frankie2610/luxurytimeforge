@@ -15,6 +15,7 @@ type WishlistContextValue = {
   ids: string[];
   has: (productId: string) => boolean;
   toggle: (productId: string) => void;
+  addMany: (productIds: string[]) => void;
   remove: (productId: string) => void;
   clear: () => void;
 };
@@ -69,6 +70,11 @@ export function WishlistProvider({children}: {children: ReactNode}) {
       ? current.filter((id) => id !== normalizedId)
       : [normalizedId, ...current].slice(0, MAX_WISHLIST_ITEMS));
   }, []);
+  const addMany = useCallback((productIds: string[]) => {
+    const normalizedIds = normalizeWishlist(productIds);
+    if (!normalizedIds.length) return;
+    setIds((current) => normalizeWishlist([...normalizedIds, ...current]));
+  }, []);
   const remove = useCallback((productId: string) => setIds((current) => current.filter((id) => id !== productId)), []);
   const clear = useCallback(() => setIds([]), []);
   const idSet = useMemo(() => new Set(ids), [ids]);
@@ -76,9 +82,10 @@ export function WishlistProvider({children}: {children: ReactNode}) {
     ids,
     has: (productId) => idSet.has(productId),
     toggle,
+    addMany,
     remove,
     clear,
-  }), [clear, idSet, ids, remove, toggle]);
+  }), [addMany, clear, idSet, ids, remove, toggle]);
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
