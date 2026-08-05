@@ -12,8 +12,11 @@ const adminShell = read('src/admin-shell-v16.tsx');
 const adminCss = read('src/v565-admin-performance.css');
 const productEditor = read('src/product-editor-v39.tsx');
 
+const [major, minor, patch] = String(packageJson.version || '').split('.').map(Number);
+const preservesV565 = major > 0 || minor > 56 || (minor === 56 && patch >= 5);
+
 const checks = [
-  ['package version is 0.56.5', packageJson.version === '0.56.5'],
+  ['package version preserves the V0.56.5 baseline', preservesV565],
   ['V0.56.5 regression command is registered', packageJson.scripts?.['v565:check'] === 'node scripts/check-v565-performance-features.mjs'],
   ['published and draft themes are referentially stable across cart updates', context.includes('const activeTheme=useMemo(') && context.includes('const draftTheme=useMemo(') && context.includes('theme:activeTheme,draftTheme,themeState')],
   ['Wishlist uses a React external store instead of broadcasting every card', wishlistStore.includes('useSyncExternalStore') && wishlistStore.includes('export function useWishlistItem') && wishlistStore.includes('wishlistIdSet.has(productId)')],

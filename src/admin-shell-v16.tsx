@@ -2,7 +2,7 @@ import './legacy.css';
 import {useEffect,useMemo,useState,type ComponentType} from 'react';
 import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
-  Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,
+  Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,History,Link2,
   BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Menu,PackageSearch,Plus,
   PanelLeftClose,PanelLeftOpen,RotateCcw,Rows3,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,
 } from 'lucide-react';
@@ -29,6 +29,7 @@ import './v560-admin-features.css';
 import './v563-admin-scroll-polish.css';
 import './v564-admin-polish.css';
 import './v565-admin-performance.css';
+import './v566-admin-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -36,6 +37,16 @@ import {
 
 type NavItem={to:string;label:string;icon:ComponentType<{className?:string}>;count?:number};
 type NavSection={label?:string;items:NavItem[]};
+type RecentAdminPage={path:string;title:string;visitedAt:number};
+
+const RECENT_ADMIN_PAGES_KEY='tf:admin-recent-pages:v1';
+const readRecentAdminPages=():RecentAdminPage[]=>{
+  if(typeof window==='undefined')return[];
+  try{
+    const value=JSON.parse(window.localStorage.getItem(RECENT_ADMIN_PAGES_KEY)||'[]');
+    return Array.isArray(value)?value.filter((item):item is RecentAdminPage=>Boolean(item&&typeof item.path==='string'&&typeof item.title==='string')).slice(0,5):[];
+  }catch{return[]}
+};
 
 const adminRoutePrefetchers:Record<string,()=>Promise<unknown>>={
   orders:()=>Promise.all([import('./admin-sprint11'),import('./admin-sprint12')]),
@@ -97,6 +108,7 @@ export function AdminLayoutV16(){
   const[open,setOpen]=useState(false);
   const[collapsed,setCollapsed]=useState(()=>typeof window!=='undefined'&&window.localStorage.getItem('tf:admin-sidebar-collapsed')==='1');
   const[density,setDensity]=useState<'comfortable'|'compact'>(()=>{try{return typeof window!=='undefined'&&window.localStorage.getItem('tf:admin-density')==='compact'?'compact':'comfortable'}catch{return'comfortable'}});
+  const[recentPages,setRecentPages]=useState<RecentAdminPage[]>(readRecentAdminPages);
   const location=useLocation();
   const navigate=useNavigate();
   const{dataSource,orders,products}=useCommerce();
@@ -142,6 +154,14 @@ export function AdminLayoutV16(){
     ]},
   ].map(section=>({...section,items:section.items.filter(item=>hasPermission(user?.role,routePermission(item.to)))})).filter(section=>section.items.length),[pendingOrders,pendingReturns,lowStock,user?.role]);
   useEffect(()=>{setOpen(false)},[location.pathname]);
+  useEffect(()=>{
+    const entry:RecentAdminPage={path:location.pathname,title:meta.title,visitedAt:Date.now()};
+    setRecentPages(current=>{
+      const next=[entry,...current.filter(item=>item.path!==entry.path)].slice(0,5);
+      try{window.localStorage.setItem(RECENT_ADMIN_PAGES_KEY,JSON.stringify(next))}catch{/* Recent navigation remains available for this session. */}
+      return next;
+    });
+  },[location.pathname,meta.title]);
   useEffect(()=>{window.localStorage.setItem('tf:admin-sidebar-collapsed',collapsed?'1':'0')},[collapsed]);
   useEffect(()=>{try{window.localStorage.setItem('tf:admin-density',density)}catch{/* Density remains available for the current session when storage is blocked. */}},[density]);
   useEffect(()=>{if(!open)return;const close=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[open]);
@@ -149,6 +169,16 @@ export function AdminLayoutV16(){
   const liveData=dataSource==='firebase';
   const dataSourceLabel=dataSource==='loading'?'Đang tải Firebase':liveData?'Firebase live':dataSource==='error'?'Lỗi tải catalog':dataSource==='local'?'Local':'Dữ liệu mẫu';
   const toggleDensity=()=>{const next=density==='compact'?'comfortable':'compact';setDensity(next);sonnerToast.success(next==='compact'?'Đã chuyển bảng sang chế độ gọn':'Đã chuyển bảng sang chế độ thoáng')};
+  const copyCurrentPage=async()=>{
+    const url=window.location.href;
+    try{
+      if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(url);
+      else window.prompt('Sao chép đường dẫn trang hiện tại',url);
+      sonnerToast.success('Đã sao chép đường dẫn trang Admin');
+    }catch{
+      window.prompt('Sao chép đường dẫn trang hiện tại',url);
+    }
+  };
   return <div className={`v16-admin-shell tf-admin-v499 ${collapsed?'is-sidebar-collapsed':''} ${density==='compact'?'is-density-compact':''}`}>
     {open&&<button className="v16-admin-backdrop" aria-label="Đóng menu" onClick={()=>setOpen(false)}/>} 
     <aside className={`v16-admin-sidebar ${open?'is-open':''}`} aria-label="Điều hướng quản trị">
@@ -173,9 +203,10 @@ export function AdminLayoutV16(){
         <div className="v16-topbar-actions">
           <span className={`v16-data-state ${liveData?'is-live':''}`} title="Nguồn catalog hiện tại"><i/>{dataSourceLabel}</span>
           <DropdownMenu><DropdownMenuTrigger asChild><Button variant="secondary" size="sm" className="v16-create-button"><Plus/>Tạo mới<ChevronDown/></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onSelect={()=>navigate('/admin/products/new')}><Boxes/>Sản phẩm</DropdownMenuItem><DropdownMenuItem onSelect={()=>navigate('/admin/draft-orders/new')}><FileText/>Đơn hàng nháp</DropdownMenuItem><DropdownMenuItem onSelect={()=>navigate('/admin/discounts')}><BadgePercent/>Mã giảm giá</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+          <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-icon-action tf566-recent-trigger" aria-label="Trang Admin vừa mở" title="Trang vừa mở"><History/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="tf566-recent-menu"><div className="tf566-recent-heading"><b>Trang vừa mở</b><small>Đi nhanh tới 5 màn hình gần nhất</small></div>{recentPages.map(item=><DropdownMenuItem key={item.path} onSelect={()=>navigate(item.path)}><History/><span><b>{item.title}</b><small>{item.path}</small></span></DropdownMenuItem>)}<DropdownMenuSeparator/><DropdownMenuItem onSelect={()=>void copyCurrentPage()}><Link2/>Sao chép link trang hiện tại</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
           <Link className="v16-view-store" to="/" target="_blank">Xem cửa hàng<ArrowUpRight/></Link>
           <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-icon-action v35-notification-trigger" aria-label="Thông báo"><Bell/>{(pendingOrders+pendingReturns+lowStock)>0&&<span>{Math.min(pendingOrders+pendingReturns+lowStock,99)}</span>}</button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v35-notification-menu"><div className="v35-notification-heading"><b>Thông báo</b><small>Các việc cần xử lý</small></div>{pendingOrders>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/orders')}><ShoppingBag/><span><b>{pendingOrders} đơn hàng đang mở</b><small>Kiểm tra thanh toán và xử lý đơn</small></span></DropdownMenuItem>}{pendingReturns>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/returns')}><RotateCcw/><span><b>{pendingReturns} yêu cầu hoàn trả</b><small>Đang chờ xét duyệt</small></span></DropdownMenuItem>}{lowStock>0&&<DropdownMenuItem onSelect={()=>navigate('/admin/inventory')}><PackageSearch/><span><b>{lowStock} sản phẩm sắp hết</b><small>Cần bổ sung hoặc điều chỉnh tồn kho</small></span></DropdownMenuItem>}{pendingOrders+pendingReturns+lowStock===0&&<div className="v35-notification-empty"><Bell/><b>Không có việc gấp</b><small>Cửa hàng đang hoạt động ổn định.</small></div>}</DropdownMenuContent></DropdownMenu>
-          <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-user-trigger"><span>{initials}</span><span><b>{user?.name||'Admin'}</b><small>{user?.role?roleLabels[user.role]:'Quản trị viên'}</small></span><ChevronDown/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v16-user-menu"><DropdownMenuItem onSelect={()=>navigate('/admin/settings')}><CircleUserRound/>Tài khoản quản trị</DropdownMenuItem><DropdownMenuItem onSelect={toggleDensity}><Rows3/>{density==='compact'?'Chế độ bảng: Gọn':'Chế độ bảng: Thoáng'}</DropdownMenuItem><DropdownMenuSeparator/><DropdownMenuItem className="danger" onSelect={()=>void logout()}>Đăng xuất</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+          <DropdownMenu><DropdownMenuTrigger asChild><button className="v16-user-trigger"><span>{initials}</span><span><b>{user?.name||'Admin'}</b><small>{user?.role?roleLabels[user.role]:'Quản trị viên'}</small></span><ChevronDown/></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="v16-user-menu"><DropdownMenuItem onSelect={()=>navigate('/admin/settings')}><CircleUserRound/>Tài khoản quản trị</DropdownMenuItem><DropdownMenuItem onSelect={toggleDensity}><Rows3/>{density==='compact'?'Chế độ bảng: Gọn':'Chế độ bảng: Thoáng'}</DropdownMenuItem><DropdownMenuItem onSelect={()=>void copyCurrentPage()}><Link2/>Sao chép link trang hiện tại</DropdownMenuItem><DropdownMenuSeparator/><DropdownMenuItem className="danger" onSelect={()=>void logout()}>Đăng xuất</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
         </div>
       </header>
       <div className={`v16-admin-page ${meta.fullBleed?'is-fullbleed':''}`}>

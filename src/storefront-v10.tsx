@@ -2,6 +2,7 @@ import './legacy.css';
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -12,6 +13,7 @@ import {
   Menu,
   Minus,
   PackageCheck,
+  PackageSearch,
   MapPin,
   Plus,
   Search,
@@ -102,6 +104,7 @@ import './v562-storefront-interactions.css';
 import './v563-storefront-menu.css';
 import './v564-storefront-polish.css';
 import './v565-storefront-performance.css';
+import './v566-storefront-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
@@ -424,6 +427,35 @@ function NewsletterSignupForm({source, onSuccess, className = ''}: {source: stri
   </form>;
 }
 
+function StorefrontUtilityDock() {
+  const [visible,setVisible]=useState(false);
+  useEffect(()=>{
+    let frame=0;
+    const update=()=>{
+      if(frame)return;
+      frame=window.requestAnimationFrame(()=>{
+        frame=0;
+        const next=window.scrollY>640;
+        setVisible(current=>current===next?current:next);
+      });
+    };
+    update();
+    window.addEventListener('scroll',update,{passive:true});
+    return()=>{
+      window.removeEventListener('scroll',update);
+      if(frame)window.cancelAnimationFrame(frame);
+    };
+  },[]);
+  const scrollToTop=()=>{
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({top:0,left:0,behavior:reduced?'auto':'smooth'});
+  };
+  return <div className={`tf566-customer-utilities ${visible?'is-visible':''}`} aria-label="Tiện ích nhanh">
+    <Link to="/track-order"><PackageSearch/><span>Theo dõi đơn</span></Link>
+    <button type="button" onClick={scrollToTop} aria-label="Về đầu trang"><ArrowUp/><span>Về đầu trang</span></button>
+  </div>;
+}
+
 function LuxuryFooter() {
   const {theme}=useCommerce();
   const settings=theme.settings;
@@ -448,9 +480,9 @@ function LuxuryFooter() {
         <NewsletterSignupForm source="footer" className="tf-footer-signup-v4910" />
       </div>
       <div className="tf-footer-grid-v4910">
-        <section className="tf-footer-brand-v4910"><LuxuryLogo name={storeName} logoImage={settings.logoImage} /><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910"><p>{settings.storeDescription}</p>{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
+        <section className="tf-footer-brand-v4910"><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910"><p>{settings.storeDescription}</p>{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
         <section><h4>Mua sắm</h4><Link to="/collections">Tất cả đồng hồ</Link><Link to="/search">Tìm kiếm</Link><Link to="/cart">Giỏ hàng</Link></section>
-        <section><h4>Dịch vụ</h4><Link to="/pages/warranty">Bảo hành</Link><Link to="/pages/shipping">Giao hàng</Link><Link to="/pages/returns">Đổi trả</Link></section>
+        <section><h4>Dịch vụ</h4><Link to="/track-order">Theo dõi đơn hàng</Link><Link to="/pages/warranty">Bảo hành</Link><Link to="/pages/shipping">Giao hàng</Link><Link to="/pages/returns">Đổi trả</Link></section>
         <section><h4>TimeForge</h4><Link to="/pages/about">Câu chuyện</Link><Link to="/blogs">Tạp chí</Link><Link to="/pages/contact">Liên hệ</Link>{settings.recruitmentUrl&&<a href={settings.recruitmentUrl} target="_blank" rel="noreferrer">Tuyển dụng</a>}</section>
       </div>
       <section className={`tf509-footer-channels ${hasSocial?'':'is-payments-only'}`} aria-label="Thanh toán và mạng xã hội">
@@ -557,6 +589,7 @@ export function StoreLayoutV10() {
       <LuxuryHeader openCart={requestCart} />
       <main><div className="tf-route-view-v4910" key={location.pathname}><Outlet context={{openCart: requestCart}} /></div></main>
       {(extras.footerVisible || location.pathname === '/checkout') && <LuxuryFooter />}
+      <StorefrontUtilityDock />
       {extras.cartDrawer && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
       {extras.newsletterPopup && !newsletterDismissed && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
       {extras.privacyBanner && !privacyDismissed && <aside className="v23-privacy-banner"><div><ShieldCheck/><span><b>Quyền riêng tư</b><small>Dữ liệu được sử dụng để vận hành cửa hàng và xử lý đơn hàng.</small></span></div><button onClick={() => setPrivacyDismissed(true)}>Đồng ý</button></aside>}
@@ -1518,11 +1551,16 @@ export function ContentPageV10() {
         <div><span>{managedPage.eyebrow}</span><h1>{managedPage.title}</h1><p>{managedPage.lead}</p><Link to="/collections">Khám phá bộ sưu tập<ArrowRight/></Link></div>
         <aside aria-hidden="true"><small>EST.</small><b>TF</b><span>2026 · VIETNAM</span><i/></aside>
       </header>
+      <section className="tf566-about-trust" aria-label="Tiêu chuẩn dịch vụ">
+        <article><ShieldCheck/><div><small>01 · AUTHENTICITY</small><b>Nguồn hàng rõ ràng</b><p>Thông tin thương hiệu, mã sản phẩm và chính sách được trình bày nhất quán.</p></div></article>
+        <article><PackageCheck/><div><small>02 · TRANSPARENCY</small><b>Quyết định dễ hơn</b><p>Thông số cần thiết được sắp xếp gọn để so sánh trước khi mua.</p></div></article>
+        <article><Clock3/><div><small>03 · AFTERCARE</small><b>Đồng hành dài lâu</b><p>Khách hàng có thể tra cứu đơn và tiếp cận chính sách hỗ trợ nhanh hơn.</p></div></article>
+      </section>
       <section className="tf4941-about-story">
         <aside><small>THE TIMEFORGE STANDARD</small><h2>Mỗi lựa chọn đều bắt đầu từ thông tin rõ ràng.</h2><div><span><b>01</b>Tuyển chọn</span><span><b>02</b>Minh bạch</span><span><b>03</b>Đồng hành</span></div></aside>
         <main>{managedPage.sections.map((section,index)=><article key={section.id}><span>{String(index+1).padStart(2,'0')}</span><div><h2>{section.title}</h2>{section.body.split(/\n+/).filter(Boolean).map(paragraph=><p key={paragraph}>{paragraph}</p>)}</div></article>)}</main>
       </section>
-      <footer className="tf4941-about-footer"><div><small>CURATED WITH PURPOSE</small><h2>Khám phá chiếc đồng hồ phù hợp với nhịp sống riêng.</h2></div><Link to="/collections">Xem tất cả sản phẩm<ArrowRight/></Link></footer>
+      <footer className="tf4941-about-footer"><div><small>CURATED WITH PURPOSE</small><h2>Khám phá chiếc đồng hồ phù hợp với nhịp sống riêng.</h2><nav className="tf566-about-footer-links"><Link to="/pages/warranty">Chính sách bảo hành</Link><Link to="/track-order">Theo dõi đơn hàng</Link></nav></div><Link to="/collections">Xem tất cả sản phẩm<ArrowRight/></Link></footer>
     </article>
     : managedPage?<article className={`tf4923-policy-page tf4923-policy-${managedPage.slug}`}>
       <nav className="tf4923-policy-breadcrumb" aria-label="Đường dẫn"><Link to="/">Trang chủ</Link><ChevronRight/><span>{managedPage.label}</span></nav>

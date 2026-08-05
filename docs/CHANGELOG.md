@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.56.6 — Footer identity, compact About and faster Admin navigation
+
+- Removed the duplicated footer logo/name lockup so the editable shop name appears only once.
+- Increased the footer store name to a 24–30px desktop scale with 950 weight and black text, while retaining responsive sizing.
+- Added direct order-tracking access in the footer and a lightweight customer utility dock with order tracking and back-to-top actions.
+- Reduced About-page title scales, tightened spacing, added a three-part trust layer and linked warranty/order-tracking shortcuts.
+- Added a device-local five-page Admin history menu and one-click copying of the current Admin URL.
+- Refined Admin topbar, page headers, cards, active navigation and sticky table headers.
+- Added targeted below-fold paint containment without adding blur, heavy animation or new runtime dependencies.
+- Added V0.56.6 regression checks and preserved V0.56.4–V0.56.5 checks.
+
 ## 0.56.5 — Isolated storefront rendering and practical shortcuts
 
 - Stabilized the published and draft theme objects so cart quantity changes no longer invalidate the main commerce context or re-render unrelated storefront routes.
