@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-08-13T19:52:06.384Z",
-  "files": 123,
-  "sourceBytes": 1473214,
-  "importantDeclarations": 2821,
-  "uniqueSelectors": 10016,
-  "duplicatedSelectors": 3503,
+  "generatedAt": "2026-08-13T20:16:47.635Z",
+  "files": 128,
+  "sourceBytes": 1511464,
+  "importantDeclarations": 3323,
+  "uniqueSelectors": 10149,
+  "duplicatedSelectors": 3572,
   "productionCss": [
     {
-      "name": "storefront-v10-DPwMsakk.css",
-      "bytes": 301485
+      "name": "storefront-v10-Dw-wWsr6.css",
+      "bytes": 305319
     },
     {
-      "name": "legacy-C7NBcqum.css",
+      "name": "legacy-BynqRDAL.css",
       "bytes": 233221
     },
     {
@@ -19,8 +19,8 @@
       "bytes": 231420
     },
     {
-      "name": "checkout-v11-Bmvfqy9c.css",
-      "bytes": 63717
+      "name": "checkout-v11-CcvdYxJR.css",
+      "bytes": 64440
     },
     {
       "name": "v50-journal-polish-BiKk08VZ.css",
@@ -79,16 +79,16 @@
       "bytes": 7663
     },
     {
+      "name": "blog-v18-BCKBL4mF.css",
+      "bytes": 7650
+    },
+    {
       "name": "admin-sprint11-CmbuPi47.css",
       "bytes": 6706
     },
     {
       "name": "login-BAUKEKHj.css",
       "bytes": 5752
-    },
-    {
-      "name": "blog-v18-BEA7DLUB.css",
-      "bytes": 5721
     },
     {
       "name": "product-editor-v39-Dskf_fFH.css",
@@ -111,11 +111,11 @@
       "bytes": 1143
     }
   ],
-  "productionCssBytes": 1088823,
+  "productionCssBytes": 1095309,
   "topDuplicates": [
     {
       "selector": "@media(prefers-reduced-motion:reduce)",
-      "count": 55,
+      "count": 58,
       "files": [
         "src/app.css",
         "src/auth.css",
@@ -171,7 +171,10 @@
         "src/v574-storefront-polish.css",
         "src/v575-commerce-polish.css",
         "src/v575-journal-polish.css",
-        "src/v575-storefront-polish.css"
+        "src/v575-storefront-polish.css",
+        "src/v576-commerce-polish.css",
+        "src/v576-compare-polish.css",
+        "src/v576-storefront-readability.css"
       ]
     },
     {
@@ -200,7 +203,7 @@
     },
     {
       "selector": "@media(max-width:680px)",
-      "count": 41,
+      "count": 46,
       "files": [
         "src/sprint11.css",
         "src/sprint12.css",
@@ -241,7 +244,12 @@
         "src/v573-commerce-polish.css",
         "src/v573-compare-polish.css",
         "src/v573-storefront-core.css",
-        "src/v575-commerce-polish.css"
+        "src/v575-commerce-polish.css",
+        "src/v576-commerce-polish.css",
+        "src/v576-compare-polish.css",
+        "src/v576-journal-readability.css",
+        "src/v576-storefront-readability.css",
+        "src/v576-wishlist-readability.css"
       ]
     },
     {
@@ -351,6 +359,39 @@
       ]
     },
     {
+      "selector": "button)",
+      "count": 24,
+      "files": [
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4922-journal.css",
+        "src/v4923-storefront.css",
+        "src/v4927-commerce.css",
+        "src/v499-admin.css",
+        "src/v50-storefront-polish.css",
+        "src/v550-admin-polish.css",
+        "src/v566-storefront-polish.css",
+        "src/v575-commerce-polish.css",
+        "src/v575-journal-polish.css",
+        "src/v575-storefront-polish.css",
+        "src/v576-journal-readability.css",
+        "src/v576-storefront-readability.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-line",
+      "count": 24,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css",
+        "src/v562-cart-performance.css",
+        "src/v573-commerce-polish.css",
+        "src/v576-commerce-polish.css"
+      ]
+    },
+    {
       "selector": ".tf-storefront-v4912 .lux-header-inner",
       "count": 24,
       "files": [
@@ -403,38 +444,8 @@
       ]
     },
     {
-      "selector": "button)",
-      "count": 21,
-      "files": [
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4922-journal.css",
-        "src/v4923-storefront.css",
-        "src/v4927-commerce.css",
-        "src/v499-admin.css",
-        "src/v50-storefront-polish.css",
-        "src/v550-admin-polish.css",
-        "src/v566-storefront-polish.css",
-        "src/v575-commerce-polish.css",
-        "src/v575-journal-polish.css",
-        "src/v575-storefront-polish.css"
-      ]
-    },
-    {
-      "selector": ".tf4912-cart-line",
-      "count": 20,
-      "files": [
-        "src/v4912-commerce.css",
-        "src/v4925-commerce.css",
-        "src/v502-commerce-polish.css",
-        "src/v503-commerce-polish.css",
-        "src/v562-cart-performance.css",
-        "src/v573-commerce-polish.css"
-      ]
-    },
-    {
       "selector": "@media(max-width:980px)",
-      "count": 19,
+      "count": 21,
       "files": [
         "src/sprint14.css",
         "src/styles.css",
@@ -453,7 +464,37 @@
         "src/v571-storefront-polish.css",
         "src/v572-storefront-tools.css",
         "src/v573-commerce-polish.css",
-        "src/v573-journal-polish.css"
+        "src/v573-journal-polish.css",
+        "src/v576-commerce-polish.css",
+        "src/v576-compare-polish.css"
+      ]
+    },
+    {
+      "selector": "a)",
+      "count": 19,
+      "files": [
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v50-storefront-polish.css",
+        "src/v508-storefront-final.css",
+        "src/v540-admin-refinement.css",
+        "src/v562-cart-performance.css",
+        "src/v576-wishlist-readability.css"
+      ]
+    },
+    {
+      "selector": "span",
+      "count": 18,
+      "files": [
+        "src/sprint16.css",
+        "src/sprint21.css",
+        "src/v4912-storefront.css",
+        "src/v4913-storefront-compat.css",
+        "src/v4922-journal.css",
+        "src/v50-journal-polish.css",
+        "src/v50-storefront-polish.css",
+        "src/v576-journal-readability.css"
       ]
     },
     {
@@ -493,19 +534,6 @@
       ]
     },
     {
-      "selector": "a)",
-      "count": 17,
-      "files": [
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v50-storefront-polish.css",
-        "src/v508-storefront-final.css",
-        "src/v540-admin-refinement.css",
-        "src/v562-cart-performance.css"
-      ]
-    },
-    {
       "selector": "from",
       "count": 17,
       "files": [
@@ -518,6 +546,19 @@
         "src/v563-storefront-menu.css",
         "src/v565-storefront-performance.css",
         "src/v573-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-line-image",
+      "count": 17,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css",
+        "src/v562-cart-performance.css",
+        "src/v573-commerce-polish.css",
+        "src/v576-commerce-polish.css"
       ]
     },
     {
@@ -544,25 +585,40 @@
       ]
     },
     {
-      "selector": "span",
-      "count": 16,
-      "files": [
-        "src/sprint16.css",
-        "src/sprint21.css",
-        "src/v4912-storefront.css",
-        "src/v4913-storefront-compat.css",
-        "src/v4922-journal.css",
-        "src/v50-journal-polish.css",
-        "src/v50-storefront-polish.css"
-      ]
-    },
-    {
       "selector": ":where(.tf4912-cart-route",
       "count": 16,
       "files": [
         "src/v4912-commerce.css",
         "src/v502-commerce-polish.css",
         "src/v575-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-fields input",
+      "count": 16,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css",
+        "src/v504-commerce.css",
+        "src/v573-commerce-polish.css",
+        "src/v576-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-mobile-place-order",
+      "count": 16,
+      "files": [
+        "src/v4912-commerce.css",
+        "src/v4925-commerce.css",
+        "src/v502-commerce-polish.css",
+        "src/v503-commerce-polish.css",
+        "src/v504-commerce.css",
+        "src/v509-commerce-final.css",
+        "src/v573-commerce-polish.css",
+        "src/v575-commerce-polish.css",
+        "src/v576-commerce-polish.css"
       ]
     },
     {
@@ -637,19 +693,22 @@
       ]
     },
     {
-      "selector": ".tf4912-cart-line-image",
+      "selector": "b)",
       "count": 14,
       "files": [
         "src/v4912-commerce.css",
-        "src/v4925-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v499-theme-editor.css",
+        "src/v50-storefront-polish.css",
         "src/v502-commerce-polish.css",
-        "src/v503-commerce-polish.css",
-        "src/v562-cart-performance.css",
-        "src/v573-commerce-polish.css"
+        "src/v502-storefront-contrast.css",
+        "src/v573-commerce-polish.css",
+        "src/v576-commerce-polish.css",
+        "src/v576-journal-readability.css"
       ]
     },
     {
-      "selector": ".tf4912-mobile-place-order",
+      "selector": ".tf4912-order-note textarea",
       "count": 14,
       "files": [
         "src/v4912-commerce.css",
@@ -657,9 +716,8 @@
         "src/v502-commerce-polish.css",
         "src/v503-commerce-polish.css",
         "src/v504-commerce.css",
-        "src/v509-commerce-final.css",
         "src/v573-commerce-polish.css",
-        "src/v575-commerce-polish.css"
+        "src/v576-commerce-polish.css"
       ]
     },
     {
@@ -713,18 +771,6 @@
       ]
     },
     {
-      "selector": ".tf4912-fields input",
-      "count": 13,
-      "files": [
-        "src/v4912-commerce.css",
-        "src/v4925-commerce.css",
-        "src/v502-commerce-polish.css",
-        "src/v503-commerce-polish.css",
-        "src/v504-commerce.css",
-        "src/v573-commerce-polish.css"
-      ]
-    },
-    {
       "selector": ".tf-storefront-v4912 .lux-announcement",
       "count": 13,
       "files": [
@@ -732,31 +778,6 @@
         "src/v50-storefront-polish.css",
         "src/v502-storefront-contrast.css",
         "src/v504-storefront-final.css"
-      ]
-    },
-    {
-      "selector": ".v18-best-sellers",
-      "count": 13,
-      "files": [
-        "src/v4912-storefront.css"
-      ]
-    },
-    {
-      "selector": "@media(max-width:760px)",
-      "count": 12,
-      "files": [
-        "src/app.css",
-        "src/styles.css",
-        "src/v4917-admin-catalog.css",
-        "src/v4917-admin-invite.css",
-        "src/v4922-admin-customers.css",
-        "src/v512-admin-contrast.css",
-        "src/v513-store-profile.css",
-        "src/v515-order-payment.css",
-        "src/v524-print-documents.css",
-        "src/v566-admin-polish.css",
-        "src/v573-journal-polish.css",
-        "src/v575-journal-polish.css"
       ]
     }
   ]

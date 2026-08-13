@@ -112,6 +112,7 @@ import './v573-storefront-core.css';
 import './v4936-mobile-product-grid.css';
 import './v574-storefront-polish.css';
 import './v575-storefront-polish.css';
+import './v576-storefront-readability.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};

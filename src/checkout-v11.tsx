@@ -28,6 +28,7 @@ import './v521-ui-polish.css';
 import './v562-cart-performance.css';
 import './v573-commerce-polish.css';
 import './v575-commerce-polish.css';
+import './v576-commerce-polish.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -169,6 +170,12 @@ export function CartPageV11() {
         <div><h1>Giỏ hàng</h1><span>{quantity} sản phẩm đã chọn</span></div>
         <Button variant="destructive" size="sm" onClick={clearCart}><Trash2/>Xóa giỏ hàng</Button>
       </header>
+
+      <nav className="tf576-cart-steps" aria-label="Tiến trình mua hàng">
+        <span className="is-active"><i>01</i><b>Giỏ hàng</b></span>
+        <span><i>02</i><b>Thanh toán</b></span>
+        <span><i>03</i><b>Xác nhận</b></span>
+      </nav>
 
       {showShippingEstimate && <ShippingProgress subtotal={subtotal}/>} 
       <PurchaseConfidenceV575 surface="cart"/>
