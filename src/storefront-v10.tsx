@@ -108,6 +108,7 @@ import './v564-storefront-polish.css';
 import './v565-storefront-performance.css';
 import './v566-storefront-polish.css';
 import './v570-storefront-controls.css';
+import './v571-storefront-core.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -184,7 +185,8 @@ const LuxuryLogo = memo(function LuxuryLogo({name, logoImage, showName = true}: 
 });
 
 function LuxuryHeader({openCart}: {openCart: () => void}) {
-  const {collections, theme, products} = useCommerce();
+  const {collections, theme, products, storeProfile} = useCommerce();
+  const identity=isThemePreviewV26()?theme.settings:storeProfile;
   const cart = useCartState();
   const {ids: wishlistIds} = useWishlist();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -228,7 +230,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
           <button className="lux-icon-button lux-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Mở menu" aria-expanded={mobileOpen} aria-controls="tf-storefront-navigation-drawer">
             <Menu />
           </button>
-          <LuxuryLogo name={theme.settings.storeName} logoImage={theme.settings.logoImage} />
+          <LuxuryLogo name={identity.storeName} logoImage={identity.logoImage} />
           <nav className="lux-main-nav" aria-label="Điều hướng chính">
             <NavLink to="/collections">Tất cả đồng hồ</NavLink>
             {activeCollections.map((collection) => (
@@ -300,7 +302,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
               aria-label="Menu điều hướng"
             >
               <header>
-                <LuxuryLogo name={theme.settings.storeName} logoImage={theme.settings.logoImage} />
+                <LuxuryLogo name={identity.storeName} logoImage={identity.logoImage} />
                 <button onClick={() => setMobileOpen(false)} aria-label="Đóng menu"><X /></button>
               </header>
               <form onSubmit={submitSearch}>
@@ -466,9 +468,10 @@ function StorefrontUtilityDock() {
 }
 
 function LuxuryFooter() {
-  const {theme}=useCommerce();
+  const {theme,storeProfile}=useCommerce();
   const settings=theme.settings;
-  const storeName=resolveStoreName(settings.storeName);
+  const identity=isThemePreviewV26()?settings:storeProfile;
+  const storeName=resolveStoreName(identity.storeName);
   const hasSocial=Boolean(settings.facebookUrl||settings.instagramUrl||settings.tiktokUrl);
   const storeDescription=String(settings.storeDescription||'').trim();
   const showStoreDescription=Boolean(storeDescription&&storeDescription.localeCompare(storeName,undefined,{sensitivity:'base'})!==0);
@@ -491,7 +494,7 @@ function LuxuryFooter() {
         <NewsletterSignupForm source="footer" className="tf-footer-signup-v4910" />
       </div>
       <div className="tf-footer-grid-v4910">
-        <section className="tf-footer-brand-v4910"><LuxuryLogo name={storeName} logoImage={settings.logoImage} showName={false}/><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910">{showStoreDescription&&<p>{storeDescription}</p>}{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
+        <section className="tf-footer-brand-v4910"><LuxuryLogo name={storeName} logoImage={identity.logoImage} showName={false}/><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910">{showStoreDescription&&<p>{storeDescription}</p>}{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
         <section><h4>Mua sắm</h4><Link to="/collections">Tất cả đồng hồ</Link><Link to="/watch-finder">Tư vấn chọn đồng hồ</Link><Link to="/compare">So sánh sản phẩm</Link><Link to="/search">Tìm kiếm</Link><Link to="/cart">Giỏ hàng</Link></section>
         <section><h4>Dịch vụ</h4><Link to="/track-order">Theo dõi đơn hàng</Link><Link to="/pages/warranty">Bảo hành</Link><Link to="/pages/shipping">Giao hàng</Link><Link to="/pages/returns">Đổi trả</Link></section>
         <section><h4>TimeForge</h4><Link to="/pages/about">Câu chuyện</Link><Link to="/blogs">Tạp chí</Link><Link to="/pages/contact">Liên hệ</Link>{settings.recruitmentUrl&&<a href={settings.recruitmentUrl} target="_blank" rel="noreferrer">Tuyển dụng</a>}</section>
@@ -505,9 +508,10 @@ function LuxuryFooter() {
   );
 }
 
-function StoreCatalogLoading({error=''}:{error?:string}) {
-  if(error)return <div className="tf508-catalog-state is-error" role="alert"><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><span>Không thể tải danh mục</span><b>Trang không hiển thị dữ liệu cũ để tránh sai sản phẩm.</b><button type="button" onClick={()=>window.location.reload()}>Tải lại trang</button></div>;
-  return <div className="tf508-catalog-state" aria-label="Đang tải danh mục sản phẩm" aria-busy="true"><div className="tf508-catalog-progress"/><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><span>Luxury Timeforge</span><b>Đang đồng bộ danh mục chính thức…</b><div className="tf508-catalog-skeleton"><i/><i/><i/></div></div>;
+function StoreCatalogLoading({error='',storeName,logoImage}:{error?:string;storeName:unknown;logoImage:unknown}) {
+  const name=resolveStoreName(storeName);const logo=optimizedImage(resolveStoreLogo(logoImage),180,180,'fit');
+  if(error)return <div className="tf508-catalog-state is-error" role="alert"><img src={logo} alt="" aria-hidden="true"/><span>Không thể tải danh mục</span><b>Trang không hiển thị dữ liệu cũ để tránh sai sản phẩm.</b><button type="button" onClick={()=>window.location.reload()}>Tải lại trang</button></div>;
+  return <div className="tf508-catalog-state" aria-label="Đang tải danh mục sản phẩm" aria-busy="true"><div className="tf508-catalog-progress"/><img src={logo} alt="" aria-hidden="true"/><span>{name}</span><b>Đang đồng bộ danh mục chính thức…</b><div className="tf508-catalog-skeleton"><i/><i/><i/></div></div>;
 }
 
 export function StoreLayoutV10() {
@@ -518,7 +522,7 @@ export function StoreLayoutV10() {
   const [privacyDismissed, setPrivacyDismissed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const {theme,isLoading,dataError,products} = useCommerce();
+  const {theme,storeProfile,isLoading,dataError,products} = useCommerce();
   useLayoutEffect(() => {
     const previousRestoration = window.history.scrollRestoration;
     const previousBehavior = document.documentElement.style.scrollBehavior;
@@ -534,8 +538,10 @@ export function StoreLayoutV10() {
   }, [location.pathname]);
   useEffect(() => {
     captureCommerceAttribution();
-    trackCommerceEvent('page_view');
   }, [location.pathname, location.search]);
+  useEffect(() => {
+    trackCommerceEvent('page_view');
+  }, [location.pathname]);
   useEffect(() => {
     const sync = () => setExtras(previewMode ? readThemePreviewExtrasV26(readThemeExtrasV23()) : readThemeExtrasV23());
     window.addEventListener(THEME_EXTRAS_EVENT, sync);
@@ -568,8 +574,8 @@ export function StoreLayoutV10() {
     }
     touchLinks.forEach((link) => {link.href = touchHref;});
   }, [theme.settings.logoImage, theme.settings.storeName]);
-  if(isLoading && products.length === 0)return <StoreCatalogLoading/>;
-  if(dataError && products.length === 0)return <StoreCatalogLoading error={dataError}/>;
+  if(isLoading && products.length === 0)return <StoreCatalogLoading storeName={storeProfile.storeName} logoImage={storeProfile.logoImage}/>;
+  if(dataError && products.length === 0)return <StoreCatalogLoading error={dataError} storeName={storeProfile.storeName} logoImage={storeProfile.logoImage}/>;
   const settings = theme.settings;
   const isCheckoutRoute = location.pathname === '/checkout';
   const showStandaloneCountdown = extras.showCountdown && !settings.showAnnouncement;
@@ -1356,7 +1362,7 @@ function ProductFamilySelector({group,products,current}:{group:ProductGroup;prod
 
 export function ProductPageV10() {
   const {handle} = useParams();
-  const {products, productGroups, theme, isLoading} = useCommerce();
+  const {products, productGroups, theme, storeProfile, isLoading} = useCommerce();
   const {addToCart} = useCartActions();
   const {openCart} = useOutletContext<{openCart: () => void}>();
   const product = findProductByRoute(products, handle);
@@ -1376,7 +1382,7 @@ export function ProductPageV10() {
   useEffect(() => { if (product?.id) trackCommerceEvent('product_view',{productId:product.id,value:product.price}); }, [product?.id]);
 
   const parsedContent = useMemo(() => product ? productContent(product, product.variants[0]?.sku || product.sku) : {paragraphs: [], specs: []}, [product]);
-  if (!product && isLoading) return <div className="route-loading tf-product-route-loading" aria-label="Đang tải đầy đủ dữ liệu sản phẩm" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><i/><b>Đang chuẩn bị sản phẩm</b></div></div>;
+  if (!product && isLoading) return <div className="route-loading tf-product-route-loading" aria-label="Đang tải đầy đủ dữ liệu sản phẩm" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt="" aria-hidden="true"/><i/><b>Đang chuẩn bị sản phẩm</b></div></div>;
   if (!product) return <Navigate to="/404" replace />;
   if (product.status !== 'active' || !product.published) return <Navigate to="/404" replace />;
   const images = product.images.length ? product.images : ['https://placehold.co/1200x1200/f0eee8/25231f?text=TimeForge'];
@@ -1409,7 +1415,7 @@ export function ProductPageV10() {
   const related = products.filter((item) => item.id !== product.id && item.status === 'active' && item.published && (item.vendor === product.vendor || item.productType === product.productType)).slice(0, relatedLimit);
   const recentlyViewed = recentlyViewedIds.filter((id) => id !== product.id).map((id) => products.find((item) => item.id === id)).filter((item): item is Product => Boolean(item?.published && item.status === 'active')).slice(0, 4);
   const add = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('add_to_cart',{productId:product.id,value:price*quantity}); toast.success('Đã thêm sản phẩm vào giỏ hàng'); openCart();};
-  const buyNow = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('checkout_started',{productId:product.id,value:price*quantity});};
+  const buyNow = () => {addToCart(product.id, variantId, quantity); trackCommerceEvent('add_to_cart',{productId:product.id,value:price*quantity,metadata:{source:'buy_now'}});};
   const shareProduct = async () => {
     const url = new URL(`/products/${product.handle}`, window.location.origin).toString();
     try {
@@ -1622,5 +1628,6 @@ export function ContentPageV10() {
 }
 
 export function NotFoundV10() {
-  return <section className="lux-not-found tf-not-found-v496"><div className="tf-not-found-mark-v496"><img src="/luxury-timeforge-logo.svg" alt="Luxury Timeforge"/><span>404</span></div><small>LOST IN TIME</small><h1>Trang này đã rời khỏi dòng thời gian.</h1><p>Đường dẫn có thể đã thay đổi, hoặc sản phẩm chưa được xuất bản trên cửa hàng.</p><div><Link className="primary" to="/">Về trang chủ<ArrowRight/></Link><Link to="/collections">Khám phá đồng hồ</Link><Link to="/search">Tìm kiếm</Link></div></section>;
+  const{storeProfile}=useCommerce();
+  return <section className="lux-not-found tf-not-found-v496"><div className="tf-not-found-mark-v496"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),240,240,'fit')} alt={resolveStoreName(storeProfile.storeName)}/><span>404</span></div><small>LOST IN TIME</small><h1>Trang này đã rời khỏi dòng thời gian.</h1><p>Đường dẫn có thể đã thay đổi, hoặc sản phẩm chưa được xuất bản trên cửa hàng.</p><div><Link className="primary" to="/">Về trang chủ<ArrowRight/></Link><Link to="/collections">Khám phá đồng hồ</Link><Link to="/search">Tìm kiếm</Link></div></section>;
 }

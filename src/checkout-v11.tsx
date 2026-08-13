@@ -1,6 +1,6 @@
 import {motion} from 'framer-motion';
 import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
-import {useEffect, useMemo, useState, type FormEvent, type ReactNode} from 'react';
+import {useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode} from 'react';
 import {Link, Navigate, useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import {useCartActions, useCartState, useCommerce} from './context';
 import {optimizedImage, productImage, SmartImage} from './image-utils';
@@ -13,6 +13,7 @@ import {toast} from 'sonner';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {Button} from './ui';
 import {sectionLabels} from './theme';
+import {resolveStoreLogo,resolveStoreName} from './store-profile';
 import './v4912-commerce.css';
 import './v4915-commerce-fixes.css';
 import './v4920-commerce-mobile.css';
@@ -68,8 +69,9 @@ function useSummary(discountCode = '', paymentMethod: CheckoutPayload['paymentMe
 }
 
 function LuxuryCheckoutLogo() {
-  const {theme} = useCommerce();
-  return <Link className="tf4912-checkout-logo" to="/">{theme.settings.logoImage ? <SmartImage src={theme.settings.logoImage} alt={theme.settings.storeName} width={180} height={54} priority /> : <><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><b>{theme.settings.logoText || 'TIMEFORGE'}</b></>}</Link>;
+  const {storeProfile} = useCommerce();
+  const storeName=resolveStoreName(storeProfile.storeName);
+  return <Link className="tf4912-checkout-logo" to="/"><SmartImage src={resolveStoreLogo(storeProfile.logoImage)} alt={storeName} width={180} height={54} priority /></Link>;
 }
 
 function SummaryRows({subtotal, shipping, discount, paymentDiscount, total}: {subtotal: number; shipping: number; discount: ReturnType<typeof useSummary>['discount']; paymentDiscount?: ReturnType<typeof useSummary>['paymentDiscount']; total: number}) {
@@ -239,7 +241,12 @@ export function CheckoutPageV11() {
       ? `Thanh toán qua PayOS · ${money(total)}`
       : `Gửi yêu cầu thanh toán · ${money(total)}`;
   const noPaymentMethod=!integration.payment.cod&&!integration.payment.bankTransfer&&!integration.payment.online;
-  useEffect(() => {trackCommerceEvent('checkout_started', {value: total});}, []);
+  const checkoutTracked=useRef(false);
+  useEffect(() => {
+    if(checkoutTracked.current||!cart.length||total<=0)return;
+    checkoutTracked.current=true;
+    trackCommerceEvent('checkout_started',{value:total,metadata:{items:cart.reduce((sum,line)=>sum+line.quantity,0)}});
+  },[cart,total]);
   if (!cart.length) return <Navigate to="/cart" replace/>;
   const patchAddress = (key: keyof CheckoutPayload['shippingAddress'], value: string) => setPayload((current) => ({...current, shippingAddress: {...current.shippingAddress, [key]: value}, customer: {...current.customer, ...(key === 'fullName' ? {name: value} : key === 'email' ? {email: value} : key === 'phone' ? {phone: value} : {})}}));
   const submit = async (event: FormEvent) => {

@@ -3,12 +3,17 @@ import{useEffect,useMemo,useState}from'react';
 import{ArrowLeft,Eye,EyeOff,KeyRound,LockKeyhole,Mail,ShieldCheck}from'lucide-react';
 import{Link,Navigate,useLocation,useNavigate}from'react-router-dom';
 import{useAuth}from'./auth';
+import{useCommerce}from'./context';
+import{resolveStoreLogo,resolveStoreName}from'./store-profile';
+import{optimizedImage}from'./image-utils';
 
 const RETURN_KEY='tf:admin:return-to';
 const AUTH_ERROR_KEY='tf:admin:auth-error';
 
 export function AdminLogin(){
   const{user,firebaseEnabled,accessConfigured,demoEnabled,loginDemo,loginEmail,loginGoogle,resetPassword}=useAuth();
+  const{storeProfile}=useCommerce();
+  const storeName=resolveStoreName(storeProfile.storeName);
   const navigate=useNavigate();
   const location=useLocation();
   const[email,setEmail]=useState('');
@@ -29,8 +34,8 @@ export function AdminLogin(){
     <Link className="tf-auth-store-link" to="/"><ArrowLeft/>Về cửa hàng</Link>
     <section className="tf-auth-card" aria-labelledby="tf-auth-title">
       <header className="tf-auth-brand">
-        <img src="/luxury-timeforge-logo.svg" alt="Luxury Timeforge"/>
-        <div><b>LUXURY TIMEFORGE</b><span>COMMERCE ADMIN</span></div>
+        <img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt={storeName}/>
+        <div><b>{storeName}</b><span>COMMERCE ADMIN</span></div>
       </header>
       <div className="tf-auth-heading"><span><ShieldCheck/>Khu vực quản trị bảo mật</span><h1 id="tf-auth-title">Đăng nhập Admin</h1><p>Quản lý sản phẩm, đơn hàng, khách hàng và giao diện cửa hàng bằng Firebase Authentication.</p></div>
       {!firebaseEnabled&&<div className="tf-auth-config"><b>Chưa kết nối Firebase Web App</b><span>Điền các biến <code>VITE_FIREBASE_*</code> trong <code>.env.local</code> hoặc Vercel.</span></div>}

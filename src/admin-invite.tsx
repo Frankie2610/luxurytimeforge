@@ -6,6 +6,9 @@ import {adminInvitationPath,adminMemberPath,inviteExpired,normalizeEmail,type Ad
 import {useAuth} from './auth';
 import {firebaseClient,getFirebaseAuth} from './firebase';
 import {roleLabels} from './permissions';
+import {useCommerce} from './context';
+import {resolveStoreLogo,resolveStoreName} from './store-profile';
+import {optimizedImage} from './image-utils';
 
 const emailKey='tf:admin-invite-email';
 
@@ -15,6 +18,8 @@ export function AcceptAdminInviteV4917(){
   const[params]=useSearchParams();
   const navigate=useNavigate();
   const{refreshAccess}=useAuth();
+  const{storeProfile}=useCommerce();
+  const storeName=resolveStoreName(storeProfile.storeName);
   const inviteId=params.get('invite')||'';
   const[email,setEmail]=useState(()=>sessionStorage.getItem(emailKey)||'');
   const[invite,setInvite]=useState<AdminInvitationRecord|null>(null);
@@ -100,10 +105,10 @@ export function AcceptAdminInviteV4917(){
   const submit=(event:FormEvent)=>{event.preventDefault();const normalized=normalizeEmail(email);sessionStorage.setItem(emailKey,normalized);void(async()=>{const auth=await getFirebaseAuth();const sdk=await import('firebase/auth');if(auth&&sdk.isSignInWithEmailLink(auth,currentUrl))void complete(normalized);else void sendVerification(normalized)})()};
   return <main className="tf4917-invite-page">
     <section className="tf4917-invite-card">
-      <div className="tf4917-invite-brand"><img src="/luxury-timeforge-logo.svg" alt="Luxury Timeforge"/><span>COMMERCE ADMIN</span></div>
+      <div className="tf4917-invite-brand"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt={storeName}/><span>COMMERCE ADMIN</span></div>
       <div className={`tf4917-invite-icon is-${stage}`}>{stage==='success'?<CheckCircle2/>:stage==='error'?<TriangleAlert/>:<ShieldCheck/>}</div>
       <span className="tf4917-invite-kicker">LỜI MỜI QUẢN TRỊ</span>
-      <h1>{stage==='success'?'Đã kích hoạt quyền truy cập':stage==='error'?'Không thể hoàn tất lời mời':stage==='sent'?'Kiểm tra email xác thực':'Tham gia Luxury Timeforge'}</h1>
+      <h1>{stage==='success'?'Đã kích hoạt quyền truy cập':stage==='error'?'Không thể hoàn tất lời mời':stage==='sent'?'Kiểm tra email xác thực':`Tham gia ${storeName}`}</h1>
       <p>{message}</p>
       {invite&&stage!=='success'&&stage!=='error'&&<div className="tf4917-invite-summary"><div><Mail/><span><small>Email</small><b>{invite.email}</b></span></div><div><KeyRound/><span><small>Vai trò</small><b>{roleLabels[invite.role]}</b></span></div><div><span className="tf527-invite-google-mark">G</span><span><small>Đăng nhập Google</small><b>{invite.allowGoogleSignIn===true?'Được Admin cho phép':'Không được cho phép'}</b></span></div></div>}
       {stage==='email'&&<form onSubmit={submit}><label>Email nhận lời mời<input autoFocus type="email" required value={email} onChange={event=>setEmail(event.target.value)} placeholder="email@domain.com"/></label><button type="submit">Xác nhận và chấp nhận<ArrowRight/></button></form>}

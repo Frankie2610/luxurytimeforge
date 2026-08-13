@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.57.1 — Analytics accuracy, horizontal comparison and Firebase identity
+
+- Clarified and hardened first-party event storage for PageView, ViewContent, AddToCart, InitiateCheckout and Purchase, including exact rolling-range fallback data and single-fire checkout starts.
+- Rebuilt `/compare` as a horizontally scrollable spec table with robust field extraction, shareable URLs and direct add-to-cart.
+- Loaded the published shop identity from Firebase before the idle catalog refresh and reused it across storefront, checkout, loading, 404 and Admin authentication screens.
+- Polished Watch Finder with cached product indexing, editable answers, match reasons and responsive progress.
+- Added Admin Event Explorer with range/scope controls and Catalog Health diagnostics with CSV exports.
+- Reduced compare-state propagation, kept new page code route-lazy and added V0.57.1 regression coverage.
+
 ## 0.57.0 — Meta Ads command center, conversion signals and customer decision tools
 
 - Added a permission-aware Meta Ads Admin workspace with Pixel setup/health, UTM URL builder, Meta Catalog CSV and seven-day campaign attribution.

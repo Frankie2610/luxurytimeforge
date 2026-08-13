@@ -2,6 +2,9 @@ import {lazy,Suspense} from 'react';
 import {Navigate,Route,Routes} from 'react-router-dom';
 import {ProtectedAdmin} from './auth';
 import {PermissionGate} from './access-denied-v20';
+import {useCommerce} from './context';
+import {resolveStoreLogo,resolveStoreName} from './store-profile';
+import {optimizedImage} from './image-utils';
 
 const StoreLayout=lazy(()=>import('./storefront-v10').then(m=>({default:m.StoreLayoutV10})));
 const Home=lazy(()=>import('./storefront-v10').then(m=>({default:m.HomeV10})));
@@ -57,7 +60,7 @@ const ProductGroupsAdminV504=lazy(()=>import('./product-groups-admin-v504').then
 
 
 function AdminRouteLoading(){return <div className="tf-admin-boot" aria-label="Đang tải trang quản trị" aria-busy="true"><div className="tf-admin-boot-bar"/><div className="tf-admin-boot-shell"><aside><i/><i/><i/><i/><i/></aside><main><header><i/><i/></header><section><i/><i/><div><i/><i/><i/></div></section></main></div></div>}
-function RouteLoading(){const adminRoute=typeof window!=='undefined'&&window.location.pathname.startsWith('/admin');if(adminRoute)return <AdminRouteLoading/>;return <div className="route-loading" aria-label="Đang tải trang" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src="/luxury-timeforge-logo.svg" alt="" aria-hidden="true"/><i/><b>Đang tải Luxury Timeforge</b></div></div>}
+function RouteLoading(){const{storeProfile}=useCommerce();const adminRoute=typeof window!=='undefined'&&window.location.pathname.startsWith('/admin');if(adminRoute)return <AdminRouteLoading/>;return <div className="route-loading" aria-label="Đang tải trang" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt="" aria-hidden="true"/><i/><b>Đang tải {resolveStoreName(storeProfile.storeName)}</b></div></div>}
 
 export function App(){return <Suspense fallback={<RouteLoading/>}><Routes>
  <Route element={<StoreLayout/>}>

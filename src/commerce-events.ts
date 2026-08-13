@@ -83,6 +83,15 @@ export function readCommerceEvents():CommerceEvent[]{
   return cachedEvents;
 }
 
+export function readRecentCommerceEvents(days=7):CommerceEvent[]{
+  const safeDays=Math.max(1,Math.min(31,Math.round(days)));
+  const cutoff=Date.now()-safeDays*86400000;
+  return readCommerceEvents().filter(event=>{
+    const timestamp=new Date(event.createdAt).getTime();
+    return Number.isFinite(timestamp)&&timestamp>=cutoff;
+  });
+}
+
 let remoteQueue:CommerceEvent[]=[];
 let remoteTimer:number|undefined;
 let lifecycleBound=false;
@@ -126,18 +135,31 @@ export function trackCommerceEvent(name:CommerceEventName,payload:Omit<CommerceE
 }
 
 const dateKey=(date:Date)=>date.toISOString().slice(0,10);
-export async function readRemoteCommerceEvents(days=7):Promise<CommerceEvent[]>{
+export interface CommerceEventSnapshot{events:CommerceEvent[];source:'firebase'|'local';remoteCount:number;localOnlyCount:number}
+export async function readCommerceEventSnapshot(days=7):Promise<CommerceEventSnapshot>{
   const safeDays=Math.max(1,Math.min(31,Math.round(days)));
   const{firebaseClient}=await import('./firebase');
-  if(!firebaseClient.enabled)return readCommerceEvents();
-  const keys=Array.from({length:safeDays},(_,index)=>dateKey(new Date(Date.now()-index*86400000)));
+  const localEvents=readRecentCommerceEvents(safeDays);
+  if(!firebaseClient.enabled)return{events:localEvents,source:'local',remoteCount:0,localOnlyCount:localEvents.length};
+  // Read an extra UTC bucket, then enforce the exact rolling cutoff.
+  const keys=Array.from({length:safeDays+1},(_,index)=>dateKey(new Date(Date.now()-index*86400000)));
   const results=await Promise.allSettled(keys.map(key=>firebaseClient.read<Record<string,CommerceEvent>>(`timeforge/analyticsEvents/${key}`)));
   if(!results.some(result=>result.status==='fulfilled'))throw(results[0] as PromiseRejectedResult)?.reason||new Error('Không thể đọc analytics từ Firebase.');
-  const merged=new Map<string,CommerceEvent>();
-  results.forEach(result=>{if(result.status!=='fulfilled'||!result.value)return;Object.values(result.value).forEach(event=>{if(event?.id&&event?.name)merged.set(event.id,event)})});
+  const remote=new Map<string,CommerceEvent>();
+  results.forEach(result=>{if(result.status!=='fulfilled'||!result.value)return;Object.values(result.value).forEach(event=>{if(event?.id&&event?.name)remote.set(event.id,event)})});
   const cutoff=Date.now()-safeDays*86400000;
-  readCommerceEvents().filter(event=>new Date(event.createdAt).getTime()>=cutoff).forEach(event=>merged.set(event.id,event));
-  return [...merged.values()].sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  const recentRemote=[...remote.values()].filter(event=>{
+    const timestamp=new Date(event.createdAt).getTime();
+    return Number.isFinite(timestamp)&&timestamp>=cutoff;
+  });
+  const merged=new Map(recentRemote.map(event=>[event.id,event]));
+  localEvents.forEach(event=>merged.set(event.id,event));
+  return{
+    events:[...merged.values()].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)),
+    source:'firebase',remoteCount:recentRemote.length,
+    localOnlyCount:localEvents.filter(event=>!remote.has(event.id)).length,
+  };
 }
+export async function readRemoteCommerceEvents(days=7):Promise<CommerceEvent[]>{return(await readCommerceEventSnapshot(days)).events}
 
 if(typeof window!=='undefined')window.addEventListener('storage',(event)=>{if(event.key===KEY||event.key===LEGACY_KEY){cachedRaw=null;cachedEvents=null}});

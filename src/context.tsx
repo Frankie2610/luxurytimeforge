@@ -130,6 +130,17 @@ export function CommerceProvider({children}:{children:ReactNode}){
   if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
   else{setIsLoading(false);setDataSource('local')}
   setDataError('');
+  const profileRequest=firebaseClient.read<StoreProfile>('timeforge/settings/store');
+  void profileRequest.then(value=>{
+   if(!active||!value)return;
+   const remoteProfile=normalizeStoreProfile(value,DEFAULT_STORE_PROFILE);
+   setStoreProfile(remoteProfile);
+   setThemeState(cur=>({
+    ...cur,
+    published:applyStoreProfileToTheme(cur.published,remoteProfile),
+    draft:applyStoreProfileToTheme(cur.draft,remoteProfile)
+   }));
+  }).catch(error=>console.warn('[TimeForge] Store identity refresh failed; cached identity remains visible.',error));
 
   const refresh=()=>{
    if(!active)return;
@@ -151,7 +162,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
     firebaseClient.read<ProductGroup[]|Record<string,ProductGroup>>('timeforge/productGroups'),
     firebaseClient.read<Discount[]|Record<string,Discount>>('timeforge/discounts'),
     firebaseClient.read<Theme>('timeforge/themes/published'),
-    firebaseClient.read<StoreProfile>('timeforge/settings/store')
+    profileRequest
    ]).then(([collectionResult,groupResult,discountResult,publishedResult,profileResult])=>{
     if(!active)return;
     if(collectionResult.status==='fulfilled')setCollections(normalizeCollections(collectionResult.value));

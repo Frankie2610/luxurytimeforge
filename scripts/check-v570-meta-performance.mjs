@@ -21,7 +21,7 @@ const images=read('src/image-utils.tsx');
 const permissions=read('src/permissions.ts');
 
 const checks=[
-  ['package version is 0.57.0',packageJson.version==='0.57.0'],
+  ['package remains on the V0.57 release line',/^0\.57\.\d+$/.test(packageJson.version)],
   ['V0.57.0 check command is registered',packageJson.scripts?.['v570:check']==='node scripts/check-v570-meta-performance.mjs'],
   ['customer tools remain route-lazy',app.includes("lazy(()=>import('./storefront-tools-v57')")&&app.includes('path="/compare"')&&app.includes('path="/watch-finder"')],
   ['Meta Admin is route-lazy and permission protected',app.includes("lazy(()=>import('./meta-ads-v57')")&&app.includes('path="marketing/meta"')&&permissions.includes("startsWith('/admin/discounts')||pathname.startsWith('/admin/marketing')")],
@@ -29,13 +29,13 @@ const checks=[
   ['Meta Pixel loads only after an enabled valid configuration',metaPixel.includes('settings.enabled&&validPixelId(settings.pixelId)')&&metaPixel.includes("script.src='https://connect.facebook.net/en_US/fbevents.js'")],
   ['five commerce conversions map to Meta standard events',metaPixel.includes("page_view:'PageView'")&&metaPixel.includes("product_view:'ViewContent'")&&metaPixel.includes("add_to_cart:'AddToCart'")&&metaPixel.includes("checkout_started:'InitiateCheckout'")&&metaPixel.includes("checkout_completed:'Purchase'")],
   ['Meta events carry catalog IDs and browser event IDs',metaPixel.includes('content_ids:ids')&&metaPixel.includes('{eventID:event.id}')],
-  ['Admin provides Pixel health, UTM builder, catalog feed and campaign attribution',metaAdmin.includes('EVENT HEALTH')&&metaAdmin.includes('CAMPAIGN URL BUILDER')&&metaAdmin.includes('META CATALOG')&&metaAdmin.includes('7-DAY ATTRIBUTION')],
+  ['Admin provides Pixel health, UTM builder, catalog feed and campaign attribution',metaAdmin.includes('EVENT HEALTH')&&metaAdmin.includes('CAMPAIGN URL BUILDER')&&metaAdmin.includes('CATALOG HEALTH')&&metaAdmin.includes('-DAY ATTRIBUTION')],
   ['analytics storage is capped, cached and remotely batched',commerceEvents.includes('LOCAL_EVENT_LIMIT=600')&&commerceEvents.includes('cachedEvents')&&commerceEvents.includes('REMOTE_BATCH_LIMIT=12')&&commerceEvents.includes("addEventListener('pagehide'")],
   ['new campaign parameters refresh stale session attribution',commerceEvents.includes('hasCampaignSignal')&&commerceEvents.includes("'fbclid','gclid'")&&commerceEvents.includes('existing&&!hasCampaignSignal')],
   ['public analytics input is minimized and validated server-side',analyticsApi.includes('safeMetadata')&&analyticsApi.includes('60_000')&&analyticsApi.includes('allowedEvents')&&analyticsApi.includes('requestIsSameOrigin')],
   ['browser writes to analytics are denied by Firebase Rules',rules.includes('"analyticsEvents"')&&rules.includes('".write": false')],
   ['Shopify and Cloudinary media both receive responsive variants',images.includes("parsed.searchParams.set('width'")&&images.includes("parsed.hostname === 'cdn.shopify.com'")&&images.includes('optimizedImageSrcSet')],
-  ['comparison is device-persistent and capped at three products',compare.includes("const KEY='tf.v57.compare-products'")&&compare.includes('const LIMIT=3')&&main.includes('<CompareProviderV57>')],
+  ['comparison is device-persistent, capped and external-store based',compare.includes("const KEY='tf.v57.compare-products'")&&compare.includes('const LIMIT=3')&&compare.includes('useSyncExternalStore')],
   ['comparison is available on cards, product detail and a responsive page',storefront.includes('tf57-card-compare')&&storefront.includes('tf57-pdp-compare')&&storefront.includes('<CompareDockV57')&&finder.includes('ComparePageV57')],
   ['watch finder uses four guided inputs and live catalog scoring',finder.includes('finderSteps')&&finder.includes('recipient:')&&finder.includes('budget:')&&finder.includes('style:')&&finder.includes('brand:')&&finder.includes('finderScore')],
   ['new customer tools report intent without blocking UI',finder.includes("trackCommerceEvent('compare_view'")&&finder.includes("trackCommerceEvent('watch_finder_completed'")],
