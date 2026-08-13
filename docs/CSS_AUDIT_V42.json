@@ -1,12 +1,109 @@
 {
-  "generatedAt": "2026-08-05T07:26:37.511Z",
-  "files": 104,
-  "sourceBytes": 1389665,
-  "importantDeclarations": 2657,
-  "uniqueSelectors": 9520,
-  "duplicatedSelectors": 3297,
-  "productionCss": [],
-  "productionCssBytes": 0,
+  "generatedAt": "2026-08-13T14:19:47.559Z",
+  "files": 106,
+  "sourceBytes": 1414087,
+  "importantDeclarations": 2663,
+  "uniqueSelectors": 9730,
+  "duplicatedSelectors": 3365,
+  "productionCss": [
+    {
+      "name": "storefront-v10-DoOoqSDl.css",
+      "bytes": 290705
+    },
+    {
+      "name": "legacy-C7NBcqum.css",
+      "bytes": 233221
+    },
+    {
+      "name": "admin-shell-v16-D89PmjKN.css",
+      "bytes": 231420
+    },
+    {
+      "name": "checkout-v11-B4a78Mna.css",
+      "bytes": 56000
+    },
+    {
+      "name": "wishlist-page-v53-T9rB5dfr.css",
+      "bytes": 30707
+    },
+    {
+      "name": "blog-v18-BiKk08VZ.css",
+      "bytes": 26941
+    },
+    {
+      "name": "customer-account-v12-mOoOg7b_.css",
+      "bytes": 19555
+    },
+    {
+      "name": "index-B6W-7Edi.css",
+      "bytes": 18247
+    },
+    {
+      "name": "online-store-v19-LQMWsvYh.css",
+      "bytes": 14696
+    },
+    {
+      "name": "v570-storefront-features-CeBYDhM5.css",
+      "bytes": 13835
+    },
+    {
+      "name": "product-groups-admin-v504-Dizteivd.css",
+      "bytes": 11474
+    },
+    {
+      "name": "admin-sprint12-BGiyFGc_.css",
+      "bytes": 11396
+    },
+    {
+      "name": "v4927-commerce-COnk4C0b.css",
+      "bytes": 11385
+    },
+    {
+      "name": "v526-account-returns-CcRuxovv.css",
+      "bytes": 11273
+    },
+    {
+      "name": "v521-ui-polish-aDKq7Ypc.css",
+      "bytes": 11107
+    },
+    {
+      "name": "meta-ads-v57-c8r_svFq.css",
+      "bytes": 9803
+    },
+    {
+      "name": "v522-ui-refinement-B-K6bSEi.css",
+      "bytes": 8964
+    },
+    {
+      "name": "v515-order-payment-DBhPmc7V.css",
+      "bytes": 7663
+    },
+    {
+      "name": "admin-sprint11-CmbuPi47.css",
+      "bytes": 6706
+    },
+    {
+      "name": "login-BAUKEKHj.css",
+      "bytes": 5752
+    },
+    {
+      "name": "product-editor-v39-Dskf_fFH.css",
+      "bytes": 4474
+    },
+    {
+      "name": "admin-rxia0sja.css",
+      "bytes": 4447
+    },
+    {
+      "name": "admin-invite-D7BOGfEe.css",
+      "bytes": 4157
+    },
+    {
+      "name": "v523-product-admin-fix-rS6mWcAV.css",
+      "bytes": 3481
+    }
+  ],
+  "productionCssBytes": 1047409,
   "topDuplicates": [
     {
       "selector": "select",
@@ -34,7 +131,7 @@
     },
     {
       "selector": "@media(prefers-reduced-motion:reduce)",
-      "count": 41,
+      "count": 43,
       "files": [
         "src/app.css",
         "src/auth.css",
@@ -76,12 +173,38 @@
         "src/v565-admin-performance.css",
         "src/v565-storefront-performance.css",
         "src/v566-admin-polish.css",
-        "src/v566-storefront-polish.css"
+        "src/v566-storefront-polish.css",
+        "src/v570-meta-ads.css",
+        "src/v570-storefront-features.css"
+      ]
+    },
+    {
+      "selector": "to",
+      "count": 32,
+      "files": [
+        "src/app.css",
+        "src/auth.css",
+        "src/sprint11.css",
+        "src/sprint13.css",
+        "src/sprint22.css",
+        "src/styles.css",
+        "src/ui/ui.css",
+        "src/v4912-storefront.css",
+        "src/v4917-admin-invite.css",
+        "src/v4917-team.css",
+        "src/v4920-commerce-mobile.css",
+        "src/v499-theme-editor.css",
+        "src/v508-storefront-final.css",
+        "src/v560-wishlist-features.css",
+        "src/v562-storefront-interactions.css",
+        "src/v563-storefront-menu.css",
+        "src/v565-storefront-performance.css",
+        "src/v570-meta-ads.css"
       ]
     },
     {
       "selector": "@media(max-width:680px)",
-      "count": 31,
+      "count": 32,
       "files": [
         "src/sprint11.css",
         "src/sprint12.css",
@@ -112,30 +235,8 @@
         "src/v540-admin-refinement.css",
         "src/v550-admin-polish.css",
         "src/v560-admin-features.css",
-        "src/v566-storefront-polish.css"
-      ]
-    },
-    {
-      "selector": "to",
-      "count": 30,
-      "files": [
-        "src/app.css",
-        "src/auth.css",
-        "src/sprint11.css",
-        "src/sprint13.css",
-        "src/sprint22.css",
-        "src/styles.css",
-        "src/ui/ui.css",
-        "src/v4912-storefront.css",
-        "src/v4917-admin-invite.css",
-        "src/v4917-team.css",
-        "src/v4920-commerce-mobile.css",
-        "src/v499-theme-editor.css",
-        "src/v508-storefront-final.css",
-        "src/v560-wishlist-features.css",
-        "src/v562-storefront-interactions.css",
-        "src/v563-storefront-menu.css",
-        "src/v565-storefront-performance.css"
+        "src/v566-storefront-polish.css",
+        "src/v570-storefront-features.css"
       ]
     },
     {
@@ -481,6 +582,24 @@
       ]
     },
     {
+      "selector": "@media(max-width:980px)",
+      "count": 13,
+      "files": [
+        "src/sprint14.css",
+        "src/styles.css",
+        "src/v4912-commerce.css",
+        "src/v4912-storefront.css",
+        "src/v4922-journal.css",
+        "src/v4923-admin-content.css",
+        "src/v4927-commerce.css",
+        "src/v504-product-groups-admin.css",
+        "src/v509-admin-final.css",
+        "src/v525-customer-order-detail.css",
+        "src/v53-wishlist.css",
+        "src/v570-storefront-features.css"
+      ]
+    },
+    {
       "selector": "p",
       "count": 13,
       "files": [
@@ -550,23 +669,6 @@
         "src/sprint15.css",
         "src/sprint21.css",
         "src/styles.css"
-      ]
-    },
-    {
-      "selector": "@media(max-width:980px)",
-      "count": 12,
-      "files": [
-        "src/sprint14.css",
-        "src/styles.css",
-        "src/v4912-commerce.css",
-        "src/v4912-storefront.css",
-        "src/v4922-journal.css",
-        "src/v4923-admin-content.css",
-        "src/v4927-commerce.css",
-        "src/v504-product-groups-admin.css",
-        "src/v509-admin-final.css",
-        "src/v525-customer-order-detail.css",
-        "src/v53-wishlist.css"
       ]
     },
     {

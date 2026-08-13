@@ -10,8 +10,15 @@ export default async function handler(req,res){
     const payment=await getPayOS().paymentRequests.get(Number(session.orderCode));
     const paymentStatus=mapPayOSStatus(payment.status);
     await savePaymentSession(orderId,{...session,status:payment.status,paymentLinkId:payment.id||session.paymentLinkId,updatedAt:new Date().toISOString()});
-    if(paymentStatus!=='pending'||payment.status==='CANCELLED')await syncPaymentState({orderId,status:payment.status,paymentLinkId:payment.id,reference:payment.transactions?.[0]?.reference,orderCode:payment.orderCode,paidAt:payment.transactions?.[0]?.transactionDateTime});
-    return res.status(200).json({orderId,orderNumber:session.orderNumber,orderCode:session.orderCode,amount:session.amount,status:payment.status,paymentStatus});
+    const synchronized=paymentStatus!=='pending'||payment.status==='CANCELLED'
+      ?await syncPaymentState({orderId,status:payment.status,paymentLinkId:payment.id,reference:payment.transactions?.[0]?.reference,orderCode:payment.orderCode,paidAt:payment.transactions?.[0]?.transactionDateTime})
+      :null;
+    const lines=Array.isArray(synchronized?.order?.lines)?synchronized.order.lines:[];
+    return res.status(200).json({
+      orderId,orderNumber:session.orderNumber,orderCode:session.orderCode,amount:session.amount,status:payment.status,paymentStatus,
+      contentIds:lines.map(line=>String(line?.productId||'')).filter(Boolean).slice(0,50),
+      items:lines.reduce((sum,line)=>sum+Math.max(0,Number(line?.quantity||0)),0),
+    });
   }catch(error){
     const message=error instanceof Error?error.message:'Không thể xác minh thanh toán.';
     return res.status(/Invalid order|phiên thanh toán/i.test(message)?400:502).json({message});

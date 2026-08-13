@@ -7,7 +7,7 @@ import {money} from './utils';
 import './v4927-commerce.css';
 
 type PayOSState='checking'|'paid'|'cancelled'|'failed'|'error';
-type PayOSStatusResponse={orderId:string;orderNumber:string;orderCode:number;amount:number;status:string;paymentStatus:'pending'|'paid'|'failed';message?:string};
+type PayOSStatusResponse={orderId:string;orderNumber:string;orderCode:number;amount:number;status:string;paymentStatus:'pending'|'paid'|'failed';contentIds?:string[];items?:number;message?:string};
 
 const completedKey=(orderId:string)=>`tf.v4927.payos.completed.${orderId}`;
 
@@ -36,7 +36,7 @@ export function PayOSReturnPageV4927(){
         if(result.paymentStatus==='paid'||result.status==='PAID'){
           setState('paid');setMessage('PayOS đã xác nhận thanh toán thành công.');
           if(order?.paymentStatus!=='paid')updateOrder(orderId,{paymentStatus:'paid',paymentProvider:'payos',paymentOrderCode:result.orderCode});
-          if(!localStorage.getItem(completedKey(orderId))){trackCommerceEvent('checkout_completed',{orderId,value:result.amount});localStorage.setItem(completedKey(orderId),'1')}
+          if(!localStorage.getItem(completedKey(orderId))){trackCommerceEvent('checkout_completed',{orderId,value:result.amount,metadata:{contentIds:(result.contentIds||[]).join(','),items:Number(result.items||0)}});localStorage.setItem(completedKey(orderId),'1')}
           return;
         }
         if(result.status==='CANCELLED'||cancelledByReturn){setState('cancelled');setMessage('Giao dịch đã được hủy. Đơn hàng vẫn được giữ để bạn thanh toán lại.');return}

@@ -12,7 +12,7 @@ const localTsc = fileURLToPath(new URL('../node_modules/typescript/bin/tsc', imp
 const hasLocalTsc = fs.existsSync(localTsc);
 const compile = spawnSync(hasLocalTsc ? process.execPath : 'tsc', [
   ...(hasLocalTsc ? [localTsc] : []),
-  '--pretty', 'false', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler',
+  '--ignoreConfig', '--pretty', 'false', '--target', 'ES2022', '--module', 'ESNext', '--moduleResolution', 'bundler',
   '--rootDir', 'src', '--outDir', fixtureDir,
   'src/data-normalize.ts', 'src/utils.ts', 'src/product-data.ts', 'src/product-filter-data.ts', 'src/collection-utils.ts', 'src/theme.ts',
 ], {cwd: fileURLToPath(root), encoding: 'utf8'});

@@ -256,7 +256,7 @@ export function CheckoutPageV11() {
         const result = await startPayment(createdOrder);
         if (result.status === 'redirect' && result.checkoutUrl) {window.location.assign(result.checkoutUrl); return;}
       }
-      trackCommerceEvent('checkout_completed', {orderId: createdOrder.id, value: createdOrder.total});
+      trackCommerceEvent('checkout_completed', {orderId: createdOrder.id, value: createdOrder.total,metadata:{contentIds:createdOrder.lines.map(line=>line.productId).filter(Boolean).join(','),items:createdOrder.lines.reduce((sum,line)=>sum+line.quantity,0)}});
       if (createdOrder.paymentMethod === 'bank_transfer') {
         const transferContent = createdOrder.bankTransferContent || createdOrder.number;
         toast.success('Yêu cầu thanh toán đã được gửi', {

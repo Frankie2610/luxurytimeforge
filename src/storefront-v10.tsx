@@ -17,6 +17,7 @@ import {
   MapPin,
   Plus,
   Search,
+  Scale,
   Share2,
   ShieldCheck,
   ShoppingBag,
@@ -58,6 +59,7 @@ import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreIcon, resolveStoreLogo, resolveStoreName} from './store-profile';
 import {useWishlist, useWishlistItem} from './wishlist';
 import {useRecentlyViewedProduct} from './recently-viewed';
+import {CompareDockV57,useCompareItemV57} from './compare-v57';
 import {
   BankCardMark,
   FacebookMark,
@@ -105,8 +107,10 @@ import './v563-storefront-menu.css';
 import './v564-storefront-polish.css';
 import './v565-storefront-performance.css';
 import './v566-storefront-polish.css';
+import './v570-storefront-controls.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
+const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
 const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
 const MAX_RECENT_SEARCHES = 6;
 
@@ -232,6 +236,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
                 {collection.title}
               </NavLink>
             ))}
+            <NavLink to="/watch-finder" onPointerEnter={prefetchWatchFinderRoute} onFocus={prefetchWatchFinderRoute}>Tư vấn chọn</NavLink>
             <NavLink to="/pages/about">Câu chuyện</NavLink>
             <NavLink to="/blogs">Tạp chí</NavLink>
           </nav>
@@ -306,6 +311,8 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
                 <Link to="/" onClick={() => setMobileOpen(false)}>Trang chủ</Link>
                 <Link to="/collections" onClick={() => setMobileOpen(false)}>Tất cả đồng hồ</Link>
                 <Link to="/wishlist" onPointerEnter={prefetchWishlistRoute} onFocus={prefetchWishlistRoute} onClick={() => setMobileOpen(false)}>Yêu thích {wishlistIds.length > 0 ? `(${wishlistIds.length})` : ''}</Link>
+                <Link to="/watch-finder" onPointerEnter={prefetchWatchFinderRoute} onFocus={prefetchWatchFinderRoute} onClick={() => setMobileOpen(false)}>Tư vấn chọn đồng hồ</Link>
+                <Link to="/compare" onPointerEnter={prefetchWatchFinderRoute} onFocus={prefetchWatchFinderRoute} onClick={() => setMobileOpen(false)}>So sánh sản phẩm</Link>
                 {activeCollections.map((collection) => (
                   <Link key={collection.id} to={`/collections/${collection.handle}`} onClick={() => setMobileOpen(false)}>
                     {collection.title}
@@ -485,7 +492,7 @@ function LuxuryFooter() {
       </div>
       <div className="tf-footer-grid-v4910">
         <section className="tf-footer-brand-v4910"><LuxuryLogo name={storeName} logoImage={settings.logoImage} showName={false}/><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910">{showStoreDescription&&<p>{storeDescription}</p>}{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
-        <section><h4>Mua sắm</h4><Link to="/collections">Tất cả đồng hồ</Link><Link to="/search">Tìm kiếm</Link><Link to="/cart">Giỏ hàng</Link></section>
+        <section><h4>Mua sắm</h4><Link to="/collections">Tất cả đồng hồ</Link><Link to="/watch-finder">Tư vấn chọn đồng hồ</Link><Link to="/compare">So sánh sản phẩm</Link><Link to="/search">Tìm kiếm</Link><Link to="/cart">Giỏ hàng</Link></section>
         <section><h4>Dịch vụ</h4><Link to="/track-order">Theo dõi đơn hàng</Link><Link to="/pages/warranty">Bảo hành</Link><Link to="/pages/shipping">Giao hàng</Link><Link to="/pages/returns">Đổi trả</Link></section>
         <section><h4>TimeForge</h4><Link to="/pages/about">Câu chuyện</Link><Link to="/blogs">Tạp chí</Link><Link to="/pages/contact">Liên hệ</Link>{settings.recruitmentUrl&&<a href={settings.recruitmentUrl} target="_blank" rel="noreferrer">Tuyển dụng</a>}</section>
       </div>
@@ -595,6 +602,7 @@ export function StoreLayoutV10() {
       <main><div className={`tf-route-view-v4910 ${isCheckoutRoute ? 'is-checkout-route' : ''}`} key={location.pathname}><Outlet context={{openCart: requestCart}} /></div></main>
       {(extras.footerVisible || isCheckoutRoute) && <LuxuryFooter />}
       <StorefrontUtilityDock />
+      <CompareDockV57 />
       {extras.cartDrawer && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
       {extras.newsletterPopup && !newsletterDismissed && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
       {extras.privacyBanner && !privacyDismissed && <aside className="v23-privacy-banner"><div><ShieldCheck/><span><b>Quyền riêng tư</b><small>Dữ liệu được sử dụng để vận hành cửa hàng và xử lý đơn hàng.</small></span></div><button onClick={() => setPrivacyDismissed(true)}>Đồng ý</button></aside>}
@@ -640,6 +648,7 @@ export const LuxuryProductCard = memo(function LuxuryProductCard({product, prior
   const {productGroups, products} = useCommerce();
   const {addToCart} = useCartActions();
   const {wished, toggle} = useWishlistItem(product.id);
+  const {selected:compareSelected,toggle:toggleCompare} = useCompareItemV57(product.id);
   const [secondaryRequested, setSecondaryRequested] = useState(false);
   const sale = discount(product.price, product.compareAtPrice);
   const primary = productImage(product);
@@ -661,6 +670,7 @@ export const LuxuryProductCard = memo(function LuxuryProductCard({product, prior
         <button type="button" className={`tf-product-wish-v4918 ${wished ? 'is-active' : ''}`} onClick={() => {toggle(); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}>
           <Heart fill={wished ? 'currentColor' : 'none'} />
         </button>
+        <button type="button" className={`tf57-card-compare ${compareSelected?'is-active':''}`} onClick={()=>{const result=toggleCompare(product.id);if(result==='limit')toast.info('Chỉ so sánh tối đa 3 sản phẩm');else toast.success(result==='added'?'Đã thêm vào so sánh':'Đã xóa khỏi so sánh')}} aria-label={compareSelected?'Xóa khỏi so sánh':'Thêm vào so sánh'} aria-pressed={compareSelected}><Scale/></button>
         <button className="tf-product-quick-add-v4918" onClick={() => {addToCart(product.id, product.variants[0]?.id || '', 1); trackCommerceEvent('add_to_cart',{productId:product.id,value:product.price}); toast.success('Đã thêm sản phẩm vào giỏ hàng');}} disabled={product.inventory <= 0}>
           <ShoppingBag />{product.inventory > 0 ? 'Thêm nhanh' : 'Tạm hết hàng'}
         </button>
@@ -1355,6 +1365,7 @@ export function ProductPageV10() {
   const [quantity, setQuantity] = useState(1);
   const [variantId, setVariantId] = useState(product?.variants[0]?.id || '');
   const {wished, toggle} = useWishlistItem(product?.id || '');
+  const {selected:compareSelected,toggle:toggleCompare} = useCompareItemV57(product?.id || '');
   const {ids: recentlyViewedIds, clear: clearRecentlyViewed} = useRecentlyViewedProduct(product?.id || '');
 
   useEffect(() => {
@@ -1467,6 +1478,7 @@ export function ProductPageV10() {
               <div className="tf-pdp491-controls">
                 {quantityBlock && <div className="tf-pdp491-quantity" {...themeBlockProps(quantityBlock)}><span>Số lượng</span><div><button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={inventory <= 0} aria-label="Giảm số lượng"><Minus /></button><strong>{inventory > 0 ? quantity : 0}</strong><button onClick={() => setQuantity(Math.min(Math.max(inventory, 1), quantity + 1))} disabled={inventory <= 0 || quantity >= inventory} aria-label="Tăng số lượng"><Plus /></button></div></div>}
                 {Boolean(buyBlock?.settings.showWishlist) && <button type="button" className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => {toggle(); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}><Heart fill={wished ? 'currentColor' : 'none'} /></button>}
+                <button type="button" className={`tf57-pdp-compare ${compareSelected?'is-active':''}`} onClick={()=>{const result=toggleCompare(product.id);if(result==='limit')toast.info('Chỉ so sánh tối đa 3 sản phẩm');else toast.success(result==='added'?'Đã thêm vào so sánh':'Đã xóa khỏi so sánh')}} aria-label={compareSelected?'Xóa khỏi so sánh':'Thêm vào so sánh'} aria-pressed={compareSelected}><Scale/></button>
                 <button type="button" className="tf564-pdp-share" onClick={() => {void shareProduct();}} aria-label="Chia sẻ sản phẩm"><Share2 /></button>
               </div>
             </div>

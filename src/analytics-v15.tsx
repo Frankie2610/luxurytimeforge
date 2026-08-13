@@ -1,10 +1,10 @@
-import {useMemo} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {Bar,BarChart,CartesianGrid,Cell,Legend,Line,LineChart,ResponsiveContainer,Tooltip,XAxis,YAxis} from 'recharts';
 import {format,subDays} from 'date-fns';
 import {vi} from 'date-fns/locale';
 import {ArrowDownRight,ArrowUpRight,BarChart3,Globe2,RotateCcw,ShoppingBag,WalletCards} from 'lucide-react';
 import {useCommerce} from './context';
-import {readCommerceEvents} from './commerce-events';
+import {readCommerceEvents,readRemoteCommerceEvents} from './commerce-events';
 import {useReturns} from './returns-v13';
 import {money} from './utils';
 import {Surface,Tabs,TabsContent,TabsList,TabsTrigger} from './ui';
@@ -13,7 +13,8 @@ const palette=['#2f6848','#7f312e','#c69045','#789288','#4c6f91','#966b8f'];
 const sourceLabel=(source:string)=>({direct:'Trực tiếp',facebook:'Facebook',instagram:'Instagram',tiktok:'TikTok',google:'Google',zalo:'Zalo'}[source]||source);
 function Metric({label,value,note,icon}:{label:string;value:string;note:string;icon:React.ReactNode}){return <Surface className="v15-metric"><span>{icon}</span><div><small>{label}</small><strong>{value}</strong><p>{note}</p></div></Surface>}
 export function AnalyticsV15(){
- const{orders}=useCommerce();const{items:returns}=useReturns();const events=readCommerceEvents();
+ const{orders}=useCommerce();const{items:returns}=useReturns();const[events,setEvents]=useState(readCommerceEvents);
+ useEffect(()=>{let active=true;void readRemoteCommerceEvents(14).then(value=>{if(active)setEvents(value)}).catch(()=>undefined);return()=>{active=false}},[]);
  const validOrders=orders.filter(o=>o.status!=='cancelled');const revenue=validOrders.reduce((s,o)=>s+o.total,0);const returned=returns.filter(r=>!['rejected','closed'].includes(r.status));
  const checkoutStarted=events.filter(e=>e.name==='checkout_started').length;const checkoutCompleted=Math.max(events.filter(e=>e.name==='checkout_completed').length,validOrders.length);const conversion=checkoutStarted?checkoutCompleted/checkoutStarted*100:0;const returnRate=validOrders.length?returned.length/validOrders.length*100:0;
  const daily=useMemo(()=>Array.from({length:14},(_,index)=>{const d=subDays(new Date(),13-index);const key=format(d,'yyyy-MM-dd');const dayOrders=validOrders.filter(o=>o.createdAt.slice(0,10)===key);return{day:format(d,'dd/MM',{locale:vi}),revenue:dayOrders.reduce((s,o)=>s+o.total,0),orders:dayOrders.length}}),[orders]);

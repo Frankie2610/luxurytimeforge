@@ -52,4 +52,11 @@ export interface ImportResult{products:Product[];headers:string[];rowCount:numbe
 export type ReturnStatus='requested'|'approved'|'received'|'refunded'|'rejected'|'closed';
 export interface ReturnRequestLine{id:string;orderLineId:string;productId:string;variantId:string;title:string;image:string;quantity:number;reason:string}
 export interface ReturnRequest{id:string;requestType?:'return'|'exchange';number:string;orderId:string;orderNumber:string;customerId:string;customerName:string;customerEmail:string;customerPhone:string;createdAt:string;updatedAt:string;status:ReturnStatus;lines:ReturnRequestLine[];note:string;adminNote:string;refundAmount:number;restock:boolean;restockedAt?:string;exchangeProductId?:string;exchangeVariantId?:string;exchangeQuantity?:number;exchangeOrderId?:string;exchangePriceDifference?:number}
+export interface MetaMarketingSettings{
+  enabled:boolean;
+  pixelId:string;
+  siteUrl:string;
+  defaultSource:string;
+  defaultMedium:string;
+}
 export interface IntegrationSettings{payment:{cod:boolean;bankTransfer:boolean;online:boolean;onlineProvider:'generic'|'payos';createEndpoint:string;bankName:string;bankAccountName:string;bankAccountNumber:string;bankAccounts:BankAccount[];preferredBankAccountId:string;bankTransferDiscount:BankTransferDiscount};shipping:{defaultCarrier:string;trackingUrlTemplate:string;insured:boolean;freeShippingThreshold:number};customerAccount:{sessionMinutes:number;requireOrderChallenge:boolean}}

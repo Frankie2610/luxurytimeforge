@@ -99,6 +99,10 @@
         "integrations": {
           ".read": true,
           ".write": "__SETTINGS_MANAGE_CONDITION__"
+        },
+        "marketing": {
+          ".read": true,
+          ".write": "__MARKETING_MANAGE_CONDITION__"
         }
       },
       "blogPosts": {
@@ -115,6 +119,10 @@
           ".write": "(__MARKETING_MANAGE_CONDITION__) || !data.exists()",
           ".validate": "newData.hasChildren(['id','email','source','status','createdAt','updatedAt']) && newData.child('id').val() == $subscriberId && newData.child('email').isString() && newData.child('email').val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/) && (newData.child('status').val() == 'active' || newData.child('status').val() == 'unsubscribed')"
         }
+      },
+      "analyticsEvents": {
+        ".read": "__MARKETING_MANAGE_CONDITION__",
+        ".write": false
       }
     }
   }

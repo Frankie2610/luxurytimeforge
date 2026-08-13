@@ -14,7 +14,7 @@ const adminCss = read('src/v550-admin-polish.css');
 const storefront = read('src/storefront-v10.tsx');
 const storefrontCss = read('src/v550-storefront-polish.css');
 const envLocal = exists('.env.local') ? read('.env.local') : '';
-const demoLoginIsDisabled = !envLocal || demoLoginIsDisabled;
+const demoLoginIsDisabled = !envLocal || /^VITE_ENABLE_DEMO_LOGIN\s*=\s*(false|0|off)\s*$/im.test(envLocal);
 const [major, minor, patch] = packageJson.version.split('.').map(Number);
 const preservesV550 = major > 0 || minor > 55 || (minor === 55 && patch >= 0);
 

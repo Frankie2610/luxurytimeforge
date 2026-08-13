@@ -16,12 +16,15 @@ const checkoutCss = [
   storefrontCss,
 ].join('\n');
 
+const [major, minor, patch] = String(packageJson.version || '').split('.').map(Number);
+const preservesV567 = major > 0 || minor > 56 || (minor === 56 && patch >= 7);
+
 const footerStart = storefront.indexOf('function LuxuryFooter()');
 const footerEnd = storefront.indexOf('function StoreCatalogLoading', footerStart);
 const footerSource = storefront.slice(footerStart, footerEnd);
 
 const checks = [
-  ['package version is 0.56.7', packageJson.version === '0.56.7'],
+  ['package version preserves the V0.56.7 baseline', preservesV567],
   ['V0.56.7 check command is registered', packageJson.scripts?.['v567:check'] === 'node scripts/check-v567-footer-performance.mjs'],
   ['footer retains the logo mark without rendering its internal name', footerSource.includes('<LuxuryLogo') && footerSource.includes('showName={false}')],
   ['footer logo loading priority follows header versus below-fold use', storefront.includes("loading={showName ? 'eager' : 'lazy'}") && storefront.includes("fetchPriority={showName ? 'high' : 'low'}")],

@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.56.7",
+  "version": "0.57.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -46,7 +46,8 @@
     "v564:check": "node scripts/check-v564-wishlist-sidebar-footer-performance.mjs",
     "v565:check": "node scripts/check-v565-performance-features.mjs",
     "v566:check": "node scripts/check-v566-footer-about-admin.mjs",
-    "v567:check": "node scripts/check-v567-footer-performance.mjs"
+    "v567:check": "node scripts/check-v567-footer-performance.mjs",
+    "v570:check": "node scripts/check-v570-meta-performance.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -89,7 +90,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.56.7: corrected footer logo identity, responsive media delivery, cached product-family lookup and lower-cost route/Admin interactions.",
+  "description": "Luxury TimeForge V0.57.0: Meta Ads command center, conversion signals, responsive product comparison and guided watch finder with a targeted performance pass.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

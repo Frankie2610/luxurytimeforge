@@ -1,37 +1,143 @@
-export type CommerceEventName='page_view'|'product_view'|'add_to_cart'|'cart_view'|'checkout_started'|'checkout_completed'|'return_requested'|'exchange_requested';
+export type CommerceEventName=
+  |'page_view'|'product_view'|'add_to_cart'|'cart_view'|'checkout_started'|'checkout_completed'
+  |'return_requested'|'exchange_requested'|'compare_view'|'watch_finder_completed';
 export type CommerceDevice='desktop'|'tablet'|'mobile';
-export interface CommerceAttribution{source:string;medium:string;campaign:string;referrer:string;landingPage:string;sessionId:string;device:CommerceDevice}
-export interface CommerceEvent{id:string;name:CommerceEventName;createdAt:string;value?:number;productId?:string;orderId?:string;path?:string;attribution:CommerceAttribution;metadata?:Record<string,string|number|boolean>}
+export interface CommerceAttribution{
+  source:string;
+  medium:string;
+  campaign:string;
+  content?:string;
+  term?:string;
+  referrer:string;
+  landingPage:string;
+  sessionId:string;
+  device:CommerceDevice;
+}
+export interface CommerceEvent{
+  id:string;
+  name:CommerceEventName;
+  createdAt:string;
+  value?:number;
+  productId?:string;
+  orderId?:string;
+  path?:string;
+  attribution:CommerceAttribution;
+  metadata?:Record<string,string|number|boolean>;
+}
+
 const KEY='tf.v16.commerce-events';
 const LEGACY_KEY='tf.v15.commerce-events';
 const ATTR_KEY='tf.v16.attribution';
 const SESSION_KEY='tf.v16.analytics-session';
+const LOCAL_EVENT_LIMIT=600;
+const REMOTE_BATCH_LIMIT=12;
+
 const safeStorage=(kind:'local'|'session')=>{try{return kind==='local'?window.localStorage:window.sessionStorage}catch{return undefined}};
 const uid=()=>`ses_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
 const device=():CommerceDevice=>window.innerWidth<=680?'mobile':window.innerWidth<=1100?'tablet':'desktop';
 export const isThemeEditorCommercePreview=()=>{
- try{const params=new URLSearchParams(window.location.search);return window.self!==window.top&&params.get('theme_preview')==='1'&&params.get('tf_editor')==='1'}catch{return false}
+  try{const params=new URLSearchParams(window.location.search);return window.self!==window.top&&params.get('theme_preview')==='1'&&params.get('tf_editor')==='1'}catch{return false}
 };
 const sourceFromReferrer=(value:string)=>{try{const host=new URL(value).hostname.toLowerCase();if(!host)return'direct';if(host.includes('facebook')||host.includes('fb.'))return'facebook';if(host.includes('instagram'))return'instagram';if(host.includes('tiktok'))return'tiktok';if(host.includes('google'))return'google';if(host.includes('zalo'))return'zalo';return host.replace(/^www\./,'')}catch{return'direct'}};
+
 export function captureCommerceAttribution():CommerceAttribution{
- if(isThemeEditorCommercePreview())return{source:'theme-editor',medium:'preview',campaign:'',referrer:'',landingPage:`${window.location.pathname}${window.location.search}`,sessionId:'theme-preview',device:device()};
- const session=safeStorage('session');const local=safeStorage('local');
- const existing=session?.getItem(ATTR_KEY);if(existing){try{return JSON.parse(existing) as CommerceAttribution}catch{}}
- const params=new URLSearchParams(window.location.search);const ref=document.referrer||'';
- const source=params.get('utm_source')||params.has('fbclid')?'facebook':params.has('gclid')?'google':sourceFromReferrer(ref);
- const correctedSource=params.get('utm_source')||(params.has('fbclid')?'facebook':params.has('gclid')?'google':sourceFromReferrer(ref));
- const medium=params.get('utm_medium')||(params.has('fbclid')||params.has('gclid')?'paid':'direct'===correctedSource?'none':'referral');
- const sessionId=session?.getItem(SESSION_KEY)||uid();session?.setItem(SESSION_KEY,sessionId);
- const data:CommerceAttribution={source:correctedSource||source||'direct',medium,campaign:params.get('utm_campaign')||'',referrer:ref,landingPage:`${window.location.pathname}${window.location.search}`,sessionId,device:device()};
- session?.setItem(ATTR_KEY,JSON.stringify(data));
- if(!local?.getItem(ATTR_KEY))local?.setItem(ATTR_KEY,JSON.stringify(data));
- return data;
+  if(isThemeEditorCommercePreview())return{source:'theme-editor',medium:'preview',campaign:'',referrer:'',landingPage:`${window.location.pathname}${window.location.search}`,sessionId:'theme-preview',device:device()};
+  const session=safeStorage('session');const local=safeStorage('local');
+  const params=new URLSearchParams(window.location.search);
+  const hasCampaignSignal=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid'].some(key=>params.has(key));
+  const existing=session?.getItem(ATTR_KEY);if(existing&&!hasCampaignSignal){try{return JSON.parse(existing) as CommerceAttribution}catch{/* Rebuild malformed session attribution below. */}}
+  const ref=document.referrer||'';
+  const paidClick=params.has('fbclid')||params.has('gclid');
+  const source=params.get('utm_source')||(params.has('fbclid')?'facebook':params.has('gclid')?'google':sourceFromReferrer(ref));
+  const medium=params.get('utm_medium')||(paidClick?'paid':source==='direct'?'none':'referral');
+  const sessionId=session?.getItem(SESSION_KEY)||uid();session?.setItem(SESSION_KEY,sessionId);
+  const data:CommerceAttribution={
+    source:source||'direct',medium,campaign:params.get('utm_campaign')||'',content:params.get('utm_content')||'',term:params.get('utm_term')||'',
+    referrer:ref,landingPage:`${window.location.pathname}${window.location.search}`,sessionId,device:device(),
+  };
+  session?.setItem(ATTR_KEY,JSON.stringify(data));
+  if(!local?.getItem(ATTR_KEY))local?.setItem(ATTR_KEY,JSON.stringify(data));
+  return data;
 }
-export function readCommerceEvents():CommerceEvent[]{try{const local=safeStorage('local');const raw=local?.getItem(KEY)||local?.getItem(LEGACY_KEY)||'[]';const parsed=JSON.parse(raw) as Array<Partial<CommerceEvent>>;return parsed.map(item=>({...item,attribution:item.attribution||captureCommerceAttribution(),path:item.path||'/'} as CommerceEvent))}catch{return[]}}
+
+let cachedRaw:string|null=null;
+let cachedEvents:CommerceEvent[]|null=null;
+const normalizeStoredEvents=(raw:string):CommerceEvent[]=>{
+  try{
+    const parsed=JSON.parse(raw) as Array<Partial<CommerceEvent>>;
+    if(!Array.isArray(parsed))return[];
+    return parsed.slice(0,LOCAL_EVENT_LIMIT).filter(item=>Boolean(item?.id&&item?.name&&item?.createdAt)).map(item=>({
+      ...item,
+      path:item.path||'/',
+      attribution:item.attribution||captureCommerceAttribution(),
+    } as CommerceEvent));
+  }catch{return[]}
+};
+
+export function readCommerceEvents():CommerceEvent[]{
+  const local=safeStorage('local');
+  const raw=local?.getItem(KEY)||local?.getItem(LEGACY_KEY)||'[]';
+  if(cachedEvents&&cachedRaw===raw)return cachedEvents;
+  cachedRaw=raw;
+  cachedEvents=normalizeStoredEvents(raw);
+  return cachedEvents;
+}
+
+let remoteQueue:CommerceEvent[]=[];
+let remoteTimer:number|undefined;
+let lifecycleBound=false;
+const postRemoteBatch=(events:CommerceEvent[],beacon=false)=>{
+  if(!events.length||typeof window==='undefined'||!/^https?:$/.test(window.location.protocol))return;
+  const body=JSON.stringify({events});
+  if(beacon&&navigator.sendBeacon){
+    navigator.sendBeacon('/api/analytics/events',new Blob([body],{type:'application/json'}));
+    return;
+  }
+  void fetch('/api/analytics/events',{method:'POST',headers:{'Content-Type':'application/json'},body,credentials:'same-origin',keepalive:true}).catch(()=>undefined);
+};
+const flushRemoteQueue=(beacon=false)=>{
+  if(remoteTimer!==undefined){window.clearTimeout(remoteTimer);remoteTimer=undefined}
+  const batch=remoteQueue.splice(0,REMOTE_BATCH_LIMIT);
+  postRemoteBatch(batch,beacon);
+  if(remoteQueue.length&&!beacon)remoteTimer=window.setTimeout(()=>flushRemoteQueue(),900);
+};
+const queueRemoteEvent=(event:CommerceEvent)=>{
+  remoteQueue.push(event);
+  if(!lifecycleBound){
+    lifecycleBound=true;
+    window.addEventListener('pagehide',()=>flushRemoteQueue(true));
+  }
+  if(event.name==='checkout_completed'||remoteQueue.length>=REMOTE_BATCH_LIMIT)flushRemoteQueue();
+  else if(remoteTimer===undefined)remoteTimer=window.setTimeout(()=>flushRemoteQueue(),1200);
+};
+
 export function trackCommerceEvent(name:CommerceEventName,payload:Omit<CommerceEvent,'id'|'name'|'createdAt'|'attribution'|'path'>={}){
- if(isThemeEditorCommercePreview())return undefined;
- const local=safeStorage('local');const attribution=captureCommerceAttribution();const path=`${window.location.pathname}${window.location.search}`;const current=readCommerceEvents();const latest=current[0];
- if(latest&&latest.name===name&&latest.path===path&&Date.now()-new Date(latest.createdAt).getTime()<700)return latest;
- const next:CommerceEvent={id:`evt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,name,createdAt:new Date().toISOString(),path,attribution:{...attribution,device:device()},...payload};
- const items=[next,...current].slice(0,2500);local?.setItem(KEY,JSON.stringify(items));window.dispatchEvent(new CustomEvent('timeforge:commerce-event',{detail:next}));return next;
+  if(isThemeEditorCommercePreview())return undefined;
+  const local=safeStorage('local');const attribution=captureCommerceAttribution();const path=`${window.location.pathname}${window.location.search}`;const current=readCommerceEvents();const latest=current[0];
+  if(latest&&latest.name===name&&latest.path===path&&Date.now()-new Date(latest.createdAt).getTime()<700)return latest;
+  const next:CommerceEvent={id:`evt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,name,createdAt:new Date().toISOString(),path,attribution:{...attribution,device:device()},...payload};
+  const items=[next,...current].slice(0,LOCAL_EVENT_LIMIT);
+  const serialized=JSON.stringify(items);
+  try{local?.setItem(KEY,serialized)}catch{/* Analytics must never block storefront actions when storage is full. */}
+  cachedRaw=serialized;cachedEvents=items;
+  window.dispatchEvent(new CustomEvent('timeforge:commerce-event',{detail:next}));
+  queueRemoteEvent(next);
+  return next;
 }
+
+const dateKey=(date:Date)=>date.toISOString().slice(0,10);
+export async function readRemoteCommerceEvents(days=7):Promise<CommerceEvent[]>{
+  const safeDays=Math.max(1,Math.min(31,Math.round(days)));
+  const{firebaseClient}=await import('./firebase');
+  if(!firebaseClient.enabled)return readCommerceEvents();
+  const keys=Array.from({length:safeDays},(_,index)=>dateKey(new Date(Date.now()-index*86400000)));
+  const results=await Promise.allSettled(keys.map(key=>firebaseClient.read<Record<string,CommerceEvent>>(`timeforge/analyticsEvents/${key}`)));
+  if(!results.some(result=>result.status==='fulfilled'))throw(results[0] as PromiseRejectedResult)?.reason||new Error('Không thể đọc analytics từ Firebase.');
+  const merged=new Map<string,CommerceEvent>();
+  results.forEach(result=>{if(result.status!=='fulfilled'||!result.value)return;Object.values(result.value).forEach(event=>{if(event?.id&&event?.name)merged.set(event.id,event)})});
+  const cutoff=Date.now()-safeDays*86400000;
+  readCommerceEvents().filter(event=>new Date(event.createdAt).getTime()>=cutoff).forEach(event=>merged.set(event.id,event));
+  return [...merged.values()].sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+}
+
+if(typeof window!=='undefined')window.addEventListener('storage',(event)=>{if(event.key===KEY||event.key===LEGACY_KEY){cachedRaw=null;cachedEvents=null}});

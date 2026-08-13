@@ -3,7 +3,7 @@ import {useEffect,useLayoutEffect,useMemo,useState,type ComponentType} from 'rea
 import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
   Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,History,Link2,
-  BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Menu,PackageSearch,Plus,
+  BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Megaphone,Menu,PackageSearch,Plus,
   PanelLeftClose,PanelLeftOpen,RotateCcw,Rows3,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,
 } from 'lucide-react';
 import {toast as sonnerToast} from 'sonner';
@@ -58,6 +58,7 @@ const adminRoutePrefetchers:Record<string,()=>Promise<unknown>>={
   customers:()=>import('./admin-operations-v10'),
   'customer-segments':()=>import('./admin-sprint11'),
   analytics:()=>import('./analytics-v15'),
+  marketing:()=>import('./meta-ads-v57'),
   discounts:()=>import('./admin-operations-v10'),
   returns:()=>import('./returns-v13'),
   blogs:()=>import('./blog-v18'),
@@ -88,6 +89,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/customers':{title:'Khách hàng',eyebrow:'Khách hàng',description:'Hồ sơ, lịch sử mua và giá trị vòng đời khách hàng.'},
   '/admin/customer-segments':{title:'Phân khúc khách hàng',eyebrow:'Khách hàng',description:'Tạo nhóm động phục vụ chăm sóc và marketing.'},
   '/admin/analytics':{title:'Phân tích',eyebrow:'Báo cáo',description:'Doanh thu, chuyển đổi và nguồn tạo đơn hàng.'},
+  '/admin/marketing/meta':{title:'Meta Ads',eyebrow:'Marketing',description:'Quản lý Pixel, UTM, feed sản phẩm và chất lượng tín hiệu quảng cáo.'},
   '/admin/discounts':{title:'Mã giảm giá',eyebrow:'Marketing',description:'Thiết lập ưu đãi, điều kiện và thời gian hiệu lực.'},
   '/admin/blogs':{title:'Bài viết',eyebrow:'Nội dung',description:'Tạo và quản lý nội dung cho TimeForge Journal.'},
   '/admin/pages':{title:'Trang nội dung',eyebrow:'Nội dung',description:'Biên tập trang Giới thiệu, Bảo hành, Giao hàng và Đổi trả trên website khách.'},
@@ -146,6 +148,7 @@ export function AdminLayoutV16(){
     ]},
     {label:'Marketing & nội dung',items:[
       {to:'/admin/discounts',label:'Mã giảm giá',icon:BadgePercent},
+      {to:'/admin/marketing/meta',label:'Meta Ads',icon:Megaphone},
       {to:'/admin/blogs',label:'Bài viết',icon:BookOpen},
       {to:'/admin/pages',label:'Trang nội dung',icon:FileText},
       {to:'/admin/analytics',label:'Phân tích',icon:BarChart3},

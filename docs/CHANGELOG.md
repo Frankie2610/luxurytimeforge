@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.57.0 — Meta Ads command center, conversion signals and customer decision tools
+
+- Added a permission-aware Meta Ads Admin workspace with Pixel setup/health, UTM URL builder, Meta Catalog CSV and seven-day campaign attribution.
+- Added first-party, server-validated commerce event batching and mapped PageView, ViewContent, AddToCart, InitiateCheckout and Purchase to Meta standard events.
+- Separated marketing configuration from payment/integration settings so marketing managers can save it with least-privilege Firebase Rules.
+- Added exactly two customer tools: persistent three-product comparison and a four-step watch finder driven by the live catalog.
+- Added dedicated tablet/mobile layouts, keyboard focus states and reduced-motion behavior for both customer tools and the Meta workspace.
+- Added Shopify CDN responsive image variants alongside Cloudinary delivery, reduced the local analytics cap and cached repeated event reads.
+- Kept the new customer and Admin pages route-lazy and added V0.57.0 regression coverage.
+- Fixed legacy regression runners for TypeScript 7 command-line behavior and repaired the V0.55 demo-login assertion.
+
 ## 0.56.7 — Footer logo correction and targeted performance pass
 
 - Restored the footer logo while keeping only one editable shop-name line.

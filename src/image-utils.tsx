@@ -38,22 +38,46 @@ export function productImage(product: {images?: string[]; rawShopify?: Record<st
 export function optimizedImage(url: string, width = 900, height?: number, crop: 'fill' | 'fit' | 'limit' = 'fill') {
   const source = String(url || '').trim();
   if (!source || source.startsWith('data:') || source.startsWith('blob:')) return source;
+  const safeWidth = Math.max(80, Math.min(2400, Math.round(width || 900)));
+  const safeHeight = height ? Math.max(80, Math.min(2400, Math.round(height))) : 0;
   // Cloudinary originals can be several megabytes. Insert a deterministic,
   // cacheable transformation while leaving every non-Cloudinary URL untouched.
   const marker = '/image/upload/';
   if (/^https?:\/\/res\.cloudinary\.com\//i.test(source) && source.includes(marker)) {
     const [prefix, suffix] = source.split(marker, 2);
-    const safeWidth = Math.max(80, Math.min(2400, Math.round(width || 900)));
-    const safeHeight = height ? Math.max(80, Math.min(2400, Math.round(height))) : 0;
     const resize = [`c_${crop}`, `w_${safeWidth}`, safeHeight ? `h_${safeHeight}` : '', crop === 'fill' ? 'g_auto' : ''].filter(Boolean).join(',');
     return `${prefix}${marker}f_auto,q_auto:eco,dpr_auto,${resize}/${suffix}`;
+  }
+  // Catalog imports commonly keep Shopify CDN originals (often 3000–5000px).
+  // Shopify accepts a width query and returns a cached derivative, which keeps
+  // the storefront crisp without downloading the master image on mobile.
+  try {
+    const parsed = new URL(source);
+    const shopifyHost = parsed.hostname === 'cdn.shopify.com' || parsed.hostname.endsWith('.myshopify.com');
+    if (shopifyHost && (/\/s\/files\//.test(parsed.pathname) || /\/cdn\/shop\//.test(parsed.pathname))) {
+      parsed.searchParams.set('width', String(safeWidth));
+      return parsed.toString();
+    }
+  } catch {
+    // Keep malformed or relative legacy URLs unchanged so the fallback image
+    // path can handle them consistently.
   }
   return source;
 }
 
 export function optimizedImageSrcSet(url: string, widths: number[], aspectRatio?: number, crop: 'fill' | 'fit' | 'limit' = 'fill') {
   const source = String(url || '').trim();
-  if (!/^https?:\/\/res\.cloudinary\.com\//i.test(source) || !source.includes('/image/upload/')) return undefined;
+  let transformable = /^https?:\/\/res\.cloudinary\.com\//i.test(source) && source.includes('/image/upload/');
+  if (!transformable) {
+    try {
+      const parsed = new URL(source);
+      transformable = (parsed.hostname === 'cdn.shopify.com' || parsed.hostname.endsWith('.myshopify.com'))
+        && (/\/s\/files\//.test(parsed.pathname) || /\/cdn\/shop\//.test(parsed.pathname));
+    } catch {
+      transformable = false;
+    }
+  }
+  if (!transformable) return undefined;
   const candidates = [...new Set(widths.map((width) => Math.max(80, Math.min(2400, Math.round(width)))))]
     .sort((a, b) => a - b);
   return candidates.map((width) => {
@@ -73,6 +97,9 @@ export function SmartImage({src = '', alt = '', className = '', width, height, p
   const numericWidth = typeof width === 'number' ? width : 1000;
   const numericHeight = typeof height === 'number' ? height : undefined;
   const finalSource = optimizedImage(displayedSource, numericWidth, numericHeight, numericHeight ? 'fit' : 'limit');
+  const responsiveWidths = [240, 360, 480, 720, numericWidth, Math.round(numericWidth * 1.5), numericWidth * 2]
+    .filter((value) => value <= 2400);
+  const automaticSrcSet = optimizedImageSrcSet(displayedSource, responsiveWidths, numericHeight && numericWidth ? numericWidth / numericHeight : undefined, numericHeight ? 'fit' : 'limit');
 
   // Chỉ reset khi URL thật sự thay đổi. Không reset sau onLoad của ảnh cache,
   // tránh skeleton bị treo vĩnh viễn trên Chrome/Safari.
@@ -131,6 +158,8 @@ export function SmartImage({src = '', alt = '', className = '', width, height, p
       key={finalSource}
       ref={imageRef}
       src={finalSource}
+      srcSet={props.srcSet || automaticSrcSet}
+      sizes={props.sizes || (automaticSrcSet ? '(max-width: 760px) 100vw, 50vw' : undefined)}
       alt={alt}
       width={width}
       height={height}

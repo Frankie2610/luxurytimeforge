@@ -20,7 +20,7 @@ export const routePermission=(pathname:string):Permission=>{
  if(pathname.startsWith('/admin/import-export'))return'imports.manage';
  if(pathname.startsWith('/admin/blogs')||pathname.startsWith('/admin/pages'))return'content.manage';
  if(pathname.startsWith('/admin/analytics'))return'analytics.view';
- if(pathname.startsWith('/admin/discounts'))return'marketing.manage';
+ if(pathname.startsWith('/admin/discounts')||pathname.startsWith('/admin/marketing'))return'marketing.manage';
  if(pathname.startsWith('/admin/customers')||pathname.startsWith('/admin/customer-segments'))return'customers.view';
  if(pathname.startsWith('/admin/products')||pathname.startsWith('/admin/collections')||pathname.startsWith('/admin/product-groups')||pathname.startsWith('/admin/inventory'))return'products.view';
  if(pathname.startsWith('/admin/orders')||pathname.startsWith('/admin/draft-orders')||pathname.startsWith('/admin/returns'))return'orders.view';

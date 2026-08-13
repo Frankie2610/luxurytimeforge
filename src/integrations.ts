@@ -1,7 +1,8 @@
 import {firebaseClient} from './firebase';
-import type {BankAccount, CheckoutPayload, IntegrationSettings, Order} from './types';
+import type {BankAccount, CheckoutPayload, IntegrationSettings, MetaMarketingSettings, Order} from './types';
 
 export const INTEGRATION_KEY='tf.v15.integration-settings';
+export const MARKETING_KEY='tf.v57.marketing-settings';
 
 const defaultBankAccount:BankAccount={
   id:'bank_vcb_default',
@@ -35,6 +36,14 @@ export const defaultIntegrationSettings:IntegrationSettings={
     freeShippingThreshold:5000000,
   },
   customerAccount:{sessionMinutes:30,requireOrderChallenge:true},
+};
+
+export const defaultMetaMarketingSettings:MetaMarketingSettings={
+  enabled:false,
+  pixelId:'',
+  siteUrl:import.meta.env.VITE_PUBLIC_SITE_URL||'',
+  defaultSource:'facebook',
+  defaultMedium:'paid_social',
 };
 
 function cleanBankAccounts(payment:Partial<IntegrationSettings['payment']>|undefined):BankAccount[]{
@@ -83,6 +92,43 @@ export function normalizeIntegrationSettings(input:Partial<IntegrationSettings>|
     shipping:{...defaultIntegrationSettings.shipping,...(input?.shipping||{})},
     customerAccount:{...defaultIntegrationSettings.customerAccount,...(input?.customerAccount||{})},
   };
+}
+
+export function normalizeMarketingSettings(input:Partial<MetaMarketingSettings>|null|undefined):MetaMarketingSettings{
+  return{
+    ...defaultMetaMarketingSettings,
+    ...(input||{}),
+    enabled:Boolean(input?.enabled),
+    pixelId:String(input?.pixelId||'').replace(/\D/g,'').slice(0,24),
+    siteUrl:String(input?.siteUrl||defaultMetaMarketingSettings.siteUrl||'').trim(),
+    defaultSource:String(input?.defaultSource||'facebook').trim().toLowerCase(),
+    defaultMedium:String(input?.defaultMedium||'paid_social').trim().toLowerCase(),
+  };
+}
+
+export function readMarketingSettings():MetaMarketingSettings{
+  try{
+    const raw=localStorage.getItem(MARKETING_KEY);
+    return normalizeMarketingSettings(raw?JSON.parse(raw) as Partial<MetaMarketingSettings>:null);
+  }catch{return structuredClone(defaultMetaMarketingSettings)}
+}
+
+export async function loadMarketingSettings(){
+  const local=readMarketingSettings();
+  if(!firebaseClient.enabled)return local;
+  try{
+    const remote=await firebaseClient.read<MetaMarketingSettings>('timeforge/settings/marketing');
+    const normalized=normalizeMarketingSettings(remote||local);
+    localStorage.setItem(MARKETING_KEY,JSON.stringify(normalized));
+    return normalized;
+  }catch{return local}
+}
+
+export async function saveMarketingSettings(settings:MetaMarketingSettings){
+  const normalized=normalizeMarketingSettings(settings);
+  localStorage.setItem(MARKETING_KEY,JSON.stringify(normalized));
+  if(firebaseClient.enabled)await firebaseClient.write('timeforge/settings/marketing',normalized);
+  return normalized;
 }
 
 export function readIntegrationSettings():IntegrationSettings{
