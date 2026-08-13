@@ -974,7 +974,7 @@
 .tf-theme-preview-document-v26:not(.tf-theme-preview-outlines-v50)
   [data-theme-section-id]:not([data-theme-selected-v26="true"])::after { opacity: 0; }
 
-@media (max-width: 379px) {
+@media (max-width: 365px) {
   .tf-storefront-v4912 .lux-product-grid { grid-template-columns: minmax(0, 1fr); }
 }
 

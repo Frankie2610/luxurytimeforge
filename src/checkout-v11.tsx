@@ -10,7 +10,7 @@ import {money} from './utils';
 import {trackCommerceEvent} from './commerce-events';
 import {toast} from 'sonner';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
-import {Button} from './ui';
+import {StorefrontButton as Button} from './storefront-ui-v575';
 import {sectionLabels} from './theme';
 import {resolveStoreLogo,resolveStoreName} from './store-profile';
 import {useWishlist} from './wishlist';
@@ -27,6 +27,7 @@ import './v515-order-payment.css';
 import './v521-ui-polish.css';
 import './v562-cart-performance.css';
 import './v573-commerce-polish.css';
+import './v575-commerce-polish.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -93,6 +94,27 @@ function PaymentBenefitsV4927() {
   </section>;
 }
 
+function PurchaseConfidenceV575({surface}: {surface: 'cart'|'checkout'}) {
+  const [open, setOpen] = useState(false);
+  const detailsId = `tf575-purchase-details-${surface}`;
+  return <section className={`tf575-purchase-confidence is-${surface}`} aria-label="Quyền lợi mua hàng">
+    <div className="tf575-purchase-pills">
+      <span><ShieldCheck/>Chính hãng</span>
+      <span><PackageCheck/>Đóng gói bảo hiểm</span>
+      <span><Truck/>Giao hàng 1–4 ngày</span>
+    </div>
+    <button type="button" className="tf575-purchase-toggle" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen((value) => !value)}>
+      <span><b>Quyền lợi khi mua tại TimeForge</b><small>{open ? 'Thu gọn thông tin' : 'Xem bảo hành, giao hàng và hỗ trợ sau mua'}</small></span>
+      <ChevronDown className={open ? 'is-open' : ''}/>
+    </button>
+    {open && <div id={detailsId} className="tf575-purchase-details">
+      <article><ShieldCheck/><span><b>Bảo hành rõ ràng</b><small>Áp dụng 2 năm tại Việt Nam hoặc theo bảo hành quốc tế đi kèm sản phẩm.</small></span></article>
+      <article><PackageCheck/><span><b>Giao nhận được bảo vệ</b><small>Sản phẩm được đóng gói an toàn và hỗ trợ theo dõi trong quá trình vận chuyển.</small></span></article>
+      <article><LockKeyhole/><span><b>Hỗ trợ sau mua</b><small>TimeForge tiếp nhận yêu cầu bảo hành, đổi trả theo điều kiện của từng sản phẩm.</small></span></article>
+    </div>}
+  </section>;
+}
+
 function ShippingProgress({subtotal}: {subtotal: number}) {
   const target = Math.max(1, readIntegrationSettings().shipping.freeShippingThreshold || 1000000);
   const remaining = Math.max(0, target - subtotal);
@@ -149,6 +171,7 @@ export function CartPageV11() {
       </header>
 
       {showShippingEstimate && <ShippingProgress subtotal={subtotal}/>} 
+      <PurchaseConfidenceV575 surface="cart"/>
 
       <div className="tf4912-cart-layout">
         <main className="tf4912-cart-main">
@@ -294,16 +317,12 @@ export function CheckoutPageV11() {
   const itemCount = lines.reduce((sum, item) => sum + item.line.quantity, 0);
 
   return <div className="tf4912-checkout-page">
-    <header className="tf4912-checkout-header">
-      <LuxuryCheckoutLogo/>
-      <nav aria-label="Tiến trình thanh toán"><span className="is-active"><i>1</i>Thông tin</span><b/><span><i>2</i>Xác nhận</span></nav>
-      <Link to="/cart" className="tf4912-checkout-cart-link"><ShoppingBag/><span>{itemCount}</span></Link>
-    </header>
-
     <button type="button" className="tf4912-mobile-summary-toggle" onClick={() => setSummaryOpen((value) => !value)} aria-expanded={summaryOpen}>
       <span><ShoppingBag/>Tóm tắt đơn hàng</span><b>{money(total)}</b><ChevronDown className={summaryOpen ? 'is-open' : ''}/>
     </button>
-    {summaryOpen && <button type="button" className="tf4920-summary-backdrop" aria-label="Đóng tóm tắt đơn hàng" onClick={() => setSummaryOpen(false)}/>}
+    {summaryOpen && <button type="button" className="tf4920-summary-backdrop" aria-label="Đóng tóm tắt đơn hàng" onClick={() => setSummaryOpen(false)}/>} 
+
+    <div className="tf575-checkout-confidence-wrap"><PurchaseConfidenceV575 surface="checkout"/></div>
 
     <form className="tf4912-checkout-layout" onSubmit={submit}>
       <main className="tf4912-checkout-main">

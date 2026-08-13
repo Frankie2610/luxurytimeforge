@@ -119,15 +119,6 @@
   font-size: 9px;
 }
 
-/* Checkout owns its own compact header; avoid rendering two navigation shells. */
-.tf-storefront-v4912.is-checkout-route > :is(
-  .lux-announcement,
-  .lux-header,
-  .tf-brand-rail-v39
-) {
-  display: none !important;
-}
-
 .tf-storefront-v4912.is-checkout-route > main {
   min-height: 0;
 }

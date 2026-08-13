@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.57.5 — Shared checkout header, responsive reliability and lighter storefront UI
+
+- Replaced the checkout-only header with the exact storefront Header used on `/cart`, while keeping checkout-only distractions such as the utility dock, compare dock and popup layers disabled.
+- Removed the historical checkout CSS rule that hid the storefront announcement, Header and brand rail; the checkout cart action now safely navigates to `/cart` instead of opening an unavailable drawer.
+- Added a final high-specificity 13px desktop navigation owner and made 366–520px an authoritative two-card product grid; one-column layout begins only at 365px.
+- Rebuilt the narrow About hero so the TimeForge story title, lead and CTA remain balanced and width-safe from 320px upward.
+- Added an expandable **Quyền lợi khi mua tại TimeForge** feature to both cart and checkout, with compact authenticity, protected-packing and delivery pills.
+- Polished buttons, cards, pills and focus states across the storefront, cart, checkout and article detail page; desktop article utility text is now at least 12px.
+- Replaced the storefront dependency on the shared Radix-heavy UI barrel with a small accessible button/dialog layer that preserves focus trap, Escape close, focus restore and scroll lock.
+- Reduced the storefront static JavaScript graph from **193.15 KiB** to **158.15 KiB gzip**, a reduction of **35.00 KiB / 18.1%**.
+- Added V0.57.5 regression coverage for header ownership, responsive breakpoints, About mobile safety, commerce features, journal readability and the lightweight UI boundary.
+
 ## 0.57.4 — 365px mobile cutoff, header polish and deferred Journal
 
 - Changed the customer product grid to keep two columns from 366px through 520px and switch to one column only at 365px or below.

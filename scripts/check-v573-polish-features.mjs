@@ -13,7 +13,7 @@ const commerceCss=read('src/v573-commerce-polish.css');
 const checks=[
   ['Cart can move an item to Wishlist',checkout.includes('tf573-save-later')&&checkout.includes('addToWishlist([productId])')],
   ['Checkout no longer imports framer-motion',!checkout.includes("from 'framer-motion'")],
-  ['Checkout renders one focused header',layout.includes('{!isCheckoutRoute && <LuxuryHeader')&&layout.includes('{!isCheckoutRoute && <StorefrontUtilityDock')],
+  ['Checkout shares the storefront header without duplicate checkout chrome',layout.includes('<LuxuryHeader openCart={requestCart} />')&&!layout.includes('{!isCheckoutRoute && <LuxuryHeader')&&layout.includes('{!isCheckoutRoute && <StorefrontUtilityDock')&&!checkout.includes('<header className="tf4912-checkout-header">')],
   ['Checkout logo supports Firebase aspect ratios',commerceCss.includes('.tf4912-checkout-logo>.tf-smart-image')&&commerceCss.includes('object-position:left center')],
   ['Blog reading assistant has progress and TOC',blog.includes('tf573-reading-progress')&&blog.includes('prepareArticleV573')&&blog.includes('Mục lục bài viết')],
   ['Customer Blog excludes Admin form dependencies',!blog.includes('react-hook-form')&&!blog.includes('@hookform/resolvers')&&app.includes("import('./admin-blogs-v18')")],

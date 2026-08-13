@@ -45,7 +45,7 @@ import {useCartActions, useCartState, useCommerce} from './context';
 import type {Collection, Product, ProductGroup, ProductGroupItem, Section, ThemeBlock} from './types';
 import {discount, money} from './utils';
 import {optimizedImage, optimizedImageSrcSet, productImage, SmartImage} from './image-utils';
-import {Accordion, Button, Dialog, DialogContent} from './ui';
+import {StorefrontButton as Button, StorefrontDialog as Dialog, StorefrontDialogContent as DialogContent} from './storefront-ui-v575';
 import {toast} from 'sonner';
 import {captureCommerceAttribution,trackCommerceEvent} from './commerce-events';
 import {readThemeExtrasV23, THEME_EXTRAS_EVENT, type ThemeExtrasV23} from './theme-extras-v23';
@@ -111,6 +111,7 @@ import './v572-storefront-core.css';
 import './v573-storefront-core.css';
 import './v4936-mobile-product-grid.css';
 import './v574-storefront-polish.css';
+import './v575-storefront-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -610,7 +611,7 @@ export function StoreLayoutV10() {
   const settings = theme.settings;
   const isCheckoutRoute = location.pathname === '/checkout';
   const showStandaloneCountdown = extras.showCountdown && !settings.showAnnouncement;
-  const requestCart = () => extras.cartDrawer ? setCartOpen(true) : navigate('/cart');
+  const requestCart = () => isCheckoutRoute ? navigate('/cart') : extras.cartDrawer ? setCartOpen(true) : navigate('/cart');
   return (
     <div
       className={`lux-store tf-storefront-v4912 motion-${settings.motion} ${previewMode ? 'tf-storefront-preview-v26' : ''} ${isCheckoutRoute ? 'is-checkout-route' : ''}`}
@@ -634,8 +635,8 @@ export function StoreLayoutV10() {
       } as React.CSSProperties}
     >
       {previewMode && <ThemePreviewBridgeV26 />}
-      {showStandaloneCountdown && !isCheckoutRoute && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
-      {!isCheckoutRoute && <LuxuryHeader openCart={requestCart} />}
+      {showStandaloneCountdown && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
+      <LuxuryHeader openCart={requestCart} />
       <main><div className={`tf-route-view-v4910 ${isCheckoutRoute ? 'is-checkout-route' : ''}`} key={location.pathname}><Outlet context={{openCart: requestCart}} /></div></main>
       {extras.footerVisible && !isCheckoutRoute && <LuxuryFooter />}
       {!isCheckoutRoute && <StorefrontUtilityDock />}

@@ -1,0 +1,138 @@
+/* V0.57.5 — cart / checkout cards, pills and action polish. */
+.tf575-purchase-confidence{
+  display:grid;
+  gap:9px;
+  margin-bottom:18px;
+  padding:11px;
+  border:1px solid #ddd7ce;
+  border-radius:17px;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 9px 28px rgba(43,34,26,.055);
+}
+.tf575-purchase-pills{display:flex;flex-wrap:wrap;gap:7px}
+.tf575-purchase-pills>span{
+  min-height:30px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:0 10px;
+  border:1px solid #dce6de;
+  border-radius:999px;
+  background:#f2f7f3;
+  color:#31543b;
+  font-size:9px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.tf575-purchase-pills>span:nth-child(2){border-color:#eadcbd;background:#fff8e9;color:#72521e}
+.tf575-purchase-pills>span:nth-child(3){border-color:#e5d7da;background:#fbf2f4;color:#712d3b}
+.tf575-purchase-pills svg{width:14px;height:14px;flex:0 0 14px}
+.tf575-purchase-toggle{
+  width:100%;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:8px 10px;
+  border:0;
+  border-radius:11px;
+  background:#f8f6f2;
+  color:#282a27;
+  text-align:left;
+}
+.tf575-purchase-toggle>span{min-width:0;display:grid;gap:2px}
+.tf575-purchase-toggle b{font-size:11px;font-weight:900}
+.tf575-purchase-toggle small{color:#74766f;font-size:8.5px;line-height:1.35}
+.tf575-purchase-toggle>svg{width:17px;height:17px;flex:0 0 17px;color:#6f2637;transition:transform .18s ease}
+.tf575-purchase-toggle>svg.is-open{transform:rotate(180deg)}
+.tf575-purchase-details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.tf575-purchase-details>article{
+  min-width:0;
+  display:grid;
+  grid-template-columns:30px minmax(0,1fr);
+  align-items:start;
+  gap:8px;
+  padding:10px;
+  border:1px solid #e4e0d9;
+  border-radius:12px;
+  background:#fff;
+}
+.tf575-purchase-details>article>svg{width:30px;height:30px;padding:7px;border-radius:9px;background:#edf4ef;color:#315c3e}
+.tf575-purchase-details>article>span{min-width:0;display:grid;gap:3px}
+.tf575-purchase-details b{font-size:9px;font-weight:900;line-height:1.25}
+.tf575-purchase-details small{color:#71746e;font-size:8px;line-height:1.42}
+.tf575-checkout-confidence-wrap{width:min(1240px,calc(100% - 32px));margin:22px auto -8px}
+.tf575-checkout-confidence-wrap .tf575-purchase-confidence{margin:0}
+
+/* Rounded cards and pills give the two commerce steps one coherent visual language. */
+:where(.tf4912-cart-route,.tf4912-checkout-page) :is(
+  .tf4912-cart-line,
+  .tf4912-gift-option,
+  .tf4912-cart-assurance article,
+  .tf4927-order-summary,
+  .tf4912-checkout-section,
+  .tf4912-checkout-summary,
+  .tf4927-payment-benefits article
+){border-color:#dfdad2;box-shadow:0 10px 30px rgba(43,34,26,.055)}
+.tf4912-cart-header>div>span,
+.tf4912-checkout-summary>header>span,
+.tf4927-summary-totals .is-discount span{border-radius:999px}
+
+:where(.tf4912-cart-route,.tf4912-checkout-page) :is(
+  .tf4927-coupon-apply,
+  .tf4927-checkout-cta,
+  .tf4912-place-order,
+  .tf4912-mobile-place-order,
+  .tf4912-empty-cart>a
+){
+  border-radius:12px!important;
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease,background-color .18s ease;
+}
+.tf4927-checkout-cta,.tf4912-place-order,.tf4912-mobile-place-order{
+  box-shadow:0 13px 28px rgba(105,19,33,.2)!important;
+}
+:where(.tf4912-cart-route,.tf4912-checkout-page) :is(button,a):focus-visible{outline:3px solid rgba(126,40,55,.2);outline-offset:3px}
+
+@media(hover:hover) and (pointer:fine){
+  :where(.tf4912-cart-route,.tf4912-checkout-page) :is(.tf4927-checkout-cta,.tf4912-place-order,.tf4912-mobile-place-order):hover{transform:translateY(-2px);box-shadow:0 17px 34px rgba(105,19,33,.25)!important}
+  .tf575-purchase-toggle:hover{background:#f2eee8}
+}
+
+@media(min-width:681px){
+  .tf4912-cart-assurance b,.tf4912-cart-assurance small,
+  .tf4912-checkout-trust b,.tf4912-checkout-trust small{font-size:9px!important}
+}
+
+@media(max-width:680px){
+  .tf575-purchase-confidence{gap:8px;margin-bottom:14px;padding:9px;border-radius:14px}
+  .tf575-purchase-pills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+  .tf575-purchase-pills>span{min-width:0;min-height:42px;justify-content:center;align-content:center;flex-wrap:wrap;gap:4px;padding:5px 4px;font-size:7.5px;line-height:1.15;text-align:center;white-space:normal}
+  .tf575-purchase-pills svg{width:13px;height:13px;flex-basis:13px}
+  .tf575-purchase-toggle{min-height:46px;padding:8px 9px}
+  .tf575-purchase-toggle b{font-size:9.5px}.tf575-purchase-toggle small{font-size:7.5px}
+  .tf575-purchase-details{grid-template-columns:1fr;gap:6px}
+  .tf575-purchase-details>article{grid-template-columns:29px minmax(0,1fr);padding:9px}
+  .tf575-purchase-details b{font-size:9px}.tf575-purchase-details small{font-size:8px}
+  .tf575-checkout-confidence-wrap{width:calc(100% - 20px);margin:12px auto -5px}
+
+  .tf4912-cart-header>.tf-button{min-height:38px!important;padding-inline:10px!important;border-radius:11px!important;font-size:8px!important}
+  .tf4912-shipping-progress>div{font-size:9px!important;line-height:1.35}
+  .tf4912-gift-option b{font-size:9.5px!important}.tf4912-gift-option small{font-size:7.5px!important}
+  .tf4912-cart-assurance b{font-size:8px!important}.tf4912-cart-assurance small{font-size:7px!important}
+  .tf4927-checkout-cta{min-height:52px!important}
+  .tf4927-coupon-apply{min-height:42px!important;padding-inline:12px!important}
+  .tf4912-mobile-place-order{min-height:52px!important;font-size:10px!important}
+  .tf4912-checkout-section>header{padding:15px!important}
+  .tf4912-checkout-section header p{font-size:9px!important}
+  .tf4912-checkout-trust b{font-size:7.5px!important}.tf4912-checkout-trust small{font-size:6.8px!important}
+}
+
+@media(max-width:365px){
+  .tf575-purchase-pills>span{font-size:7px}
+  .tf575-purchase-toggle small{max-width:220px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  :where(.tf4912-cart-route,.tf4912-checkout-page) :is(a,button),.tf575-purchase-toggle>svg{transition:none!important}
+}
