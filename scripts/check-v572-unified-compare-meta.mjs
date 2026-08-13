@@ -17,7 +17,7 @@ const toolsCss=read('src/v572-storefront-tools.css');
 const metaCss=read('src/v572-meta-admin.css');
 
 const checks=[
-  ['package version is 0.57.2',packageJson.version==='0.57.2'],
+  ['package version preserves the V0.57.2 baseline',/^0\.57\.(?:[2-9]|[1-9]\d+)$/.test(packageJson.version)],
   ['V0.57.2 regression command is registered',packageJson.scripts?.['v572:check']==='node scripts/check-v572-unified-compare-meta.mjs'],
   ['Wishlist uses the shared comparison store without local modal state',wishlist.includes('useCompareV57')&&!wishlist.includes('compareIds')&&!wishlist.includes('compareOpen')],
   ['only the shared comparison storage key remains',compareStore.includes("const KEY='tf.v57.compare-products'")&&!wishlist.includes('MAX_COMPARE_ITEMS')],

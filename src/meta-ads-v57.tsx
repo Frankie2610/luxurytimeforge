@@ -11,6 +11,7 @@ import {money} from './utils';
 import './v570-meta-ads.css';
 import './v571-meta-admin.css';
 import './v572-meta-admin.css';
+import './v573-meta-admin.css';
 
 const eventDefinitions:Array<{name:CommerceEventName;label:string;meta:string}>=[
   {name:'page_view',label:'PageView',meta:'Lượt xem trang'},
@@ -33,6 +34,8 @@ const isMetaAttributed=(event:CommerceEvent)=>{
 const dateTime=(value:string)=>new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value));
 const catalogDescription=(product:Product)=>String(product.descriptionText||product.descriptionHtml.replace(/<[^>]+>/g,' ')||product.title).replace(/\s+/g,' ').trim().slice(0,5000);
 const publicAsset=(root:string,value:string)=>{try{const url=new URL(value,root);return['http:','https:'].includes(url.protocol)?url.toString():''}catch{return''}};
+type CatalogIssueFilterV573='all'|'media'|'identity'|'pricing'|'content'|'stock';
+const catalogIssueGroupV573=(kind:string):CatalogIssueFilterV573=>kind==='image'?'media':['sku','duplicate','handle'].includes(kind)?'identity':kind==='price'?'pricing':kind==='description'?'content':'stock';
 
 export function MetaAdsV57(){
   const{products}=useCommerce();
@@ -48,6 +51,9 @@ export function MetaAdsV57(){
   const[eventFilter,setEventFilter]=useState<'all'|CommerceEventName>('all');
   const[eventQuery,setEventQuery]=useState('');
   const[eventLimit,setEventLimit]=useState(5);
+  const[catalogOpen,setCatalogOpen]=useState(false);
+  const[catalogFilter,setCatalogFilter]=useState<CatalogIssueFilterV573>('all');
+  const[catalogQuery,setCatalogQuery]=useState('');
   const eventRequestRef=useRef(0);
   const[runtimeTick,setRuntimeTick]=useState(0);
   const[path,setPath]=useState('/collections');
@@ -79,6 +85,17 @@ export function MetaAdsV57(){
     const rate=index===0?'Điểm vào':previous?`${(total/previous*100).toFixed(1)}% từ bước trước`:'Chưa đủ dữ liệu';
     return{...item,total,rate};
   }),[counts]);
+  const funnelInsight=useMemo(()=>{
+    const candidates=eventDefinitions.slice(1).map((item,index)=>{
+      const previous=counts[eventDefinitions[index].name]||0;
+      const total=counts[item.name]||0;
+      return previous?{from:eventDefinitions[index].label,to:item.label,rate:total/previous,drop:Math.max(0,previous-total),step:index+1}:null;
+    }).filter((item):item is NonNullable<typeof item>=>Boolean(item));
+    const weakest=candidates.sort((a,b)=>a.rate-b.rate)[0];
+    if(!weakest)return null;
+    const actions=['Kiểm tra tốc độ landing page và liên kết sản phẩm.','Làm rõ CTA, giá và lý do mua trên trang sản phẩm.','Giảm ma sát ở giỏ hàng và giữ nút thanh toán dễ thấy.','Rà phương thức thanh toán, lỗi form và tín hiệu tin cậy.'];
+    return{...weakest,action:actions[Math.max(0,weakest.step-1)]};
+  },[counts]);
   const purchases=metaEvents.filter(event=>event.name==='checkout_completed').length;
   const revenue=metaEvents.filter(event=>event.name==='checkout_completed').reduce((sum,event)=>sum+Number(event.value||0),0);
   const metaSessions=new Set(metaEvents.map(sessionKey)).size;
@@ -144,6 +161,12 @@ export function MetaAdsV57(){
   const catalogIssueProducts=new Set(catalogIssues.map(item=>item.productId)).size;
   const missingCatalogImages=new Set(catalogIssues.filter(item=>item.kind==='image').map(item=>item.productId)).size;
   const outOfStockProducts=new Set(catalogIssues.filter(item=>item.kind==='stock').map(item=>item.productId)).size;
+  const normalizedCatalogQuery=catalogQuery.trim().toLocaleLowerCase('vi');
+  const filteredCatalogIssues=useMemo(()=>catalogIssues.filter(item=>{
+    if(catalogFilter!=='all'&&catalogIssueGroupV573(item.kind)!==catalogFilter)return false;
+    if(!normalizedCatalogQuery)return true;
+    return[item.sku,item.title,item.label].some(value=>String(value||'').toLocaleLowerCase('vi').includes(normalizedCatalogQuery));
+  }),[catalogFilter,catalogIssues,normalizedCatalogQuery]);
   const exportCatalog=()=>{
     const root=siteRoot(settings.siteUrl);
     const headers=['id','title','description','availability','condition','price','sale_price','link','image_link','brand','google_product_category'];
@@ -161,9 +184,9 @@ export function MetaAdsV57(){
   };
   const exportCatalogIssues=()=>{
     const headers=['product_id','sku','title','issue_type','issue'];
-    const rows=catalogIssues.map(item=>[item.productId,item.sku,item.title,item.kind,item.label]);
+    const rows=filteredCatalogIssues.map(item=>[item.productId,item.sku,item.title,item.kind,item.label]);
     download(`timeforge-catalog-health-${new Date().toISOString().slice(0,10)}.csv`,`\uFEFF${[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n')}`,'text/csv;charset=utf-8');
-    toast.success(`Đã xuất ${rows.length} lỗi/cảnh báo catalog`);
+    toast.success(`Đã xuất ${rows.length} lỗi/cảnh báo đang lọc`);
   };
   const normalizedQuery=eventQuery.trim().toLocaleLowerCase('vi');
   const filteredEvents=useMemo(()=>scopedEvents.filter(event=>{
@@ -209,6 +232,7 @@ export function MetaAdsV57(){
     <section className="tf57-meta-card tf572-funnel-card">
       <header><span><Funnel/></span><div><small>CONVERSION FUNNEL · {eventScope==='meta'?'META':'TẤT CẢ'}</small><h2>Phễu chuyển đổi {rangeLabel}</h2><p>Đọc nhanh lượng người đi từ xem trang đến hoàn tất đơn, cùng tỷ lệ giữ lại ở từng bước.</p></div></header>
       <div className="tf572-conversion-funnel">{funnelSteps.map((step,index)=><article key={step.name}><div><span>{index+1}</span><small>{step.meta}</small></div><b>{step.label}</b><strong>{step.total}</strong><em>{step.rate}</em></article>)}</div>
+      {funnelInsight&&<div className="tf573-funnel-insight"><TriangleAlert/><span><small>ĐIỂM CẦN ƯU TIÊN</small><b>{funnelInsight.from} → {funnelInsight.to}: giữ lại {(funnelInsight.rate*100).toFixed(1)}%</b><p>{funnelInsight.drop?`Giảm ${funnelInsight.drop} event. `:''}{funnelInsight.action}</p></span></div>}
     </section>
 
     <section className="tf57-meta-card tf571-event-explorer">
@@ -219,7 +243,16 @@ export function MetaAdsV57(){
 
     <section className="tf57-meta-card tf57-utm-builder"><header><span><Link2/></span><div><small>CAMPAIGN URL BUILDER</small><h2>Tạo link UTM nhất quán</h2><p>Dùng link này cho từng mẫu quảng cáo để báo cáo không bị gộp sai nguồn.</p></div></header><div className="tf57-utm-grid"><label><span>Trang đích</span><input value={path} onChange={event=>setPath(event.target.value)} placeholder="/collections/adidas"/></label><label><span>utm_campaign</span><input value={campaign} onChange={event=>setCampaign(event.target.value)} placeholder="meta_prospecting_aug"/></label><label><span>utm_content</span><input value={content} onChange={event=>setContent(event.target.value)} placeholder="carousel_01"/></label><label><span>utm_source / medium</span><div className="tf57-double-field"><input value={settings.defaultSource} onChange={event=>patch({defaultSource:event.target.value})}/><input value={settings.defaultMedium} onChange={event=>patch({defaultMedium:event.target.value})}/></div></label></div><div className="tf57-generated-link"><code>{targetUrl}</code><button type="button" onClick={()=>void copyLink()}><Copy/>Sao chép</button></div></section>
 
-    <section className="tf57-meta-card tf57-catalog-card"><header><span><PackageCheck/></span><div><small>CATALOG HEALTH</small><h2>Kiểm tra catalog trước khi chạy quảng cáo</h2><p>Rà ảnh công khai, SKU, handle, giá, mô tả, tồn kho và SKU trùng trước khi xuất feed.</p></div><div className="tf571-catalog-actions"><button type="button" onClick={exportCatalogIssues} disabled={!catalogIssues.length}><FileWarning/>Xuất lỗi</button><button type="button" onClick={exportCatalog}><Download/>Xuất Meta CSV</button></div></header><div className="tf571-catalog-health-grid"><span><b>{activeProducts.length}</b><small>Đang xuất bản</small></span><span className={catalogIssueProducts?'warn':'good'}><b>{catalogIssueProducts}</b><small>Sản phẩm cần kiểm tra</small></span><span className={missingCatalogImages?'warn':'good'}><b>{missingCatalogImages}</b><small>Thiếu URL ảnh</small></span><span className={outOfStockProducts?'warn':'good'}><b>{outOfStockProducts}</b><small>Hết hàng</small></span></div>{catalogIssues.length?<div className="tf571-catalog-issues">{catalogIssues.slice(0,12).map((item,index)=><div key={`${item.productId}-${item.kind}-${index}`}><span><b>{item.sku}</b><small>{item.title}</small></span><em>{item.label}</em></div>)}{catalogIssues.length>12&&<p>Và {catalogIssues.length-12} lỗi/cảnh báo khác — xuất CSV để xem đầy đủ.</p>}</div>:<div className="tf571-catalog-clean"><CheckCircle2/><span><b>Catalog sạch</b><small>Chưa phát hiện lỗi trong các trường đang kiểm tra.</small></span></div>}</section>
+    <section className={`tf57-meta-card tf57-catalog-card tf573-catalog-card ${catalogOpen?'is-open':''}`}>
+      <button type="button" className="tf573-catalog-toggle" onClick={()=>setCatalogOpen(value=>!value)} aria-expanded={catalogOpen} aria-controls="tf573-catalog-details">
+        <span><PackageCheck/></span><div><small>CATALOG HEALTH</small><b>Sức khỏe catalog</b><p>{catalogIssueProducts?`${catalogIssueProducts} sản phẩm cần kiểm tra`:'Catalog sẵn sàng chạy quảng cáo'}</p></div><em className={catalogIssueProducts?'warn':'good'}>{catalogIssueProducts||'✓'}</em>{catalogOpen?<ChevronUp/>:<ChevronDown/>}
+      </button>
+      {catalogOpen&&<div id="tf573-catalog-details" className="tf573-catalog-details">
+        <header><div><h2>Kiểm tra catalog trước khi chạy quảng cáo</h2><p>Rà ảnh công khai, SKU, handle, giá, mô tả, tồn kho và SKU trùng trước khi xuất feed.</p></div><div className="tf571-catalog-actions"><button type="button" onClick={exportCatalogIssues} disabled={!filteredCatalogIssues.length}><FileWarning/>Xuất lỗi đang lọc</button><button type="button" onClick={exportCatalog}><Download/>Xuất Meta CSV</button></div></header>
+        <div className="tf571-catalog-health-grid"><span><b>{activeProducts.length}</b><small>Đang xuất bản</small></span><span className={catalogIssueProducts?'warn':'good'}><b>{catalogIssueProducts}</b><small>Sản phẩm cần kiểm tra</small></span><span className={missingCatalogImages?'warn':'good'}><b>{missingCatalogImages}</b><small>Thiếu URL ảnh</small></span><span className={outOfStockProducts?'warn':'good'}><b>{outOfStockProducts}</b><small>Hết hàng</small></span></div>
+        {catalogIssues.length?<><div className="tf573-catalog-filters"><label><Search/><input value={catalogQuery} onChange={event=>setCatalogQuery(event.target.value)} placeholder="Tìm SKU hoặc tên sản phẩm…"/></label><select value={catalogFilter} onChange={event=>setCatalogFilter(event.target.value as CatalogIssueFilterV573)} aria-label="Lọc nhóm lỗi catalog"><option value="all">Tất cả lỗi</option><option value="media">Hình ảnh</option><option value="identity">SKU & nhận diện</option><option value="pricing">Giá bán</option><option value="content">Mô tả</option><option value="stock">Tồn kho</option></select><span>{filteredCatalogIssues.length}/{catalogIssues.length} cảnh báo</span></div>{filteredCatalogIssues.length?<div className="tf571-catalog-issues">{filteredCatalogIssues.slice(0,8).map((item,index)=><div key={`${item.productId}-${item.kind}-${index}`}><span><b>{item.sku}</b><small>{item.title}</small></span><em>{item.label}</em></div>)}{filteredCatalogIssues.length>8&&<p>Còn {filteredCatalogIssues.length-8} cảnh báo đang lọc — xuất CSV để xử lý đầy đủ.</p>}</div>:<div className="tf573-catalog-filter-empty"><Search/><span><b>Không có cảnh báo phù hợp</b><small>Đổi từ khóa hoặc nhóm lỗi để kiểm tra lại.</small></span></div>}</>:<div className="tf571-catalog-clean"><CheckCircle2/><span><b>Catalog sạch</b><small>Chưa phát hiện lỗi trong các trường đang kiểm tra.</small></span></div>}
+      </div>}
+    </section>
 
     <section className="tf57-meta-card tf57-campaign-report"><header><span><Funnel/></span><div><small>{rangeDays==='all'?'ALL-TIME':`${rangeDays}-DAY`} ATTRIBUTION</small><h2>Hiệu quả theo utm_campaign</h2><p>Attribution theo landing UTM/fbclid; nên đối chiếu thêm với Meta Ads Manager.</p></div><a href="https://business.facebook.com/adsmanager" target="_blank" rel="noreferrer">Mở Ads Manager<ExternalLink/></a></header>
       {campaignRows.length?<div className="tf57-campaign-table"><div className="head"><span>Chiến dịch</span><span>Phiên</span><span>Xem SP</span><span>Thêm giỏ</span><span>Checkout</span><span>Đơn</span><span>Doanh thu</span></div>{campaignRows.map(row=><div key={row.campaign}><b>{row.campaign}</b><span data-label="Phiên">{row.sessions.size}</span><span data-label="Xem SP">{row.views}</span><span data-label="Thêm giỏ">{row.adds}</span><span data-label="Checkout">{row.checkouts}</span><span data-label="Đơn">{row.purchases}</span><strong data-label="Doanh thu">{money(row.revenue)}</strong></div>)}</div>:<div className="tf57-meta-empty"><Megaphone/><h3>Chưa có traffic quảng cáo được gắn UTM</h3><p>Tạo link ở phía trên, dùng cho mẫu quảng cáo rồi quay lại xem phễu theo chiến dịch.</p></div>}

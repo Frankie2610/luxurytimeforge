@@ -1,5 +1,4 @@
-import {motion} from 'framer-motion';
-import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Heart, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
 import {useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode} from 'react';
 import {Link, Navigate, useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import {useCartActions, useCartState, useCommerce} from './context';
@@ -14,6 +13,7 @@ import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {Button} from './ui';
 import {sectionLabels} from './theme';
 import {resolveStoreLogo,resolveStoreName} from './store-profile';
+import {useWishlist} from './wishlist';
 import './v4912-commerce.css';
 import './v4915-commerce-fixes.css';
 import './v4920-commerce-mobile.css';
@@ -26,6 +26,7 @@ import './v509-commerce-final.css';
 import './v515-order-payment.css';
 import './v521-ui-polish.css';
 import './v562-cart-performance.css';
+import './v573-commerce-polish.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -105,6 +106,7 @@ function ShippingProgress({subtotal}: {subtotal: number}) {
 export function CartPageV11() {
   const {theme} = useCommerce();
   const {updateCart, clearCart} = useCartActions();
+  const {addMany: addToWishlist} = useWishlist();
   useEffect(() => {trackCommerceEvent('cart_view');}, []);
   const [params] = useSearchParams();
   const [code, setCode] = useState(params.get('discount') || '');
@@ -120,6 +122,11 @@ export function CartPageV11() {
   const {lines, subtotal, shippingAfterDiscount, discount, total} = useSummary(applied);
   const quantity = lines.reduce((sum, item) => sum + item.line.quantity, 0);
   const supplement = supplemental.map((section) => <ThemeSectionV27 key={section.id} section={section}/>);
+  const saveForLater = (productId: string, variantId: string, title: string) => {
+    addToWishlist([productId]);
+    updateCart(productId, variantId, 0);
+    toast.success('Đã lưu để mua sau', {description: title});
+  };
 
   if (!lines.length) return <div className="tf4912-cart-route">
     <section data-theme-section-id={cartMain?.id} data-theme-section-label={cartMain ? sectionLabels[cartMain.type] : 'Giỏ hàng'} className="tf4912-empty-cart">
@@ -158,6 +165,7 @@ export function CartPageV11() {
                     <b>{line.quantity}</b>
                     <button type="button" onClick={() => updateCart(line.productId, line.variantId, line.quantity + 1)} aria-label="Tăng số lượng"><Plus/></button>
                   </div>
+                  <button type="button" className="tf573-save-later" onClick={() => saveForLater(line.productId, line.variantId, product.title)} aria-label={`Lưu ${product.title} để mua sau`}><Heart/><span>Lưu mua sau</span></button>
                   <button type="button" className="tf4912-remove-line" onClick={() => updateCart(line.productId, line.variantId, 0)} aria-label="Xóa sản phẩm"><Trash2/><span>Xóa</span></button>
                 </div>
               </div>
@@ -364,11 +372,11 @@ export function CheckoutPageV11() {
         <section className="tf4912-checkout-summary">
           <header><div><h2>Tóm tắt đơn hàng</h2><p>Kiểm tra sản phẩm trước khi hoàn tất.</p></div><span>{itemCount} sản phẩm</span><button type="button" className="tf4920-summary-close" onClick={() => setSummaryOpen(false)} aria-label="Đóng tóm tắt đơn hàng"><X/></button></header>
           <div className="tf4912-checkout-products">
-            {lines.map(({line, product, variant, unitPrice}, index) => <motion.article key={`${product.id}-${line.variantId}`} initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} transition={{duration: .22, delay: index * .025}}>
+            {lines.map(({line, product, variant, unitPrice}, index) => <article className="tf573-checkout-product" key={`${product.id}-${line.variantId}`} style={{'--tf573-item-index': index} as React.CSSProperties}>
               <Link to={`/products/${product.handle}`} className="tf4912-checkout-product-image"><CommerceProductImageV32 product={product} alt={product.title} size={260} priority={index < 3}/><span>{line.quantity}</span></Link>
               <div><small>{product.vendor || 'TIMEFORGE'}</small><Link to={`/products/${product.handle}`}>{product.title}</Link>{variant?.title && variant.title !== 'Default Title' && <em>{variant.title}</em>}</div>
               <strong>{money(unitPrice * line.quantity)}</strong>
-            </motion.article>)}
+            </article>)}
           </div>
           <div className="tf4927-coupon"><label htmlFor="checkout-discount-code">Mã giảm giá</label><div><input id="checkout-discount-code" value={payload.discountCode} onChange={(event) => setPayload({...payload, discountCode: event.target.value.toUpperCase()})} placeholder="Nhập mã ưu đãi"/><Button type="button" variant="secondary" className="tf4927-coupon-apply" onClick={() => setPayload({...payload, discountCode: payload.discountCode.trim()})}>Áp dụng</Button></div></div>
           {payload.discountCode && <p className={discount?.valid ? 'tf4912-message is-success' : 'tf4912-message is-error'}>{discount?.message || 'Mã không hợp lệ.'}</p>}
@@ -378,6 +386,7 @@ export function CheckoutPageV11() {
         </section>
       </aside>
     </form>
+    <footer className="tf573-checkout-footer"><span><LockKeyhole/>Thanh toán bảo mật · Thông tin được dùng để xử lý đơn hàng</span><nav><Link to="/pages/shipping">Giao hàng</Link><Link to="/pages/returns">Đổi trả</Link><Link to="/pages/privacy">Quyền riêng tư</Link></nav></footer>
   </div>;
 }
 
@@ -388,5 +397,5 @@ export function OrderConfirmationV11() {
   useEffect(()=>{if(id)sessionStorage.removeItem(`tf.order.notice.${id}`)},[id]);
   const order = orders.find((item) => item.id === id);
   if (!order) return <Navigate to="/" replace/>;
-  return <div className="s11-confirmation"><header><LuxuryCheckoutLogo/></header><main><motion.div className="s11-confirmation-mark" initial={{scale: .7, opacity: 0}} animate={{scale: 1, opacity: 1}}><CheckCircle2/></motion.div><small>ORDER CONFIRMED</small><h1>Đơn hàng đã được ghi nhận.</h1><p>TimeForge sẽ liên hệ để xác nhận trước khi xử lý và giao hàng.</p>{notice&&<div className="tf520-order-notice"><QrCode/><span><b>Đơn hàng đã được lưu an toàn</b><small>{notice}</small></span></div>}<div className="s11-confirmation-number"><span>Mã đơn hàng</span><b>{order.number}</b></div><section><div><h2>Thông tin giao hàng</h2><p><b>{order.customerName}</b><br/>{order.customerPhone}<br/>{order.shippingAddress.address1}{order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}<br/>{order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p></div><div><h2>Thanh toán</h2><p>{order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : ['payos','online'].includes(order.paymentMethod) ? 'PayOS · QR ngân hàng' : 'Chuyển khoản ngân hàng'}<br/><b>{money(order.total)}</b></p>{order.paymentMethod === 'bank_transfer' && <div className="s11-bank-note tf515-bank-confirmation"><Sparkles/><span><b>{order.bankName || 'Ngân hàng chuyển khoản'}</b><br/>Chủ tài khoản: {order.bankAccountName || '—'}<br/>Số tài khoản: <strong>{order.bankAccountNumber || '—'}</strong><br/>Nội dung bắt buộc: <strong>{order.bankTransferContent || order.number}</strong></span></div>}</div></section><div className="s11-confirmation-products">{order.lines.map((line) => <article key={line.id}><SmartImage src={line.image} alt={line.title} width={110} height={110}/><div><b>{line.title}</b><small>{line.variantTitle} · Số lượng {line.quantity}</small></div><strong>{money(line.lineTotal)}</strong></article>)}</div><div className="s11-confirmation-actions"><Link to="/collections">Tiếp tục mua sắm</Link><Link className="primary" to="/pages/contact">Liên hệ TimeForge</Link></div></main></div>;
+  return <div className="s11-confirmation"><header><LuxuryCheckoutLogo/></header><main><div className="s11-confirmation-mark tf573-confirmation-mark"><CheckCircle2/></div><small>ORDER CONFIRMED</small><h1>Đơn hàng đã được ghi nhận.</h1><p>TimeForge sẽ liên hệ để xác nhận trước khi xử lý và giao hàng.</p>{notice&&<div className="tf520-order-notice"><QrCode/><span><b>Đơn hàng đã được lưu an toàn</b><small>{notice}</small></span></div>}<div className="s11-confirmation-number"><span>Mã đơn hàng</span><b>{order.number}</b></div><section><div><h2>Thông tin giao hàng</h2><p><b>{order.customerName}</b><br/>{order.customerPhone}<br/>{order.shippingAddress.address1}{order.shippingAddress.address2 ? `, ${order.shippingAddress.address2}` : ''}<br/>{order.shippingAddress.ward}, {order.shippingAddress.district}, {order.shippingAddress.city}</p></div><div><h2>Thanh toán</h2><p>{order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : ['payos','online'].includes(order.paymentMethod) ? 'PayOS · QR ngân hàng' : 'Chuyển khoản ngân hàng'}<br/><b>{money(order.total)}</b></p>{order.paymentMethod === 'bank_transfer' && <div className="s11-bank-note tf515-bank-confirmation"><Sparkles/><span><b>{order.bankName || 'Ngân hàng chuyển khoản'}</b><br/>Chủ tài khoản: {order.bankAccountName || '—'}<br/>Số tài khoản: <strong>{order.bankAccountNumber || '—'}</strong><br/>Nội dung bắt buộc: <strong>{order.bankTransferContent || order.number}</strong></span></div>}</div></section><div className="s11-confirmation-products">{order.lines.map((line) => <article key={line.id}><SmartImage src={line.image} alt={line.title} width={110} height={110}/><div><b>{line.title}</b><small>{line.variantTitle} · Số lượng {line.quantity}</small></div><strong>{money(line.lineTotal)}</strong></article>)}</div><div className="s11-confirmation-actions"><Link to="/collections">Tiếp tục mua sắm</Link><Link className="primary" to="/pages/contact">Liên hệ TimeForge</Link></div></main></div>;
 }

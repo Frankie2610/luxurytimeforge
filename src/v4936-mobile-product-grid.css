@@ -1,5 +1,5 @@
-/* Sprint 49.36 — single owner for storefront product-grid breakpoints.
-   Imported last so historical responsive layers cannot collapse 380–520px to one column. */
+/* V0.57.4 — single owner for storefront product-grid breakpoints.
+   Imported after historical responsive layers so 366–520px remains two columns. */
 
 .tf-storefront-v4912 .lux-product-grid,
 .tf-storefront-v4912 .lux-product-grid > .tf-product-card-v4918,
@@ -8,7 +8,7 @@
   min-width:0;
 }
 
-@media (min-width:380px) and (max-width:520px){
+@media (min-width:366px) and (max-width:520px){
   .tf-storefront-v4912 .lux-product-grid,
   .tf-storefront-v4912 .lux-product-grid[class*="v23-columns-"]{
     width:100%!important;
@@ -68,7 +68,7 @@
   }
 }
 
-@media (max-width:379px){
+@media (max-width:365px){
   .tf-storefront-v4912 .lux-product-grid,
   .tf-storefront-v4912 .lux-product-grid[class*="v23-columns-"]{
     grid-template-columns:minmax(0,1fr)!important;

@@ -12,6 +12,7 @@ import {money} from './utils';
 import './v570-storefront-features.css';
 import './v571-storefront-polish.css';
 import './v572-storefront-tools.css';
+import './v573-compare-polish.css';
 
 type CompareRow={label:string;always?:boolean;read:(product:Product,specs:ProductSpecsV571)=>string};
 const spec=(key:ProductSpecKey)=>(_:Product,specs:ProductSpecsV571)=>specs[key]||'—';

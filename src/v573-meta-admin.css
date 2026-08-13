@@ -1,0 +1,39 @@
+/* V0.57.3 — quieter Meta workspace, collapsible catalog triage and funnel insight. */
+.tf57-meta-page{gap:12px;color:#27342c}
+.tf571-analytics-toolbar{border-color:#d9e0db;background:linear-gradient(118deg,#fbfcfb,#f0f5f1);box-shadow:none}
+.tf57-meta-overview article,.tf57-meta-card{border-color:#dfe4e0;box-shadow:0 5px 18px rgba(32,48,38,.025)}
+.tf57-meta-overview article>span,.tf57-meta-card>header>span{background:#edf3ef;color:#315f45}
+.tf57-meta-card header h2{letter-spacing:-.012em}.tf57-meta-card header p{max-width:680px}
+.tf572-conversion-funnel article{border-color:#e0e5e1;background:#fbfcfb}.tf572-conversion-funnel article>div>span{background:#e6efe9;color:#315f45}
+
+.tf573-funnel-insight{margin-top:10px;padding:11px 13px;border:1px solid #ead5b7;border-radius:11px;display:flex;align-items:flex-start;gap:10px;background:#fff8ef;color:#744919}
+.tf573-funnel-insight>svg{width:17px;height:17px;margin-top:1px;flex:0 0 auto}.tf573-funnel-insight>span{display:grid;gap:2px}.tf573-funnel-insight small{font-size:8px;font-weight:900;letter-spacing:.11em}.tf573-funnel-insight b{color:#553817;font-size:11px}.tf573-funnel-insight p{margin:0;color:#86643f;font-size:9.5px;line-height:1.45}
+
+.tf573-catalog-card{padding:0!important;overflow:hidden}
+.tf573-catalog-toggle{width:100%;min-height:70px;padding:12px 15px;border:0;display:grid;grid-template-columns:40px minmax(0,1fr) auto 28px;align-items:center;gap:11px;background:#fff;color:#2b3730;text-align:left}
+.tf573-catalog-toggle:hover{background:#fafcfb}.tf573-catalog-toggle>span{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:#edf4ef;color:#315f45}.tf573-catalog-toggle>span svg{width:19px}
+.tf573-catalog-toggle>div{min-width:0;display:grid;gap:1px}.tf573-catalog-toggle small{color:#5e7868;font-size:8.5px;font-weight:900;letter-spacing:.12em}.tf573-catalog-toggle b{font-size:15px}.tf573-catalog-toggle p{margin:0;color:#79837d;font-size:9.5px}
+.tf573-catalog-toggle>em{min-width:29px;height:29px;padding:0 8px;border-radius:99px;display:grid;place-items:center;font-size:10px;font-style:normal;font-weight:900}.tf573-catalog-toggle>em.warn{background:#fff0e3;color:#995719}.tf573-catalog-toggle>em.good{background:#e8f4eb;color:#2d6845}
+.tf573-catalog-toggle>svg{width:16px;color:#78837c}.tf573-catalog-card.is-open .tf573-catalog-toggle{border-bottom:1px solid #e2e7e3;background:#f8faf8}
+.tf573-catalog-details{padding:16px 17px 17px;background:#fff}.tf573-catalog-details>header{margin-bottom:13px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.tf573-catalog-details>header>div:first-child{min-width:0}.tf573-catalog-details h2{margin:0 0 4px;font-size:16px}.tf573-catalog-details header p{margin:0;color:#748079;font-size:10px;line-height:1.45}
+.tf573-catalog-filters{margin-top:11px;display:grid;grid-template-columns:minmax(0,1fr) 170px auto;align-items:center;gap:8px}
+.tf573-catalog-filters label{height:38px;padding:0 10px;border:1px solid #dae0dc;border-radius:9px;display:flex;align-items:center;gap:7px;background:#fbfcfb}.tf573-catalog-filters label svg{width:14px;color:#78837c}.tf573-catalog-filters input{width:100%;border:0;outline:0;background:transparent;font:inherit;font-size:10.5px}
+.tf573-catalog-filters select{height:38px;padding:0 9px;border:1px solid #dae0dc;border-radius:9px;background:#fbfcfb;color:#3f4d44;font:inherit;font-size:10px}.tf573-catalog-filters>span{color:#7a857e;font-size:9px;white-space:nowrap}
+.tf573-catalog-filter-empty{min-height:96px;margin-top:11px;border:1px dashed #d8dfda;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:9px;background:#fafcfb;color:#69776e}.tf573-catalog-filter-empty>svg{width:19px}.tf573-catalog-filter-empty>span{display:grid;gap:2px}.tf573-catalog-filter-empty b{font-size:11px}.tf573-catalog-filter-empty small{font-size:9px}
+.tf573-catalog-details .tf571-catalog-issues{margin-top:9px}.tf573-catalog-details .tf571-catalog-issues>div{min-height:43px}
+
+/* Remove visual noise from the dense log while preserving all controls. */
+.tf571-event-explorer{background:linear-gradient(180deg,#fff,#fcfdfc)}
+.tf571-event-table{border-color:#e1e6e2}.tf571-event-table .head{background:#f4f6f4}.tf572-event-more{border-top:1px solid #edf0ee;margin-top:8px}
+.tf57-utm-builder,.tf57-campaign-report{background:linear-gradient(180deg,#fff,#fbfcfb)}
+
+@media(max-width:720px){
+  .tf573-funnel-insight{padding:10px}.tf573-funnel-insight p{font-size:9px}
+  .tf573-catalog-toggle{min-height:64px;padding:10px 11px;grid-template-columns:36px minmax(0,1fr) auto 24px;gap:8px}.tf573-catalog-toggle>span{width:36px;height:36px}.tf573-catalog-toggle p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tf573-catalog-toggle>em{min-width:27px;height:27px;padding-inline:7px}
+  .tf573-catalog-details{padding:13px}.tf573-catalog-details>header{display:grid}.tf573-catalog-details>header .tf571-catalog-actions{width:100%;margin:0}.tf573-catalog-filters{grid-template-columns:minmax(0,1fr) 120px}.tf573-catalog-filters>span{grid-column:1/-1}.tf573-catalog-filters select{min-width:0}
+}
+
+@media(max-width:420px){
+  .tf573-catalog-toggle p{display:none}.tf573-catalog-toggle b{font-size:13px}
+  .tf573-catalog-filters{grid-template-columns:1fr}.tf573-catalog-filters>span{grid-column:auto}.tf573-catalog-details .tf571-catalog-health-grid{grid-template-columns:1fr 1fr}
+}

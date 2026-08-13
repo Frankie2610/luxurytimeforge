@@ -28,7 +28,7 @@ import {
   X,
   ZoomIn,
 } from 'lucide-react';
-import {memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent} from 'react';
+import {lazy, memo, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent} from 'react';
 import {createPortal} from 'react-dom';
 import {
   Link,
@@ -48,7 +48,6 @@ import {optimizedImage, optimizedImageSrcSet, productImage, SmartImage} from './
 import {Accordion, Button, Dialog, DialogContent} from './ui';
 import {toast} from 'sonner';
 import {captureCommerceAttribution,trackCommerceEvent} from './commerce-events';
-import {BlogCardsV18} from './blog-home-cards-v18';
 import {readThemeExtrasV23, THEME_EXTRAS_EVENT, type ThemeExtrasV23} from './theme-extras-v23';
 import {ThemePreviewBridgeV26} from './theme-preview-bridge-v26';
 import {isThemePreviewV26, readThemePreviewExtrasV26, THEME_PREVIEW_UPDATED_V26} from './theme-preview-v26';
@@ -86,7 +85,6 @@ import './v4923-storefront.css';
 import './v4924-storefront.css';
 import './v4925-storefront.css';
 import './v4933-collection.css';
-import './v4936-mobile-product-grid.css';
 import './v50-storefront-polish.css';
 import './v502-storefront-contrast.css';
 import './v503-storefront-filter.css';
@@ -110,11 +108,43 @@ import './v566-storefront-polish.css';
 import './v570-storefront-controls.css';
 import './v571-storefront-core.css';
 import './v572-storefront-core.css';
+import './v573-storefront-core.css';
+import './v4936-mobile-product-grid.css';
+import './v574-storefront-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
+const LazyBlogCardsV18 = lazy(() => import('./blog-home-cards-v18').then((module) => ({default: module.BlogCardsV18})));
 const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
 const MAX_RECENT_SEARCHES = 6;
+
+function BlogCardsFallbackV574() {
+  return <div className="tf574-blog-skeleton" aria-hidden="true">{[0, 1, 2].map((item) => <i key={item} />)}</div>;
+}
+
+function DeferredBlogCardsV574({limit}: {limit: number}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host || typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setShouldLoad(true);
+      observer.disconnect();
+    }, {rootMargin: '480px 0px'});
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
+  return <div ref={hostRef} className="tf574-blog-loader" aria-busy={!shouldLoad}>
+    {shouldLoad
+      ? <Suspense fallback={<BlogCardsFallbackV574 />}><LazyBlogCardsV18 limit={limit} /></Suspense>
+      : <BlogCardsFallbackV574 />}
+  </div>;
+}
 
 function readRecentSearches() {
   if (typeof window === 'undefined') return [] as string[];
@@ -604,15 +634,15 @@ export function StoreLayoutV10() {
       } as React.CSSProperties}
     >
       {previewMode && <ThemePreviewBridgeV26 />}
-      {showStandaloneCountdown && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
-      <LuxuryHeader openCart={requestCart} />
+      {showStandaloneCountdown && !isCheckoutRoute && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
+      {!isCheckoutRoute && <LuxuryHeader openCart={requestCart} />}
       <main><div className={`tf-route-view-v4910 ${isCheckoutRoute ? 'is-checkout-route' : ''}`} key={location.pathname}><Outlet context={{openCart: requestCart}} /></div></main>
-      {(extras.footerVisible || isCheckoutRoute) && <LuxuryFooter />}
-      <StorefrontUtilityDock />
-      <CompareDockV57 />
-      {extras.cartDrawer && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
-      {extras.newsletterPopup && !newsletterDismissed && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
-      {extras.privacyBanner && !privacyDismissed && <aside className="v23-privacy-banner"><div><ShieldCheck/><span><b>Quyền riêng tư</b><small>Dữ liệu được sử dụng để vận hành cửa hàng và xử lý đơn hàng.</small></span></div><button onClick={() => setPrivacyDismissed(true)}>Đồng ý</button></aside>}
+      {extras.footerVisible && !isCheckoutRoute && <LuxuryFooter />}
+      {!isCheckoutRoute && <StorefrontUtilityDock />}
+      {!isCheckoutRoute && <CompareDockV57 />}
+      {extras.cartDrawer && !isCheckoutRoute && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
+      {extras.newsletterPopup && !newsletterDismissed && !isCheckoutRoute && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
+      {extras.privacyBanner && !privacyDismissed && !isCheckoutRoute && <aside className="v23-privacy-banner"><div><ShieldCheck/><span><b>Quyền riêng tư</b><small>Dữ liệu được sử dụng để vận hành cửa hàng và xử lý đơn hàng.</small></span></div><button onClick={() => setPrivacyDismissed(true)}>Đồng ý</button></aside>}
     </div>
   );
 }
@@ -775,7 +805,7 @@ export function HomeV10() {
       const heading = getBlock(section, 'heading'); const text = getBlock(section, 'text');
       return <section key={section.id} {...boundary(section)} className={`lux-newsletter v26-newsletter ${section.settings.background === 'dark' ? 'dark' : ''}`}><div><small>{String(heading?.settings.eyebrow || 'TIMEFORGE JOURNAL')}</small><h2>{String(heading?.settings.text || 'Nhận tin tuyển chọn mới')}</h2><p>{String(text?.settings.text || '')}</p></div><NewsletterSignupForm source="homepage" className="v34-home-signup" /></section>;
     }
-    if (section.type === 'blogPosts') return <section key={section.id} {...boundary(section)} className="lux-section v18-journal-home tf-journal-v4912"><LuxurySectionHeading eyebrow={String(section.settings.eyebrow || 'TIMEFORGE JOURNAL')} title={String(section.settings.title || 'Câu chuyện về thời gian và phong cách')} description={String(section.settings.description || 'Kiến thức tuyển chọn về đồng hồ, chăm sóc và trải nghiệm sở hữu.')} link="/blogs" /><BlogCardsV18 limit={Number(section.settings.limit || 3)}/></section>;
+    if (section.type === 'blogPosts') return <section key={section.id} {...boundary(section)} className="lux-section v18-journal-home tf-journal-v4912"><LuxurySectionHeading eyebrow={String(section.settings.eyebrow || 'TIMEFORGE JOURNAL')} title={String(section.settings.title || 'Câu chuyện về thời gian và phong cách')} description={String(section.settings.description || 'Kiến thức tuyển chọn về đồng hồ, chăm sóc và trải nghiệm sở hữu.')} link="/blogs" /><DeferredBlogCardsV574 limit={Number(section.settings.limit || 3)}/></section>;
     if (section.type === 'multicolumn') {
       const items = getBlocks(section, 'iconText');
       return <section key={section.id} {...boundary(section)} className="lux-section v26-multicolumn"><LuxurySectionHeading eyebrow={String(section.settings.eyebrow || 'DỊCH VỤ TIMEFORGE')} title={String(section.settings.title || 'Trải nghiệm được chăm chút')} /><div style={{'--v26-columns': Number(section.settings.columns || 3)} as React.CSSProperties}>{items.map((item) => <article key={item.id}>{iconFor(String(item.settings.icon || 'shield'))}<span><b>{String(item.settings.title || 'Nội dung')}</b><p>{String(item.settings.text || '')}</p></span></article>)}</div></section>;

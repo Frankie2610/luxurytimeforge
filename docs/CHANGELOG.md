@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.57.4 — 365px mobile cutoff, header polish and deferred Journal
+
+- Changed the customer product grid to keep two columns from 366px through 520px and switch to one column only at 365px or below.
+- Added a final narrow-mobile typography pass below 380px for product cards, section copy, promotion text and collection controls.
+- Set the promotion announcement to a solid red treatment with white content and locked desktop main-navigation links to 13px.
+- Moved the responsive grid owner after all historical storefront CSS so older 379px rules cannot override the new cutoff.
+- Deferred the home Journal card module and blog data until the section approaches the viewport, while reserving responsive skeleton space to prevent layout shift.
+- Reduced the storefront static JavaScript dependency graph from 194.71 KiB to 193.15 KiB gzip; the 2.39 KiB Journal/data payload is now fetched only near that section.
+- Added V0.57.4 regression coverage for breakpoints, typography, header color/type, CSS order and deferred loading.
+
+## 0.57.3 — Focused checkout, warm comparison and Admin triage
+
+- Fixed `/checkout` to render one Firebase-backed logo/header and removed storefront docks, popups and the full footer from the checkout route.
+- Polished `/compare`, `/cart`, `/checkout` and Blog detail layouts across desktop, tablet and mobile.
+- Added **Lưu mua sau** to cart plus a Blog reading assistant with real read time, progress and generated table of contents.
+- Collapsed Catalog Health by default and added SKU/product search, issue-group filters and filtered CSV export.
+- Added automatic funnel weak-point guidance to Meta Ads Admin.
+- Removed `framer-motion` from the cart/checkout route and prevented checkout-only UI from rendering unnecessary storefront chrome.
+- Split the customer Blog route from the Admin editor so storefront readers no longer download form, schema and editor UI dependencies.
+- Moved the compare dock below the utility controls and reserved a safe area so its close button no longer conflicts with Back to top.
+
 ## 0.57.2 — Unified comparison, mobile controls and All-time Meta analytics
 
 - Removed the second Wishlist-only comparison modal and connected Wishlist, catalog cards, PDP, the floating dock and `/compare` to one persistent three-product store.

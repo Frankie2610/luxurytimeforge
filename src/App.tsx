@@ -50,7 +50,7 @@ const ShippingLabelV12=lazy(()=>import('./admin-sprint12').then(m=>({default:m.S
 const OnlineStoreV19=lazy(()=>import('./online-store-v19').then(m=>({default:m.OnlineStoreV19})));
 const BlogIndexV18=lazy(()=>import('./blog-v18').then(m=>({default:m.BlogIndexV18})));
 const BlogPostPageV18=lazy(()=>import('./blog-v18').then(m=>({default:m.BlogPostPageV18})));
-const AdminBlogsV18=lazy(()=>import('./blog-v18').then(m=>({default:m.AdminBlogsV18})));
+const AdminBlogsV18=lazy(()=>import('./admin-blogs-v18').then(m=>({default:m.AdminBlogsV18})));
 const ContentPagesAdminV23=lazy(()=>import('./content-pages-admin-v23').then(m=>({default:m.ContentPagesAdminV23})));
 const DashboardV3=lazy(()=>import('./operations').then(m=>({default:m.DashboardV3})));
 const Discounts=lazy(()=>import('./admin-operations-v10').then(m=>({default:m.DiscountsV10})));

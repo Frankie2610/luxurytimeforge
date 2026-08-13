@@ -10,10 +10,10 @@ const removedSelector='.tf-storefront-v4912 :where(.lux-home>.lux-section,.lux-c
 const checks=[
  ['selector padding global đã được xóa',!allCss.includes(removedSelector)],
  ['legacy dưới 420 px không còn ép một cột',!/@media\s*\(max-width:420px\)[\s\S]*?\.lux-product-grid\s*\{\s*grid-template-columns\s*:\s*1fr/.test(legacy)],
- ['breakpoint 380–520 px tồn tại',/@media\s*\(min-width:380px\)\s*and\s*\(max-width:520px\)/.test(grid)],
- ['breakpoint 380–520 px ép hai cột',/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/.test(grid)],
- ['dưới 380 px mới về một cột',/@media\s*\(max-width:379px\)/.test(grid)&&/grid-template-columns:minmax\(0,1fr\)!important/.test(grid)],
- ['stylesheet responsive được import cuối',storefront.lastIndexOf("import './v4936-mobile-product-grid.css'")>storefront.lastIndexOf("import './v4933-collection.css'")],
+ ['breakpoint 366–520 px tồn tại',/@media\s*\(min-width:366px\)\s*and\s*\(max-width:520px\)/.test(grid)],
+ ['breakpoint 366–520 px ép hai cột',/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/.test(grid)],
+ ['365 px trở xuống mới về một cột',/@media\s*\(max-width:365px\)/.test(grid)&&/grid-template-columns:minmax\(0,1fr\)!important/.test(grid)],
+ ['stylesheet responsive nằm sau toàn bộ CSS storefront cũ',storefront.lastIndexOf("import './v4936-mobile-product-grid.css'")>storefront.lastIndexOf("import './v573-storefront-core.css'")],
 ];
 
 const failed=checks.filter(([,ok])=>!ok);
