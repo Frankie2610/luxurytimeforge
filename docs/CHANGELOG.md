@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.57.2 — Unified comparison, mobile controls and All-time Meta analytics
+
+- Removed the second Wishlist-only comparison modal and connected Wishlist, catalog cards, PDP, the floating dock and `/compare` to one persistent three-product store.
+- Added a dismissible mobile comparison dock, hid it on `/compare`, rebuilt the mobile compare hero/actions and tightened the horizontal product table.
+- Added the customer-facing **Chỉ hiện điểm khác** filter so identical specification rows can be hidden without changing the selected products.
+- Rebuilt the mobile PDP quantity/wishlist/compare/share cluster as a compact two-row action tray with visible labels.
+- Added 7/14/30/**All time** analytics ranges, a five-row progressive Event Explorer and a scoped conversion funnel to Meta Ads Admin.
+- Removed obsolete comparison CSS and the eager comparison entry import; All-time Firebase history is fetched only when an Admin selects that range.
+- Added V0.57.2 regression coverage while preserving prior release checks.
+
 ## 0.57.1 — Analytics accuracy, horizontal comparison and Firebase identity
 
 - Clarified and hardened first-party event storage for PageView, ViewContent, AddToCart, InitiateCheckout and Purchase, including exact rolling-range fallback data and single-fire checkout starts.

@@ -109,6 +109,7 @@ import './v565-storefront-performance.css';
 import './v566-storefront-polish.css';
 import './v570-storefront-controls.css';
 import './v571-storefront-core.css';
+import './v572-storefront-core.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -1483,9 +1484,9 @@ export function ProductPageV10() {
               {infoBlock?.settings.showStock !== false && <div className={`tf-pdp491-stock ${inventory > 0 ? 'is-available' : 'is-sold-out'}`}><span><i />{inventory > 0 ? `Chỉ còn ${inventory} sản phẩm` : 'Tạm hết hàng'}</span></div>}
               <div className="tf-pdp491-controls">
                 {quantityBlock && <div className="tf-pdp491-quantity" {...themeBlockProps(quantityBlock)}><span>Số lượng</span><div><button onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={inventory <= 0} aria-label="Giảm số lượng"><Minus /></button><strong>{inventory > 0 ? quantity : 0}</strong><button onClick={() => setQuantity(Math.min(Math.max(inventory, 1), quantity + 1))} disabled={inventory <= 0 || quantity >= inventory} aria-label="Tăng số lượng"><Plus /></button></div></div>}
-                {Boolean(buyBlock?.settings.showWishlist) && <button type="button" className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => {toggle(); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}><Heart fill={wished ? 'currentColor' : 'none'} /></button>}
-                <button type="button" className={`tf57-pdp-compare ${compareSelected?'is-active':''}`} onClick={()=>{const result=toggleCompare(product.id);if(result==='limit')toast.info('Chỉ so sánh tối đa 3 sản phẩm');else toast.success(result==='added'?'Đã thêm vào so sánh':'Đã xóa khỏi so sánh')}} aria-label={compareSelected?'Xóa khỏi so sánh':'Thêm vào so sánh'} aria-pressed={compareSelected}><Scale/></button>
-                <button type="button" className="tf564-pdp-share" onClick={() => {void shareProduct();}} aria-label="Chia sẻ sản phẩm"><Share2 /></button>
+                {Boolean(buyBlock?.settings.showWishlist) && <button type="button" className={`tf-pdp491-wish ${wished ? 'is-active' : ''}`} onClick={() => {toggle(); toast.success(wished ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã lưu vào danh sách yêu thích');}} aria-label={wished ? 'Xóa khỏi danh sách yêu thích' : 'Thêm vào danh sách yêu thích'} aria-pressed={wished}><Heart fill={wished ? 'currentColor' : 'none'} /><span className="tf572-pdp-control-label">Yêu thích</span></button>}
+                <button type="button" className={`tf57-pdp-compare ${compareSelected?'is-active':''}`} onClick={()=>{const result=toggleCompare(product.id);if(result==='limit')toast.info('Chỉ so sánh tối đa 3 sản phẩm');else toast.success(result==='added'?'Đã thêm vào so sánh':'Đã xóa khỏi so sánh')}} aria-label={compareSelected?'Xóa khỏi so sánh':'Thêm vào so sánh'} aria-pressed={compareSelected}><Scale/><span className="tf572-pdp-control-label">So sánh</span></button>
+                <button type="button" className="tf564-pdp-share" onClick={() => {void shareProduct();}} aria-label="Chia sẻ sản phẩm"><Share2 /><span className="tf572-pdp-control-label">Chia sẻ</span></button>
               </div>
             </div>
 

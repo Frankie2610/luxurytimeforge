@@ -1,5 +1,5 @@
 import {useEffect,useMemo,useState} from 'react';
-import {ArrowLeft,ArrowRight,Check,ChevronRight,Compass,RotateCcw,Scale,Share2,ShoppingBag,Sparkles,Trash2} from 'lucide-react';
+import {ArrowLeft,ArrowRight,Check,ChevronRight,Compass,ListFilter,Plus,RotateCcw,Scale,Share2,ShoppingBag,Sparkles,Trash2} from 'lucide-react';
 import {Link,useSearchParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {useCartActions,useCommerce} from './context';
@@ -11,6 +11,7 @@ import type {Product} from './types';
 import {money} from './utils';
 import './v570-storefront-features.css';
 import './v571-storefront-polish.css';
+import './v572-storefront-tools.css';
 
 type CompareRow={label:string;always?:boolean;read:(product:Product,specs:ProductSpecsV571)=>string};
 const spec=(key:ProductSpecKey)=>(_:Product,specs:ProductSpecsV571)=>specs[key]||'—';
@@ -41,16 +42,22 @@ export function ComparePageV57(){
   const{products}=useCommerce();
   const{addToCart}=useCartActions();
   const[searchParams]=useSearchParams();
+  const[differencesOnly,setDifferencesOnly]=useState(false);
   const sharedIds=searchParams.get('products')||'';
   const selected=useMemo(()=>ids.map(id=>products.find(product=>product.id===id)).filter((product):product is Product=>Boolean(product)),[ids,products]);
   const selectedData=useMemo(()=>selected.map(product=>({product,specs:extractProductSpecsV571(product)})),[selected]);
-  const rows=useMemo(()=>compareRows.filter(row=>row.always||selectedData.some(item=>row.read(item.product,item.specs)!=='—')),[selectedData]);
+  const availableRows=useMemo(()=>compareRows.filter(row=>row.always||selectedData.some(item=>row.read(item.product,item.specs)!=='—')),[selectedData]);
+  const rows=useMemo(()=>{
+    if(!differencesOnly||selectedData.length<2)return availableRows;
+    return availableRows.filter(row=>new Set(selectedData.map(item=>row.read(item.product,item.specs).trim().toLocaleLowerCase('vi'))).size>1);
+  },[availableRows,differencesOnly,selectedData]);
   useEffect(()=>{
     if(!sharedIds||!products.length)return;
     const requested=[...new Set(sharedIds.split(',').map(id=>id.trim()).filter(Boolean))].slice(0,3);
     const valid=requested.filter(id=>products.some(product=>product.id===id));
     if(valid.length&&valid.join('|')!==ids.join('|'))replace(valid);
   },[ids,products,replace,sharedIds]);
+  useEffect(()=>{if(selected.length<2)setDifferencesOnly(false)},[selected.length]);
   const selectedKey=selected.map(product=>product.id).join('|');
   useEffect(()=>{if(selected.length>=2)trackCommerceEvent('compare_view',{value:selected.reduce((sum,product)=>sum+product.price,0),metadata:{count:selected.length,contentIds:selected.map(product=>product.id).join(',')}})},[selectedKey]);
   const share=async()=>{
@@ -70,11 +77,15 @@ export function ComparePageV57(){
   if(!selected.length)return <main className="tf57-feature-page tf57-empty-feature"><Scale/><small>PRODUCT COMPARE</small><h1>Chưa có sản phẩm để so sánh</h1><p>Thêm tối đa 3 mẫu từ danh sách hoặc trang chi tiết để xem điểm khác biệt rõ ràng.</p><Link to="/collections">Khám phá sản phẩm<ArrowRight/></Link></main>;
   return <main className="tf57-feature-page tf57-compare-page">
     <nav className="tf57-feature-breadcrumb"><Link to="/">Trang chủ</Link><ChevronRight/><span>So sánh sản phẩm</span></nav>
-    <header className="tf57-feature-hero"><div><small>COMPARE WITH CLARITY</small><h1>Đặt các lựa chọn cạnh nhau.</h1><p>Mỗi thông số được bóc tách thành một hàng riêng; vuốt ngang trên tablet hoặc mobile để sản phẩm luôn nằm cạnh nhau.</p></div><div className="tf571-compare-hero-actions"><button type="button" onClick={()=>void share()}><Share2/>Chia sẻ</button>{selected.length<3&&<Link to="/collections">+ Thêm sản phẩm</Link>}<button type="button" onClick={clear}><Trash2/>Xóa</button></div></header>
+    <header className="tf57-feature-hero tf572-compare-hero"><div><small>COMPARE WITH CLARITY</small><h1>Đặt các lựa chọn cạnh nhau.</h1><p><span className="tf572-compare-copy-desktop">Mỗi thông số được bóc tách thành một hàng riêng; vuốt ngang trên tablet hoặc mobile để sản phẩm luôn nằm cạnh nhau.</span><span className="tf572-compare-copy-mobile">Vuốt ngang để xem từng tiêu chí mà không tách sản phẩm khỏi cùng một hàng.</span></p></div><div className="tf571-compare-hero-actions"><button type="button" className="is-share" onClick={()=>void share()}><Share2/>Chia sẻ</button>{selected.length<3&&<Link className="is-add" to="/collections"><Plus/>Thêm sản phẩm</Link>}<button type="button" className="is-clear" onClick={clear}><Trash2/>Xóa</button></div></header>
+    <section className="tf572-compare-toolbar" aria-label="Tùy chọn bảng so sánh">
+      <div><b>{selected.length} sản phẩm</b><span>{rows.length}/{availableRows.length} tiêu chí đang hiển thị</span></div>
+      <button type="button" className={differencesOnly?'is-active':''} onClick={()=>setDifferencesOnly(value=>!value)} disabled={selected.length<2} aria-pressed={differencesOnly}><ListFilter/><span>Chỉ hiện điểm khác</span><i aria-hidden="true"/></button>
+    </section>
     <div className="tf571-compare-scroll" role="region" aria-label="Bảng so sánh sản phẩm" tabIndex={0}>
       <table className={`tf571-compare-table count-${selected.length}`}>
         <thead><tr><th className="tf571-criterion"><Scale/><b>Tiêu chí</b></th>{selectedData.map(({product})=><th key={product.id} scope="col"><article className="tf571-compare-product"><button type="button" onClick={()=>remove(product.id)} aria-label={`Bỏ ${product.title}`}><Trash2/></button><Link to={`/products/${product.handle}`}><SmartImage src={productImage(product)} alt={product.title} width={520} height={520}/><small>{product.vendor}</small><h2>{product.title}</h2></Link></article></th>)}</tr></thead>
-        <tbody>{rows.map(row=><tr key={row.label}><th scope="row">{row.label}</th>{selectedData.map(({product,specs})=><td key={product.id}>{row.read(product,specs)}</td>)}</tr>)}</tbody>
+        <tbody>{rows.length?rows.map(row=><tr key={row.label}><th scope="row">{row.label}</th>{selectedData.map(({product,specs})=><td key={product.id}>{row.read(product,specs)}</td>)}</tr>):<tr className="tf572-compare-no-difference"><th scope="row">Kết quả</th><td colSpan={selected.length}>Các tiêu chí hiện có đang giống nhau.</td></tr>}</tbody>
         <tfoot><tr><th scope="row">Thao tác</th>{selectedData.map(({product})=><td key={product.id}><div className="tf571-compare-row-actions"><button type="button" onClick={()=>add(product)} disabled={product.inventory<=0}><ShoppingBag/>{product.inventory>0?'Thêm vào giỏ':'Hết hàng'}</button><Link to={`/products/${product.handle}`}>Chi tiết<ArrowRight/></Link></div></td>)}</tr></tfoot>
       </table>
     </div>

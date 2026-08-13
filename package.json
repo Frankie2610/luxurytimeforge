@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.57.1",
+  "version": "0.57.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -48,7 +48,8 @@
     "v566:check": "node scripts/check-v566-footer-about-admin.mjs",
     "v567:check": "node scripts/check-v567-footer-performance.mjs",
     "v570:check": "node scripts/check-v570-meta-performance.mjs",
-    "v571:check": "node --experimental-strip-types scripts/check-v571-polish.mjs"
+    "v571:check": "node --experimental-strip-types scripts/check-v571-polish.mjs",
+    "v572:check": "node scripts/check-v572-unified-compare-meta.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -91,7 +92,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.57.1: accurate first-party analytics, horizontal spec comparison, Firebase store identity, polished Watch Finder and Admin diagnostics.",
+  "description": "Luxury TimeForge V0.57.2: unified comparison, responsive storefront controls, All-time Meta analytics and a compact conversion funnel.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

@@ -2,6 +2,7 @@ export type CommerceEventName=
   |'page_view'|'product_view'|'add_to_cart'|'cart_view'|'checkout_started'|'checkout_completed'
   |'return_requested'|'exchange_requested'|'compare_view'|'watch_finder_completed';
 export type CommerceDevice='desktop'|'tablet'|'mobile';
+export type CommerceEventRange=number|'all';
 export interface CommerceAttribution{
   source:string;
   medium:string;
@@ -83,8 +84,9 @@ export function readCommerceEvents():CommerceEvent[]{
   return cachedEvents;
 }
 
-export function readRecentCommerceEvents(days=7):CommerceEvent[]{
-  const safeDays=Math.max(1,Math.min(31,Math.round(days)));
+export function readRecentCommerceEvents(range:CommerceEventRange=7):CommerceEvent[]{
+  if(range==='all')return readCommerceEvents();
+  const safeDays=Math.max(1,Math.min(31,Math.round(range)));
   const cutoff=Date.now()-safeDays*86400000;
   return readCommerceEvents().filter(event=>{
     const timestamp=new Date(event.createdAt).getTime();
@@ -136,19 +138,26 @@ export function trackCommerceEvent(name:CommerceEventName,payload:Omit<CommerceE
 
 const dateKey=(date:Date)=>date.toISOString().slice(0,10);
 export interface CommerceEventSnapshot{events:CommerceEvent[];source:'firebase'|'local';remoteCount:number;localOnlyCount:number}
-export async function readCommerceEventSnapshot(days=7):Promise<CommerceEventSnapshot>{
-  const safeDays=Math.max(1,Math.min(31,Math.round(days)));
+export async function readCommerceEventSnapshot(range:CommerceEventRange=7):Promise<CommerceEventSnapshot>{
+  const allTime=range==='all';
+  const safeDays=allTime?0:Math.max(1,Math.min(31,Math.round(range)));
   const{firebaseClient}=await import('./firebase');
-  const localEvents=readRecentCommerceEvents(safeDays);
+  const localEvents=readRecentCommerceEvents(range);
   if(!firebaseClient.enabled)return{events:localEvents,source:'local',remoteCount:0,localOnlyCount:localEvents.length};
-  // Read an extra UTC bucket, then enforce the exact rolling cutoff.
-  const keys=Array.from({length:safeDays+1},(_,index)=>dateKey(new Date(Date.now()-index*86400000)));
-  const results=await Promise.allSettled(keys.map(key=>firebaseClient.read<Record<string,CommerceEvent>>(`timeforge/analyticsEvents/${key}`)));
-  if(!results.some(result=>result.status==='fulfilled'))throw(results[0] as PromiseRejectedResult)?.reason||new Error('Không thể đọc analytics từ Firebase.');
   const remote=new Map<string,CommerceEvent>();
-  results.forEach(result=>{if(result.status!=='fulfilled'||!result.value)return;Object.values(result.value).forEach(event=>{if(event?.id&&event?.name)remote.set(event.id,event)})});
+  if(allTime){
+    // The potentially larger root read only runs after the Admin explicitly selects All time.
+    const buckets=await firebaseClient.read<Record<string,Record<string,CommerceEvent>>>('timeforge/analyticsEvents');
+    Object.values(buckets||{}).forEach(bucket=>Object.values(bucket||{}).forEach(event=>{if(event?.id&&event?.name)remote.set(event.id,event)}));
+  }else{
+    // Read an extra UTC bucket, then enforce the exact rolling cutoff.
+    const keys=Array.from({length:safeDays+1},(_,index)=>dateKey(new Date(Date.now()-index*86400000)));
+    const results=await Promise.allSettled(keys.map(key=>firebaseClient.read<Record<string,CommerceEvent>>(`timeforge/analyticsEvents/${key}`)));
+    if(!results.some(result=>result.status==='fulfilled'))throw(results[0] as PromiseRejectedResult)?.reason||new Error('Không thể đọc analytics từ Firebase.');
+    results.forEach(result=>{if(result.status!=='fulfilled'||!result.value)return;Object.values(result.value).forEach(event=>{if(event?.id&&event?.name)remote.set(event.id,event)})});
+  }
   const cutoff=Date.now()-safeDays*86400000;
-  const recentRemote=[...remote.values()].filter(event=>{
+  const recentRemote=allTime?[...remote.values()]:[...remote.values()].filter(event=>{
     const timestamp=new Date(event.createdAt).getTime();
     return Number.isFinite(timestamp)&&timestamp>=cutoff;
   });
@@ -160,6 +169,6 @@ export async function readCommerceEventSnapshot(days=7):Promise<CommerceEventSna
     localOnlyCount:localEvents.filter(event=>!remote.has(event.id)).length,
   };
 }
-export async function readRemoteCommerceEvents(days=7):Promise<CommerceEvent[]>{return(await readCommerceEventSnapshot(days)).events}
+export async function readRemoteCommerceEvents(range:CommerceEventRange=7):Promise<CommerceEvent[]>{return(await readCommerceEventSnapshot(range)).events}
 
 if(typeof window!=='undefined')window.addEventListener('storage',(event)=>{if(event.key===KEY||event.key===LEGACY_KEY){cachedRaw=null;cachedEvents=null}});

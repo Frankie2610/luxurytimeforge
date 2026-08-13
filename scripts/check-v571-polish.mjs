@@ -15,6 +15,8 @@ const coreCss=read('src/v571-storefront-core.css');
 const toolsCss=read('src/v571-storefront-polish.css');
 const adminCss=read('src/v571-meta-admin.css');
 const{extractProductSpecsV571}=await import('../src/product-specs-v571.ts');
+const [major,minor,patch]=packageJson.version.split('.').map(Number);
+const preservesV571=major>0||minor>57||(minor===57&&patch>=1);
 
 const description='Giới tính: Nam Chất liệu vỏ máy: Thép không gỉ Viền đồng hồ: Đen Đường kính: 40 mm Màu mặt số: Vàng Chất liệu kính: Mineral ( Kính khoáng ) Chống nước: 5ATM Máy: Quartz Dây đeo: Dây đeo thép không gỉ màu bạc Xuất xứ thương hiệu: Đức Sản xuất tại: Đức Edition One Chrono mang phong cách lịch lãm.';
 const fixture={
@@ -36,7 +38,7 @@ assert.deepEqual({
 assert.ok(Object.values(parsed).every(value=>String(value).length<141),'No comparison value may swallow the full description.');
 
 const checks=[
-  ['package version is 0.57.1',packageJson.version==='0.57.1'],
+  ['package version preserves the 0.57.1 baseline',preservesV571],
   ['comparison is a horizontal semantic table',comparePage.includes('tf571-compare-table')&&comparePage.includes('<thead>')&&comparePage.includes('<tbody>')&&comparePage.includes('<tfoot>')],
   ['comparison can be shared and added to cart',comparePage.includes('navigator.share')&&comparePage.includes("metadata:{source:'compare'}")],
   ['comparison state no longer subscribes the app tree to catalog updates',compareStore.includes('useSyncExternalStore')&&!read('src/main.tsx').includes('CompareProviderV57')],

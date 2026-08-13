@@ -7,6 +7,8 @@ const packageJson = JSON.parse(read('package.json'));
 const wishlistPage = read('src/wishlist-page-v53.tsx');
 const wishlistStore = read('src/wishlist.tsx');
 const wishlistCss = read('src/v560-wishlist-features.css');
+const comparePage = read('src/storefront-tools-v57.tsx');
+const compareStore = read('src/compare-v57.tsx');
 const adminOrders = read('src/admin-sprint11.tsx');
 const adminShell = read('src/admin-shell-v16.tsx');
 const adminCss = read('src/v560-admin-features.css');
@@ -20,9 +22,9 @@ const checks = [
   ['Wishlist share links use repeated URL parameters', wishlistPage.includes("searchParams.getAll('wish')") && wishlistPage.includes("url.searchParams.append('wish', id)")],
   ['shared Wishlist imports only active published products', wishlistPage.includes("product?.status === 'active' && product.published") && wishlistPage.includes('addMany(validIds)')],
   ['shared parameters are removed after import', wishlistPage.includes("cleanParams.delete('wish')") && wishlistPage.includes('setSearchParams(cleanParams, {replace: true})')],
-  ['comparison selection is bounded to three items', wishlistPage.includes('MAX_COMPARE_ITEMS = 3') && wishlistPage.includes('compareIds.length >= MAX_COMPARE_ITEMS')],
-  ['comparison has an accessible responsive dialog', wishlistPage.includes('role="dialog"') && wishlistPage.includes('aria-modal="true"') && wishlistPage.includes('tf56-compare-scroll')],
-  ['comparison images remain centered and square', wishlistCss.includes('object-fit:contain!important') && wishlistCss.includes('border-radius:0!important')],
+  ['Wishlist comparison uses the single bounded global store', wishlistPage.includes('useCompareV57') && compareStore.includes('const LIMIT=3') && !wishlistPage.includes('compareIds')],
+  ['comparison now uses one accessible semantic page', comparePage.includes('tf571-compare-table') && comparePage.includes('role="region"') && !wishlistPage.includes('tf56-compare-modal')],
+  ['legacy Wishlist comparison modal styles were removed', !wishlistCss.includes('tf56-compare-modal') && !wishlistCss.includes('tf56-compare-dock')],
   ['Wishlist feature CSS includes mobile and reduced-motion guards', wishlistCss.includes('@media(max-width:640px)') && wishlistCss.includes('@media(max-width:380px)') && wishlistCss.includes('@media(prefers-reduced-motion:reduce)')],
   ['offscreen Wishlist cards use intrinsic-size containment', wishlistCss.includes('content-visibility:auto') && wishlistCss.includes('contain-intrinsic-size')],
   ['Admin order range is URL-backed', adminOrders.includes("params.get('range')") && adminOrders.includes("setFilter('range', event.target.value)")],

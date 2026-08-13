@@ -1,0 +1,59 @@
+/* V0.57.2 — comparison page hierarchy, difference filter and mobile polish. */
+.tf572-compare-copy-mobile{display:none}
+.tf572-compare-toolbar{
+  margin:-10px 0 13px;padding:10px 12px;border:1px solid #e0dbd3;border-radius:13px;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;background:#f8f6f2
+}
+.tf572-compare-toolbar>div{display:flex;align-items:center;gap:9px;min-width:0}
+.tf572-compare-toolbar>div b{font-size:12px}.tf572-compare-toolbar>div span{color:var(--lux-muted);font-size:10px}
+.tf572-compare-toolbar>button{
+  min-height:36px;padding:0 8px 0 11px;border:1px solid #d6d0c8;border-radius:10px;display:flex;
+  align-items:center;gap:7px;background:#fff;color:#555048;font-size:10px;font-weight:800
+}
+.tf572-compare-toolbar>button>svg{width:14px}.tf572-compare-toolbar>button>i{
+  width:27px;height:16px;padding:2px;border-radius:99px;display:block;background:#d5d1ca;transition:.18s ease
+}
+.tf572-compare-toolbar>button>i::after{content:"";display:block;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:.18s ease}
+.tf572-compare-toolbar>button.is-active{border-color:#9fbcaa;background:#eff6f1;color:#2d6846}
+.tf572-compare-toolbar>button.is-active>i{background:#2f6848}.tf572-compare-toolbar>button.is-active>i::after{transform:translateX(11px)}
+.tf572-compare-toolbar>button:disabled{opacity:.48;cursor:not-allowed}
+.tf571-compare-table thead .tf571-criterion{position:sticky;left:0;z-index:4}
+.tf572-compare-no-difference td{height:76px;color:var(--lux-muted)!important;font-style:italic}
+
+@media(max-width:980px){
+  .tf572-compare-hero{align-items:flex-start}.tf572-compare-hero>div:first-child{max-width:620px}
+}
+
+@media(max-width:680px){
+  .tf57-compare-page{width:calc(100% - 16px);padding-top:14px}
+  .tf57-compare-page .tf57-feature-breadcrumb{margin:0 4px 12px;font-size:10px}
+  .tf572-compare-hero{
+    margin-bottom:11px;padding:18px 15px 14px;border:1px solid #e1dcd4;border-radius:18px;
+    gap:14px;background:linear-gradient(145deg,#fff,#f7f4ee);box-shadow:0 10px 28px rgba(51,42,32,.055)
+  }
+  .tf572-compare-hero small{font-size:8px;letter-spacing:.14em}
+  .tf572-compare-hero h1{margin:6px 0 8px;font-size:30px;line-height:1.02;letter-spacing:-.04em}
+  .tf572-compare-hero p{font-size:11px;line-height:1.52}
+  .tf572-compare-copy-desktop{display:none}.tf572-compare-copy-mobile{display:inline}
+  .tf571-compare-hero-actions{width:100%;display:flex;gap:7px;flex-wrap:nowrap}
+  .tf571-compare-hero-actions>button,.tf571-compare-hero-actions>a{min-height:39px;padding:0 10px;border-radius:10px;font-size:10px}
+  .tf571-compare-hero-actions .is-share,.tf571-compare-hero-actions .is-add{min-width:0;flex:1}
+  .tf571-compare-hero-actions .is-clear{width:39px;flex:0 0 39px;padding:0;font-size:0;color:#8d3838}
+  .tf571-compare-hero-actions .is-clear svg{width:15px}
+  .tf572-compare-toolbar{margin:0 0 9px;padding:8px 9px;border-radius:12px}
+  .tf572-compare-toolbar>div{display:grid;gap:1px}.tf572-compare-toolbar>div b{font-size:10px}.tf572-compare-toolbar>div span{font-size:8.5px}
+  .tf572-compare-toolbar>button{min-height:34px;padding-inline:9px 7px;font-size:9px}.tf572-compare-toolbar>button>span{display:none}
+  .tf571-compare-scroll{border-radius:13px;scroll-padding-left:91px}
+  .tf571-compare-table,.tf571-compare-table.count-1{min-width:470px}
+  .tf571-compare-table.count-2{min-width:610px}.tf571-compare-table.count-3{min-width:790px}
+  .tf571-compare-table tr>*:first-child{width:91px}
+  .tf571-compare-table thead th,.tf571-compare-product{height:224px}
+  .tf571-compare-table thead .tf571-criterion{padding:13px 8px}.tf571-criterion svg{width:21px}
+  .tf571-compare-product{padding:11px 8px 9px}.tf571-compare-product .tf-smart-image{height:121px}
+  .tf571-compare-product h2{font-size:11px;line-height:1.3}.tf571-compare-product small{font-size:7.5px}
+  .tf571-compare-table tbody th,.tf571-compare-table tfoot th{padding:9px 7px;font-size:8.5px}
+  .tf571-compare-table tbody td,.tf571-compare-table tfoot td{padding:9px 8px;font-size:10.5px}
+  .tf571-compare-hint{margin-inline:4px;font-size:9px;line-height:1.45}
+}
+
+@media(prefers-reduced-motion:reduce){.tf572-compare-toolbar>button>i,.tf572-compare-toolbar>button>i::after{transition:none}}
