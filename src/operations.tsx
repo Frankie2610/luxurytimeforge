@@ -35,6 +35,14 @@ export function DashboardV3(){
    const value=valid.filter(order=>inRange(order,start,end)).reduce((sum,order)=>sum+order.total,0);
    return{label:new Date(start).toLocaleDateString('vi-VN',{weekday:'short'}),value};
   });
+  const catalogIssues=products.map(product=>{
+   const hasImage=product.images.some(image=>Boolean(image?.trim()));
+   const hasSku=product.variants.length?product.variants.every(variant=>Boolean(variant.sku?.trim())):Boolean(product.sku?.trim());
+   const hasPrice=Number(product.price)>0||(product.variants.length>0&&product.variants.every(variant=>Number(variant.price)>0));
+   const isSellable=product.status==='active'&&product.published&&(product.inventory>0||product.variants.some(variant=>variant.inventory>0));
+   return{hasImage,hasSku,hasPrice,isSellable,healthy:hasImage&&hasSku&&hasPrice&&isSellable};
+  });
+  const healthyProducts=catalogIssues.filter(item=>item.healthy).length;
   return{
    dateLabel:now.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}),
    monthLabel:now.toLocaleDateString('vi-VN',{month:'long',year:'numeric'}),
@@ -46,6 +54,14 @@ export function DashboardV3(){
    lowStock:products.filter(product=>product.inventory>0&&product.inventory<=3).length,
    outOfStock:products.filter(product=>product.inventory<=0).length,
    draftProducts:products.filter(product=>product.status!=='active'||!product.published).length,
+   catalogHealth:{
+    score:products.length?Math.round(healthyProducts/products.length*100):0,
+    healthy:healthyProducts,
+    missingImage:catalogIssues.filter(item=>!item.hasImage).length,
+    missingSku:catalogIssues.filter(item=>!item.hasSku).length,
+    invalidPrice:catalogIssues.filter(item=>!item.hasPrice).length,
+    unavailable:catalogIssues.filter(item=>!item.isSellable).length,
+   },
    currentRevenue,trend,daily,
   };
  },[orders,products]);
@@ -56,6 +72,14 @@ export function DashboardV3(){
   {to:'/admin/inventory',icon:<PackageSearch/>,value:insight.lowStock+insight.outOfStock,label:'Cảnh báo tồn kho',note:`${insight.outOfStock} sản phẩm đã hết`},
   {to:'/admin/products',icon:<Boxes/>,value:insight.draftProducts,label:'Sản phẩm chưa bán',note:'Đang nháp hoặc chưa xuất bản'},
  ];
+ const catalogChecks=[
+  {to:'/admin/products',icon:<FileText/>,value:insight.catalogHealth.missingImage,label:'Thiếu hình ảnh',note:'Bổ sung ảnh đại diện rõ nét'},
+  {to:'/admin/products',icon:<Boxes/>,value:insight.catalogHealth.missingSku,label:'Thiếu SKU',note:'Chuẩn hóa mã sản phẩm và biến thể'},
+  {to:'/admin/products',icon:<CircleDollarSign/>,value:insight.catalogHealth.invalidPrice,label:'Giá chưa hợp lệ',note:'Kiểm tra giá bán lớn hơn 0'},
+  {to:'/admin/inventory',icon:<PackageSearch/>,value:insight.catalogHealth.unavailable,label:'Chưa sẵn sàng bán',note:'Nháp, chưa xuất bản hoặc hết hàng'},
+ ];
+ const catalogHealthLabel=!products.length?'Chưa có dữ liệu':insight.catalogHealth.score>=90?'Sẵn sàng bán':insight.catalogHealth.score>=65?'Cần tối ưu':'Cần xử lý';
+ const catalogHealthTone=!products.length?'neutral':insight.catalogHealth.score>=90?'success':insight.catalogHealth.score>=65?'warning':'danger';
  return <div className="tf53-dashboard">
   <section className="tf53-dashboard-hero">
    <div className="tf53-dashboard-intro"><span><Sparkles/>OPERATIONS PULSE</span><h2>Tổng quan cửa hàng</h2><p>{insight.dateLabel}. Theo dõi doanh thu, đơn hàng và những việc cần xử lý trong một màn hình.</p></div>
@@ -77,6 +101,13 @@ export function DashboardV3(){
     <header><div><small>PRIORITY CENTER</small><h3>Việc cần ưu tiên</h3></div><ListChecks/></header>
     <div>{priorityItems.map(item=><Link to={item.to} key={item.label} className={item.value>0?'has-work':''}><span>{item.icon}</span><div><b>{item.label}</b><small>{item.note}</small></div><strong>{item.value}</strong><ArrowUpRight/></Link>)}</div>
    </article>
+  </section>
+  <section className="tf580-catalog-health card" aria-label="Sức khỏe danh mục sản phẩm">
+   <header><div><small>CATALOG HEALTH</small><h3>Sức khỏe catalog</h3><p>Phát hiện nhanh dữ liệu thiếu trước khi sản phẩm xuất hiện trên cửa hàng và quảng cáo.</p></div><Badge tone={catalogHealthTone}>{catalogHealthLabel}</Badge></header>
+   <div className="tf580-catalog-health-layout">
+    <div className="tf580-health-score"><div><strong>{insight.catalogHealth.score}</strong><span>/ 100</span></div><b>{insight.catalogHealth.healthy}/{products.length} sản phẩm đạt chuẩn</b><i aria-hidden="true"><span style={{width:`${insight.catalogHealth.score}%`}}/></i><small>Ảnh · SKU · giá · trạng thái bán</small></div>
+    <div className="tf580-health-checks">{catalogChecks.map(item=><Link to={item.to} key={item.label} className={item.value?'has-issue':'is-clear'}><i>{item.icon}</i><span><b>{item.label}</b><small>{item.note}</small></span><strong>{item.value}</strong><ArrowUpRight/></Link>)}</div>
+   </div>
   </section>
   <section className="tf53-quick-actions card" aria-label="Thao tác nhanh">
    <header><div><small>QUICK ACTIONS</small><h3>Thao tác nhanh</h3></div></header>

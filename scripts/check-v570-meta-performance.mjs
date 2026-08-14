@@ -21,7 +21,7 @@ const images=read('src/image-utils.tsx');
 const permissions=read('src/permissions.ts');
 
 const checks=[
-  ['package remains on the V0.57 release line',/^0\.57\.\d+$/.test(packageJson.version)],
+  ['package preserves the V0.57 Meta baseline',/^0\.(?:57|58|59)\.\d+$/.test(packageJson.version)],
   ['V0.57.0 check command is registered',packageJson.scripts?.['v570:check']==='node scripts/check-v570-meta-performance.mjs'],
   ['customer tools remain route-lazy',app.includes("lazy(()=>import('./storefront-tools-v57')")&&app.includes('path="/compare"')&&app.includes('path="/watch-finder"')],
   ['Meta Admin is route-lazy and permission protected',app.includes("lazy(()=>import('./meta-ads-v57')")&&app.includes('path="marketing/meta"')&&permissions.includes("startsWith('/admin/discounts')||pathname.startsWith('/admin/marketing')")],
@@ -29,7 +29,7 @@ const checks=[
   ['Meta Pixel loads only after an enabled valid configuration',metaPixel.includes('settings.enabled&&validPixelId(settings.pixelId)')&&metaPixel.includes("script.src='https://connect.facebook.net/en_US/fbevents.js'")],
   ['five commerce conversions map to Meta standard events',metaPixel.includes("page_view:'PageView'")&&metaPixel.includes("product_view:'ViewContent'")&&metaPixel.includes("add_to_cart:'AddToCart'")&&metaPixel.includes("checkout_started:'InitiateCheckout'")&&metaPixel.includes("checkout_completed:'Purchase'")],
   ['Meta events carry catalog IDs and browser event IDs',metaPixel.includes('content_ids:ids')&&metaPixel.includes('{eventID:event.id}')],
-  ['Admin provides Pixel health, UTM builder, catalog feed and campaign attribution',metaAdmin.includes('EVENT HEALTH')&&metaAdmin.includes('CAMPAIGN URL BUILDER')&&metaAdmin.includes('CATALOG HEALTH')&&metaAdmin.includes('ATTRIBUTION')],
+  ['Admin provides Pixel health, ad-link builder, catalog feed and campaign attribution',metaAdmin.includes('EVENT HEALTH')&&(metaAdmin.includes('CAMPAIGN URL BUILDER')||metaAdmin.includes('PRODUCT AD LINK KIT'))&&metaAdmin.includes('CATALOG HEALTH')&&metaAdmin.includes('ATTRIBUTION')],
   ['analytics storage is capped, cached and remotely batched',commerceEvents.includes('LOCAL_EVENT_LIMIT=600')&&commerceEvents.includes('cachedEvents')&&commerceEvents.includes('REMOTE_BATCH_LIMIT=12')&&commerceEvents.includes("addEventListener('pagehide'")],
   ['new campaign parameters refresh stale session attribution',commerceEvents.includes('hasCampaignSignal')&&commerceEvents.includes("'fbclid','gclid'")&&commerceEvents.includes('existing&&!hasCampaignSignal')],
   ['public analytics input is minimized and validated server-side',analyticsApi.includes('safeMetadata')&&analyticsApi.includes('60_000')&&analyticsApi.includes('allowedEvents')&&analyticsApi.includes('requestIsSameOrigin')],

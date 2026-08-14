@@ -4,6 +4,7 @@ import './v522-ui-refinement.css';
 import './v573-journal-polish.css';
 import './v575-journal-polish.css';
 import './v576-journal-readability.css';
+import './v580-journal-polish.css';
 import {ArrowLeft, ArrowRight, BookOpen, Clock3, ListTree, Sparkles} from 'lucide-react';
 import {useEffect, useMemo, useRef} from 'react';
 import {Link, Navigate, useParams} from 'react-router-dom';

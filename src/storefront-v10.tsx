@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  BadgePercent,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -55,10 +56,11 @@ import {sectionLabels, blockLabels} from './theme';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
-import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreIcon, resolveStoreLogo, resolveStoreName} from './store-profile';
+import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreLogo, resolveStoreName} from './store-profile';
 import {useWishlist, useWishlistItem} from './wishlist';
 import {useRecentlyViewedProduct} from './recently-viewed';
 import {CompareDockV57,useCompareItemV57} from './compare-v57';
+import {captureCampaignOfferV59,clearCampaignOfferV59,type CampaignOfferV59} from './campaign-offer-v59';
 import {
   BankCardMark,
   FacebookMark,
@@ -113,6 +115,7 @@ import './v4936-mobile-product-grid.css';
 import './v574-storefront-polish.css';
 import './v575-storefront-polish.css';
 import './v576-storefront-readability.css';
+import './v580-storefront-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -553,6 +556,7 @@ export function StoreLayoutV10() {
   const [extras, setExtras] = useState<ThemeExtrasV23>(() => previewMode ? readThemePreviewExtrasV26(readThemeExtrasV23()) : readThemeExtrasV23());
   const [newsletterDismissed, setNewsletterDismissed] = useState(false);
   const [privacyDismissed, setPrivacyDismissed] = useState(false);
+  const [campaignOffer, setCampaignOffer] = useState<CampaignOfferV59 | null>(() => captureCampaignOfferV59());
   const location = useLocation();
   const navigate = useNavigate();
   const {theme,storeProfile,isLoading,dataError,products} = useCommerce();
@@ -571,6 +575,7 @@ export function StoreLayoutV10() {
   }, [location.pathname]);
   useEffect(() => {
     captureCommerceAttribution();
+    setCampaignOffer(captureCampaignOfferV59(location.search));
   }, [location.pathname, location.search]);
   useEffect(() => {
     trackCommerceEvent('page_view');
@@ -583,30 +588,8 @@ export function StoreLayoutV10() {
     return () => {window.removeEventListener(THEME_EXTRAS_EVENT, sync); window.removeEventListener(THEME_PREVIEW_UPDATED_V26, sync); window.removeEventListener('storage', sync);};
   }, [previewMode]);
   useEffect(() => {
-    const storeName = resolveStoreName(theme.settings.storeName);
-    const resolvedLogo = resolveStoreLogo(theme.settings.logoImage);
-    const resolvedIcon = resolveStoreIcon(theme.settings.logoImage);
-    const customLogo = resolveCustomStoreLogo(theme.settings.logoImage);
-    document.title = storeName;
-    const faviconHref = customLogo ? optimizedImage(customLogo, 96, 96, 'fit') : resolvedIcon;
-    const touchHref = customLogo ? optimizedImage(customLogo, 180, 180, 'fit') : resolvedLogo;
-    const faviconLinks = [...document.querySelectorAll<HTMLLinkElement>('link[rel="icon"],link[rel="shortcut icon"]')];
-    if (!faviconLinks.length) {
-      const favicon = document.createElement('link');
-      favicon.rel = 'icon';
-      document.head.appendChild(favicon);
-      faviconLinks.push(favicon);
-    }
-    faviconLinks.forEach((link) => {link.href = faviconHref;});
-    let touchLinks = [...document.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]')];
-    if (!touchLinks.length) {
-      const touchIcon = document.createElement('link');
-      touchIcon.rel = 'apple-touch-icon';
-      document.head.appendChild(touchIcon);
-      touchLinks = [touchIcon];
-    }
-    touchLinks.forEach((link) => {link.href = touchHref;});
-  }, [theme.settings.logoImage, theme.settings.storeName]);
+    document.title = resolveStoreName(storeProfile.storeName);
+  }, [storeProfile.storeName]);
   if(isLoading && products.length === 0)return <StoreCatalogLoading storeName={storeProfile.storeName} logoImage={storeProfile.logoImage}/>;
   if(dataError && products.length === 0)return <StoreCatalogLoading error={dataError} storeName={storeProfile.storeName} logoImage={storeProfile.logoImage}/>;
   const settings = theme.settings;
@@ -638,6 +621,12 @@ export function StoreLayoutV10() {
       {previewMode && <ThemePreviewBridgeV26 />}
       {showStandaloneCountdown && <div className={`v23-store-countdown ${extras.countdownScheme}`}>{extras.countdownText}</div>}
       <LuxuryHeader openCart={requestCart} />
+      {campaignOffer && !isCheckoutRoute && <aside className="tf59-campaign-offer" role="status" aria-label="Ưu đãi từ liên kết quảng cáo">
+        <BadgePercent/>
+        <span><b>Ưu đãi <code>{campaignOffer.code}</code> đã được giữ</b><small>Mã sẽ tự điền khi bạn mở giỏ hàng hoặc thanh toán trong phiên này.</small></span>
+        <Link to={`/cart?discount=${encodeURIComponent(campaignOffer.code)}`}>Xem trong giỏ</Link>
+        <button type="button" onClick={() => {clearCampaignOfferV59(); setCampaignOffer(null);}} aria-label="Bỏ mã ưu đãi"><X/></button>
+      </aside>}
       <main><div className={`tf-route-view-v4910 ${isCheckoutRoute ? 'is-checkout-route' : ''}`} key={location.pathname}><Outlet context={{openCart: requestCart}} /></div></main>
       {extras.footerVisible && !isCheckoutRoute && <LuxuryFooter />}
       {!isCheckoutRoute && <StorefrontUtilityDock />}

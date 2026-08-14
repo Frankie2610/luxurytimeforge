@@ -63,6 +63,9 @@ export function captureCommerceAttribution():CommerceAttribution{
 
 let cachedRaw:string|null=null;
 let cachedEvents:CommerceEvent[]|null=null;
+let pendingLocalEvents:CommerceEvent[]|null=null;
+let localPersistHandle:number|undefined;
+let localPersistMode:'idle'|'timeout'|undefined;
 const normalizeStoredEvents=(raw:string):CommerceEvent[]=>{
   try{
     const parsed=JSON.parse(raw) as Array<Partial<CommerceEvent>>;
@@ -76,6 +79,7 @@ const normalizeStoredEvents=(raw:string):CommerceEvent[]=>{
 };
 
 export function readCommerceEvents():CommerceEvent[]{
+  if(pendingLocalEvents)return pendingLocalEvents;
   const local=safeStorage('local');
   const raw=local?.getItem(KEY)||local?.getItem(LEGACY_KEY)||'[]';
   if(cachedEvents&&cachedRaw===raw)return cachedEvents;
@@ -83,6 +87,32 @@ export function readCommerceEvents():CommerceEvent[]{
   cachedEvents=normalizeStoredEvents(raw);
   return cachedEvents;
 }
+
+const flushLocalEvents=()=>{
+  if(localPersistHandle!==undefined){
+    if(localPersistMode==='idle'&&'cancelIdleCallback'in window)window.cancelIdleCallback(localPersistHandle);
+    else window.clearTimeout(localPersistHandle);
+  }
+  localPersistHandle=undefined;localPersistMode=undefined;
+  const items=pendingLocalEvents;if(!items)return;
+  pendingLocalEvents=null;
+  const serialized=JSON.stringify(items);
+  try{safeStorage('local')?.setItem(KEY,serialized)}catch{/* Analytics must never block storefront actions when storage is full. */}
+  cachedRaw=serialized;cachedEvents=items;
+};
+const queueLocalEvents=(items:CommerceEvent[],immediate=false)=>{
+  pendingLocalEvents=items;cachedEvents=items;
+  if(immediate){flushLocalEvents();return}
+  if(localPersistHandle!==undefined)return;
+  const requestIdle=(window as unknown as {requestIdleCallback?:(callback:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;
+  if(requestIdle){
+    localPersistMode='idle';
+    localPersistHandle=requestIdle.call(window,flushLocalEvents,{timeout:500});
+  }else{
+    localPersistMode='timeout';
+    localPersistHandle=window.setTimeout(flushLocalEvents,120);
+  }
+};
 
 export function readRecentCommerceEvents(range:CommerceEventRange=7):CommerceEvent[]{
   if(range==='all')return readCommerceEvents();
@@ -124,13 +154,11 @@ const queueRemoteEvent=(event:CommerceEvent)=>{
 
 export function trackCommerceEvent(name:CommerceEventName,payload:Omit<CommerceEvent,'id'|'name'|'createdAt'|'attribution'|'path'>={}){
   if(isThemeEditorCommercePreview())return undefined;
-  const local=safeStorage('local');const attribution=captureCommerceAttribution();const path=`${window.location.pathname}${window.location.search}`;const current=readCommerceEvents();const latest=current[0];
+  const attribution=captureCommerceAttribution();const path=`${window.location.pathname}${window.location.search}`;const current=readCommerceEvents();const latest=current[0];
   if(latest&&latest.name===name&&latest.path===path&&Date.now()-new Date(latest.createdAt).getTime()<700)return latest;
   const next:CommerceEvent={id:`evt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,name,createdAt:new Date().toISOString(),path,attribution:{...attribution,device:device()},...payload};
   const items=[next,...current].slice(0,LOCAL_EVENT_LIMIT);
-  const serialized=JSON.stringify(items);
-  try{local?.setItem(KEY,serialized)}catch{/* Analytics must never block storefront actions when storage is full. */}
-  cachedRaw=serialized;cachedEvents=items;
+  queueLocalEvents(items,name==='checkout_completed');
   window.dispatchEvent(new CustomEvent('timeforge:commerce-event',{detail:next}));
   queueRemoteEvent(next);
   return next;
@@ -171,4 +199,7 @@ export async function readCommerceEventSnapshot(range:CommerceEventRange=7):Prom
 }
 export async function readRemoteCommerceEvents(range:CommerceEventRange=7):Promise<CommerceEvent[]>{return(await readCommerceEventSnapshot(range)).events}
 
-if(typeof window!=='undefined')window.addEventListener('storage',(event)=>{if(event.key===KEY||event.key===LEGACY_KEY){cachedRaw=null;cachedEvents=null}});
+if(typeof window!=='undefined'){
+  window.addEventListener('pagehide',flushLocalEvents);
+  window.addEventListener('storage',(event)=>{if(event.key===KEY||event.key===LEGACY_KEY){cachedRaw=null;cachedEvents=null;pendingLocalEvents=null}});
+}

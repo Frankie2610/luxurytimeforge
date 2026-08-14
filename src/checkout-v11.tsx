@@ -1,4 +1,4 @@
-import {ArrowLeft, ArrowRight, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Heart, Landmark, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
+import {ArrowLeft, ArrowRight, BadgePercent, Banknote, Check, CheckCircle2, ChevronDown, Copy, CreditCard, Gift, Heart, Landmark, Link2, LockKeyhole, Minus, PackageCheck, Plus, QrCode, ShieldCheck, ShoppingBag, Sparkles, Trash2, Truck, X} from 'lucide-react';
 import {useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode} from 'react';
 import {Link, Navigate, useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import {useCartActions, useCartState, useCommerce} from './context';
@@ -14,6 +14,7 @@ import {StorefrontButton as Button} from './storefront-ui-v575';
 import {sectionLabels} from './theme';
 import {resolveStoreLogo,resolveStoreName} from './store-profile';
 import {useWishlist} from './wishlist';
+import {campaignDiscountCodeV59,clearCampaignOfferV59} from './campaign-offer-v59';
 import './v4912-commerce.css';
 import './v4915-commerce-fixes.css';
 import './v4920-commerce-mobile.css';
@@ -29,6 +30,7 @@ import './v562-cart-performance.css';
 import './v573-commerce-polish.css';
 import './v575-commerce-polish.css';
 import './v576-commerce-polish.css';
+import './v580-commerce-polish.css';
 
 const productImageFallbackV32 = productImage({images: []});
 function CommerceProductImageV32({product, alt, size = 220, priority = false}: {product: Product; alt: string; size?: number; priority?: boolean}) {
@@ -127,14 +129,27 @@ function ShippingProgress({subtotal}: {subtotal: number}) {
 }
 
 export function CartPageV11() {
-  const {theme} = useCommerce();
-  const {updateCart, clearCart} = useCartActions();
+  const {theme, products} = useCommerce();
+  const {addToCart, updateCart, clearCart} = useCartActions();
   const {addMany: addToWishlist} = useWishlist();
   useEffect(() => {trackCommerceEvent('cart_view');}, []);
-  const [params] = useSearchParams();
-  const [code, setCode] = useState(params.get('discount') || '');
-  const [applied, setApplied] = useState(params.get('discount') || '');
+  const [params, setParams] = useSearchParams();
+  const initialDiscount = params.get('discount') || campaignDiscountCodeV59();
+  const [code, setCode] = useState(initialDiscount);
+  const [applied, setApplied] = useState(initialDiscount);
   const [gift, setGift] = useState(false);
+  const [sharedLink, setSharedLink] = useState('');
+  const sharedCartKey = params.toString();
+  const sharedItems = useMemo(() => params.getAll('item').flatMap((raw) => {
+    const [productId = '', variantId = '', quantityText = '1'] = raw.split('~');
+    const product = products.find((item) => item.id === productId && item.status === 'active' && item.published);
+    if (!product) return [];
+    const variant = product.variants.find((item) => item.id === variantId) || product.variants[0];
+    const available = variant?.inventory ?? product.inventory;
+    if (!variant || available <= 0) return [];
+    const quantity = Math.min(10, available, Math.max(1, Number.parseInt(quantityText, 10) || 1));
+    return [{product, variant, quantity}];
+  }).slice(0, 12), [products, sharedCartKey]);
   const cartTemplate = theme.templates.cart;
   const cartMain = cartTemplate.sections.find((section) => section.type === 'cartMain');
   const trustSection = cartTemplate.sections.find((section) => section.type === 'trust');
@@ -150,8 +165,39 @@ export function CartPageV11() {
     updateCart(productId, variantId, 0);
     toast.success('Đã lưu để mua sau', {description: title});
   };
+  const restoreSharedCart = () => {
+    sharedItems.forEach(({product, variant, quantity: sharedQuantity}) => addToCart(product.id, variant.id, sharedQuantity));
+    const next = new URLSearchParams(params);
+    next.delete('item');
+    setParams(next, {replace: true});
+    toast.success(`Đã thêm ${sharedItems.length} lựa chọn từ giỏ được chia sẻ`);
+  };
+  const copySharedCartLink = async (link: string) => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
+      await navigator.clipboard.writeText(link);
+      toast.success('Đã sao chép liên kết giỏ hàng');
+    } catch {
+      toast.info('Liên kết đã sẵn sàng', {description: 'Chọn đường dẫn bên dưới để sao chép thủ công.'});
+    }
+  };
+  const shareCart = async () => {
+    const url = new URL('/cart', window.location.origin);
+    lines.forEach(({line}) => url.searchParams.append('item', `${line.productId}~${line.variantId}~${Math.min(10, line.quantity)}`));
+    const offerCode = applied || campaignDiscountCodeV59();
+    if (offerCode) url.searchParams.set('discount', offerCode);
+    const link = url.toString();
+    setSharedLink(link);
+    await copySharedCartLink(link);
+  };
+  const sharedCartPrompt = sharedItems.length > 0 && <aside className="tf59-shared-cart" role="status">
+    <span><Link2/></span><div><small>GIỎ HÀNG ĐƯỢC CHIA SẺ</small><b>{sharedItems.length} lựa chọn còn hàng</b><p>Kiểm tra nhanh rồi thêm các sản phẩm này vào giỏ hiện tại.</p></div>
+    <div className="tf59-shared-cart-products">{sharedItems.slice(0, 4).map(({product, variant}) => <CommerceProductImageV32 key={`${product.id}-${variant.id}`} product={product} alt="" size={84}/>)}</div>
+    <button type="button" onClick={restoreSharedCart}>Thêm vào giỏ<ArrowRight/></button>
+  </aside>;
 
   if (!lines.length) return <div className="tf4912-cart-route">
+    {sharedCartPrompt}
     <section data-theme-section-id={cartMain?.id} data-theme-section-label={cartMain ? sectionLabels[cartMain.type] : 'Giỏ hàng'} className="tf4912-empty-cart">
       <div className="tf4912-empty-cart-icon"><ShoppingBag/></div>
       <small>GIỎ HÀNG</small>
@@ -168,8 +214,16 @@ export function CartPageV11() {
     <section data-theme-section-id={cartMain?.id} data-theme-section-label={cartMain ? sectionLabels[cartMain.type] : 'Giỏ hàng'} className="tf4912-cart-page">
       <header className="tf4912-cart-header">
         <div><h1>Giỏ hàng</h1><span>{quantity} sản phẩm đã chọn</span></div>
-        <Button variant="destructive" size="sm" onClick={clearCart}><Trash2/>Xóa giỏ hàng</Button>
+        <div className="tf59-cart-header-actions"><Button variant="secondary" size="sm" onClick={() => void shareCart()}><Link2/>Sao chép link giỏ</Button><Button variant="destructive" size="sm" onClick={clearCart}><Trash2/>Xóa giỏ hàng</Button></div>
       </header>
+
+      {sharedLink && <div className="tf59-cart-share-link" role="status">
+        <Link2/><span><b>Link giỏ hàng đã sẵn sàng</b><small>Dán link này vào quảng cáo, Messenger hoặc gửi trực tiếp cho khách.</small></span>
+        <input aria-label="Liên kết giỏ hàng" readOnly value={sharedLink} onFocus={(event) => event.currentTarget.select()}/>
+        <button type="button" onClick={() => void copySharedCartLink(sharedLink)}><Copy/>Sao chép</button>
+      </div>}
+
+      {sharedCartPrompt}
 
       <nav className="tf576-cart-steps" aria-label="Tiến trình mua hàng">
         <span className="is-active"><i>01</i><b>Giỏ hàng</b></span>
@@ -228,6 +282,51 @@ export function CartPageV11() {
 
 const initialPayload: CheckoutPayload = {customer: {name: '', email: '', phone: ''}, shippingAddress: {fullName: '', phone: '', email: '', address1: '', address2: '', ward: '', district: '', city: 'TP. Hồ Chí Minh', country: 'Việt Nam', postalCode: ''}, paymentMethod: 'cod', note: '', discountCode: ''};
 
+const CHECKOUT_DRAFT_KEY_V580 = 'tf:checkout-draft:v1';
+const CHECKOUT_DRAFT_MAX_AGE_V580 = 7 * 24 * 60 * 60 * 1000;
+type CheckoutDraftV580 = {version: 1; savedAt: number; payload: CheckoutPayload};
+
+const removeCheckoutDraftV580 = () => {
+  try {window.localStorage.removeItem(CHECKOUT_DRAFT_KEY_V580);} catch {/* Storage may be blocked in private browsing. */}
+};
+
+const checkoutDraftHasContentV580 = (payload: CheckoutPayload) => Boolean([
+  payload.shippingAddress.fullName,
+  payload.shippingAddress.email,
+  payload.shippingAddress.phone,
+  payload.shippingAddress.address1,
+  payload.shippingAddress.address2,
+  payload.shippingAddress.ward,
+  payload.shippingAddress.district,
+  payload.shippingAddress.postalCode,
+  payload.note,
+  payload.discountCode,
+].some((value) => value.trim()));
+
+const readCheckoutDraftV580 = (): CheckoutDraftV580 | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const value = JSON.parse(window.localStorage.getItem(CHECKOUT_DRAFT_KEY_V580) || 'null') as Partial<CheckoutDraftV580> | null;
+    if (!value || value.version !== 1 || !value.payload || typeof value.savedAt !== 'number') return null;
+    if (Date.now() - value.savedAt > CHECKOUT_DRAFT_MAX_AGE_V580) {
+      removeCheckoutDraftV580();
+      return null;
+    }
+    return {
+      version: 1,
+      savedAt: value.savedAt,
+      payload: {
+        ...initialPayload,
+        ...value.payload,
+        customer: {...initialPayload.customer, ...value.payload.customer},
+        shippingAddress: {...initialPayload.shippingAddress, ...value.payload.shippingAddress},
+      },
+    };
+  } catch {
+    return null;
+  }
+};
+
 const vietnamDateStamp = () => {
   const parts = new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Ho_Chi_Minh', year: '2-digit', month: '2-digit', day: '2-digit'}).formatToParts(new Date());
   const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
@@ -245,7 +344,15 @@ export function CheckoutPageV11() {
   const cart = useCartState();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const [payload, setPayload] = useState<CheckoutPayload>({...initialPayload, discountCode: params.get('discount') || ''});
+  const [initialDraft] = useState(readCheckoutDraftV580);
+  const [payload, setPayload] = useState<CheckoutPayload>(() => ({
+    ...(initialDraft?.payload || initialPayload),
+    customer: {...(initialDraft?.payload.customer || initialPayload.customer)},
+    shippingAddress: {...(initialDraft?.payload.shippingAddress || initialPayload.shippingAddress)},
+    discountCode: params.get('discount') || campaignDiscountCodeV59() || initialDraft?.payload.discountCode || '',
+  }));
+  const [draftState, setDraftState] = useState<'idle' | 'restored' | 'saved'>(() => initialDraft ? 'restored' : 'idle');
+  const draftDisabled = useRef(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [integration,setIntegration] = useState(readIntegrationSettings);
@@ -259,6 +366,19 @@ export function CheckoutPageV11() {
       return{...current,paymentMethod};
     });
   });return()=>{active=false}},[]);
+  useEffect(() => {
+    if (draftDisabled.current || !checkoutDraftHasContentV580(payload)) return;
+    const timer = window.setTimeout(() => {
+      try {
+        const draft: CheckoutDraftV580 = {version: 1, savedAt: Date.now(), payload};
+        window.localStorage.setItem(CHECKOUT_DRAFT_KEY_V580, JSON.stringify(draft));
+        setDraftState('saved');
+      } catch {
+        // Checkout remains fully usable when private browsing blocks local storage.
+      }
+    }, 550);
+    return () => window.clearTimeout(timer);
+  }, [payload]);
   const [summaryOpen, setSummaryOpen] = useState(false);
   useEffect(() => {
     if (!summaryOpen) return;
@@ -297,6 +417,9 @@ export function CheckoutPageV11() {
     let createdOrder:Order|null=null;
     try {
       createdOrder = await submitStorefrontOrder(payload);
+      draftDisabled.current = true;
+      removeCheckoutDraftV580();
+      clearCampaignOfferV59();
       if (['payos','online'].includes(createdOrder.paymentMethod)) {
         const result = await startPayment(createdOrder);
         if (result.status === 'redirect' && result.checkoutUrl) {window.location.assign(result.checkoutUrl); return;}
@@ -322,6 +445,12 @@ export function CheckoutPageV11() {
   };
 
   const itemCount = lines.reduce((sum, item) => sum + item.line.quantity, 0);
+  const disableCheckoutDraft = () => {
+    draftDisabled.current = true;
+    removeCheckoutDraftV580();
+    setDraftState('idle');
+    toast.info('Đã tắt tự lưu cho phiên checkout này.');
+  };
 
   return <div className="tf4912-checkout-page">
     <button type="button" className="tf4912-mobile-summary-toggle" onClick={() => setSummaryOpen((value) => !value)} aria-expanded={summaryOpen}>
@@ -334,6 +463,16 @@ export function CheckoutPageV11() {
     <form className="tf4912-checkout-layout" onSubmit={submit}>
       <main className="tf4912-checkout-main">
         <Link className="tf4912-back-link" to="/cart"><ArrowLeft/>Quay lại giỏ hàng</Link>
+
+        {payload.discountCode && <aside className={`tf59-checkout-campaign ${discount?.valid ? 'is-valid' : 'is-pending'}`}>
+          <BadgePercent/><span><b>Mã từ liên kết quảng cáo: {payload.discountCode}</b><small>{discount?.valid ? `Đã áp dụng, giảm ${money(discount.amount)}.` : discount?.message || 'Đang kiểm tra điều kiện ưu đãi.'}</small></span>
+        </aside>}
+
+        {draftState !== 'idle' && <aside className={`tf580-checkout-draft is-${draftState}`} aria-live="polite">
+          <CheckCircle2/>
+          <span><b>{draftState === 'restored' ? 'Đã khôi phục bản nháp checkout' : 'Thông tin checkout đã được tự động lưu'}</b><small>Chỉ lưu trên thiết bị này và tự hết hạn sau 7 ngày.</small></span>
+          <button type="button" onClick={disableCheckoutDraft}>Tắt tự lưu</button>
+        </aside>}
 
         <CheckoutSection number="01" title="Thông tin liên hệ" description="Dùng để xác nhận và cập nhật trạng thái đơn hàng.">
           <div className="tf4912-fields">

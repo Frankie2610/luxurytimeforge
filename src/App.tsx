@@ -1,9 +1,9 @@
-import {lazy,Suspense} from 'react';
+import {lazy,Suspense,useEffect} from 'react';
 import {Navigate,Route,Routes} from 'react-router-dom';
 import {ProtectedAdmin} from './auth';
 import {PermissionGate} from './access-denied-v20';
 import {useCommerce} from './context';
-import {resolveStoreLogo,resolveStoreName} from './store-profile';
+import {resolveStoreIcon,resolveStoreLogo,resolveStoreName} from './store-profile';
 import {optimizedImage} from './image-utils';
 
 const StoreLayout=lazy(()=>import('./storefront-v10').then(m=>({default:m.StoreLayoutV10})));
@@ -62,7 +62,28 @@ const ProductGroupsAdminV504=lazy(()=>import('./product-groups-admin-v504').then
 function AdminRouteLoading(){return <div className="tf-admin-boot" aria-label="Đang tải trang quản trị" aria-busy="true"><div className="tf-admin-boot-bar"/><div className="tf-admin-boot-shell"><aside><i/><i/><i/><i/><i/></aside><main><header><i/><i/></header><section><i/><i/><div><i/><i/><i/></div></section></main></div></div>}
 function RouteLoading(){const{storeProfile}=useCommerce();const adminRoute=typeof window!=='undefined'&&window.location.pathname.startsWith('/admin');if(adminRoute)return <AdminRouteLoading/>;return <div className="route-loading" aria-label="Đang tải trang" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt="" aria-hidden="true"/><i/><b>Đang tải {resolveStoreName(storeProfile.storeName)}</b></div></div>}
 
-export function App(){return <Suspense fallback={<RouteLoading/>}><Routes>
+function StoreIdentityHeadSync(){
+ const{storeProfile}=useCommerce();
+ useEffect(()=>{
+  const customLogo=String(storeProfile.logoImage||'').trim();
+  const faviconHref=customLogo?optimizedImage(customLogo,96,96,'fit'):resolveStoreIcon('');
+  const touchHref=customLogo?optimizedImage(customLogo,180,180,'fit'):resolveStoreLogo('');
+  let faviconLinks=[...document.querySelectorAll<HTMLLinkElement>('link[rel="icon"],link[rel="shortcut icon"]')];
+  if(!faviconLinks.length){const favicon=document.createElement('link');favicon.rel='icon';document.head.appendChild(favicon);faviconLinks=[favicon];}
+  faviconLinks.forEach(link=>{
+   link.href=faviconHref;
+   // The static fallback is SVG, while the Firebase/Cloudinary logo may be PNG/JPG/WebP.
+   // Removing the stale MIME declaration lets the browser detect the uploaded logo correctly.
+   if(customLogo)link.removeAttribute('type');else link.type='image/svg+xml';
+  });
+  let touchLinks=[...document.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]')];
+  if(!touchLinks.length){const touch=document.createElement('link');touch.rel='apple-touch-icon';document.head.appendChild(touch);touchLinks=[touch];}
+  touchLinks.forEach(link=>{link.href=touchHref;link.removeAttribute('type');});
+ },[storeProfile.logoImage]);
+ return null;
+}
+
+export function App(){return <><StoreIdentityHeadSync/><Suspense fallback={<RouteLoading/>}><Routes>
  <Route element={<StoreLayout/>}>
   <Route path="/" element={<Home/>}/><Route path="/collections" element={<CollectionPage/>}/><Route path="/collections/:handle" element={<CollectionPage/>}/><Route path="/products/:handle" element={<ProductPage/>}/><Route path="/search" element={<SearchPage/>}/><Route path="/wishlist" element={<WishlistPageV53/>}/><Route path="/compare" element={<ComparePageV57/>}/><Route path="/watch-finder" element={<WatchFinderPageV57/>}/><Route path="/cart" element={<CartPageV11/>}/><Route path="/checkout" element={<CheckoutPageV11/>}/><Route path="/payment/payos/return" element={<PayOSReturnPageV4927/>}/><Route path="/order-confirmation/:id" element={<OrderConfirmationV11/>}/><Route path="/blogs" element={<BlogIndexV18/>}/><Route path="/blogs/:handle" element={<BlogPostPageV18/>}/><Route path="/pages/:slug" element={<ContentPage/>}/><Route path="/404" element={<NotFound/>}/>
  </Route>
@@ -73,4 +94,4 @@ export function App(){return <Suspense fallback={<RouteLoading/>}><Routes>
   <Route index element={<DashboardV3/>}/><Route path="orders" element={<OrdersV11/>}/><Route path="orders/:id" element={<OrderDetailV12/>}/><Route path="returns" element={<ReturnsAdminV13/>}/><Route path="draft-orders" element={<DraftOrdersV12/>}/><Route path="draft-orders/new" element={<DraftOrderEditorV12/>}/><Route path="draft-orders/:id" element={<DraftOrderEditorV12/>}/><Route path="products" element={<ProductsV9/>}/><Route path="products/new" element={<ProductEditor/>}/><Route path="products/:id" element={<ProductEditor/>}/><Route path="collections" element={<Collections/>}/><Route path="product-groups" element={<ProductGroupsAdminV504/>}/><Route path="inventory" element={<InventoryV3/>}/><Route path="customers" element={<CustomersV3/>}/><Route path="customer-segments" element={<CustomerSegmentsV11/>}/><Route path="analytics" element={<AnalyticsV15/>}/><Route path="marketing/meta" element={<MetaAdsV57/>}/><Route path="discounts" element={<Discounts/>}/><Route path="activity" element={<ActivityLog/>}/><Route path="blogs" element={<AdminBlogsV18/>}/><Route path="pages" element={<ContentPagesAdminV23/>}/><Route path="import-export" element={<ImportExport/>}/><Route path="online-store" element={<OnlineStoreV19/>}/><Route path="settings" element={<SettingsPage/>}/><Route path="settings/integrations" element={<IntegrationsV13/>}/><Route path="settings/team" element={<TeamPermissionsV20/>}/>
  </Route>
  <Route path="*" element={<Navigate to="/404"/>}/>
-</Routes></Suspense>}
+</Routes></Suspense></>}

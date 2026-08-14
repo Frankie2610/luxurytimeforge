@@ -4,8 +4,10 @@
   V24 cascade architecture
   ------------------------
   All historical styles are isolated inside the legacy layer. New module
-  styles are unlayered, so they can override legacy rules without growing
-  specificity or relying on long selector chains.
+  styles are unlayered, so they can override normal legacy declarations
+  without growing specificity. Important declarations reverse layer order,
+  so any unavoidable legacy !important repair must stay in @layer legacy and
+  be loaded after the historical owner (see v580 storefront typography).
 */
 @layer legacy, design-system;
 

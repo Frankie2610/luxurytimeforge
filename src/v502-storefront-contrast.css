@@ -924,9 +924,8 @@
 }
 
 @layer legacy {
-  .tf-storefront-v4912 .lux-announcement { font-size: 10px !important; }
-  .tf-storefront-v4912 .lux-main-nav a,
-  .tf-storefront-v4912 .lux-search-button span { font-size: 11px !important; }
+  /* Header typography is owned by the final v580 route stylesheet. Keeping
+     these stale important sizes here made every later unlayered fix lose. */
   .tf-storefront-v4912 .lux-search-button span { color: #fff !important; }
 
   .tf-storefront-v4912 .lux-hero-copy h1 {

@@ -30,6 +30,7 @@ import './v563-admin-scroll-polish.css';
 import './v564-admin-polish.css';
 import './v565-admin-performance.css';
 import './v566-admin-polish.css';
+import './v580-admin-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,

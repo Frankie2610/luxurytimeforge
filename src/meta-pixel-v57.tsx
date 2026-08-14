@@ -15,6 +15,8 @@ declare global{interface Window{fbq?:MetaQueueFunction;_fbq?:MetaQueueFunction}}
 const PIXEL_SCRIPT_ID='tf-meta-pixel-script';
 let activeConfig:MetaMarketingSettings|null=null;
 let initializedPixelIds=new Set<string>();
+let pixelScriptFallback:number|undefined;
+let lastTest:{pixelId:string;createdAt:string}|null=null;
 
 const validPixelId=(value:string)=>/^\d{5,24}$/.test(value);
 const installQueue=()=>{
@@ -33,12 +35,24 @@ const loadPixelScript=()=>{
   script.id=PIXEL_SCRIPT_ID;script.async=true;script.src='https://connect.facebook.net/en_US/fbevents.js';
   document.head.appendChild(script);
 };
+const schedulePixelScript=(immediate=false)=>{
+  if(document.getElementById(PIXEL_SCRIPT_ID))return;
+  if(immediate){loadPixelScript();return}
+  const request=()=>{
+    const requestIdle=(window as unknown as {requestIdleCallback?:(callback:()=>void,options?:{timeout:number})=>number}).requestIdleCallback;
+    if(requestIdle)requestIdle.call(window,loadPixelScript,{timeout:900});
+    else window.setTimeout(loadPixelScript,80);
+  };
+  if(document.readyState==='complete')request();
+  else window.addEventListener('load',request,{once:true});
+  if(pixelScriptFallback===undefined)pixelScriptFallback=window.setTimeout(()=>{pixelScriptFallback=undefined;loadPixelScript()},1400);
+};
 
-export function configureMetaPixel(settings:MetaMarketingSettings){
+export function configureMetaPixel(settings:MetaMarketingSettings,immediate=false){
   activeConfig=settings.enabled&&validPixelId(settings.pixelId)?settings:null;
   if(!activeConfig)return false;
   const fbq=installQueue();
-  loadPixelScript();
+  schedulePixelScript(immediate);
   if(!initializedPixelIds.has(activeConfig.pixelId)){
     fbq('init',activeConfig.pixelId);
     initializedPixelIds.add(activeConfig.pixelId);
@@ -105,12 +119,16 @@ export function MetaMarketingBridge(){
   return null;
 }
 
-export const metaPixelRuntimeStatus=()=>({
-  configured:Boolean(activeConfig),
-  pixelId:activeConfig?.pixelId||'',
-  queueReady:Boolean(window.fbq),
-  scriptLoaded:Boolean(document.getElementById(PIXEL_SCRIPT_ID)),
-});
+export const metaPixelRuntimeStatus=()=>{
+  const test=lastTest;
+  return{
+    configured:Boolean(activeConfig),
+    pixelId:activeConfig?.pixelId||'',
+    queueReady:Boolean(window.fbq),
+    scriptLoaded:Boolean(document.getElementById(PIXEL_SCRIPT_ID)),
+    lastTestAt:test&&test.pixelId===activeConfig?.pixelId?test.createdAt:'',
+  };
+};
 
 export function sendMetaPixelTestEvent(){
   const event:CommerceEvent={
@@ -118,5 +136,7 @@ export function sendMetaPixelTestEvent(){
     attribution:{source:'admin-test',medium:'test',campaign:'pixel-health-check',referrer:'',landingPage:window.location.pathname,sessionId:'admin-test',device:window.innerWidth<=680?'mobile':window.innerWidth<=1100?'tablet':'desktop'},
     metadata:{test:true},
   };
-  return sendMetaCommerceEvent(event);
+  const sent=sendMetaCommerceEvent(event);
+  if(sent&&activeConfig)lastTest={pixelId:activeConfig.pixelId,createdAt:event.createdAt};
+  return sent;
 }

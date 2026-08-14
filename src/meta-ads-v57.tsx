@@ -1,11 +1,11 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
-import {Activity,BarChart3,CheckCircle2,ChevronDown,ChevronUp,Copy,Database,Download,ExternalLink,FileWarning,Funnel,Link2,Megaphone,MousePointerClick,PackageCheck,RefreshCw,Save,Search,Settings2,ShieldCheck,ShoppingBag,TriangleAlert} from 'lucide-react';
+import {Activity,BadgePercent,BarChart3,CheckCircle2,ChevronDown,ChevronUp,Copy,Database,Download,ExternalLink,FileWarning,Funnel,Globe2,Link2,Megaphone,MousePointerClick,PackageCheck,RefreshCw,Save,Search,Settings2,ShieldCheck,ShoppingBag,TriangleAlert} from 'lucide-react';
 import {toast} from 'sonner';
 import {readCommerceEvents,readCommerceEventSnapshot,readRecentCommerceEvents,type CommerceEvent,type CommerceEventName,type CommerceEventRange,type CommerceEventSnapshot} from './commerce-events';
 import {defaultMetaMarketingSettings,loadMarketingSettings,saveMarketingSettings} from './integrations';
 import {configureMetaPixel,metaPixelRuntimeStatus,sendMetaPixelTestEvent} from './meta-pixel-v57';
 import {useCommerce} from './context';
-import {productImage} from './image-utils';
+import {productImage,SmartImage} from './image-utils';
 import type {MetaMarketingSettings,Product} from './types';
 import {money} from './utils';
 import './v570-meta-ads.css';
@@ -38,7 +38,7 @@ type CatalogIssueFilterV573='all'|'media'|'identity'|'pricing'|'content'|'stock'
 const catalogIssueGroupV573=(kind:string):CatalogIssueFilterV573=>kind==='image'?'media':['sku','duplicate','handle'].includes(kind)?'identity':kind==='price'?'pricing':kind==='description'?'content':'stock';
 
 export function MetaAdsV57(){
-  const{products}=useCommerce();
+  const{products,discounts}=useCommerce();
   const[settings,setSettings]=useState<MetaMarketingSettings>(defaultMetaMarketingSettings);
   const[loadingSettings,setLoadingSettings]=useState(true);
   const[saving,setSaving]=useState(false);
@@ -59,6 +59,8 @@ export function MetaAdsV57(){
   const[path,setPath]=useState('/collections');
   const[campaign,setCampaign]=useState('meta_prospecting');
   const[content,setContent]=useState('carousel_01');
+  const[adProductId,setAdProductId]=useState('');
+  const[promoCode,setPromoCode]=useState('');
 
   const loadEvents=async(range:CommerceEventRange=rangeDays)=>{
     const requestId=++eventRequestRef.current;setEventsLoading(true);
@@ -112,7 +114,13 @@ export function MetaAdsV57(){
       toast.success('Đã lưu cấu hình Meta Ads');
     }catch(error){toast.error(error instanceof Error?error.message:'Không thể lưu cấu hình Meta Ads')}finally{setSaving(false)}
   };
-  const testPixel=()=>{if(dirty){toast.error('Lưu cấu hình trước khi gửi event thử.');return}if(configureMetaPixel(settings)&&sendMetaPixelTestEvent())toast.success('Đã gửi ViewContent thử nghiệm. Kiểm tra Test Events trong Meta.');else toast.error('Hãy bật Pixel, nhập Pixel ID và lưu trước khi thử.')};
+  const testPixel=()=>{if(dirty){toast.error('Lưu cấu hình trước khi gửi event thử.');return}if(configureMetaPixel(settings,true)&&sendMetaPixelTestEvent()){setRuntimeTick(value=>value+1);toast.success('Đã gửi ViewContent thử nghiệm. Kiểm tra Test Events trong Meta.')}else toast.error('Hãy bật Pixel, nhập Pixel ID và lưu trước khi thử.')};
+  const activeProducts=useMemo(()=>products.filter(product=>product.status==='active'&&product.published),[products]);
+  const activeDiscounts=useMemo(()=>discounts.filter(item=>{
+    const now=Date.now();
+    return item.active&&(!item.startsAt||new Date(item.startsAt).getTime()<=now)&&(!item.endsAt||new Date(item.endsAt).getTime()>=now)&&(item.usageLimit<=0||item.usageCount<item.usageLimit);
+  }).sort((a,b)=>a.code.localeCompare(b.code)),[discounts]);
+  const adProduct=useMemo(()=>activeProducts.find(product=>product.id===adProductId)||null,[activeProducts,adProductId]);
   const targetUrl=useMemo(()=>{
     const root=siteRoot(settings.siteUrl);
     let url:URL;
@@ -121,8 +129,9 @@ export function MetaAdsV57(){
     url.searchParams.set('utm_medium',settings.defaultMedium||'paid_social');
     if(campaign.trim())url.searchParams.set('utm_campaign',campaign.trim());
     if(content.trim())url.searchParams.set('utm_content',content.trim());
+    if(promoCode.trim())url.searchParams.set('discount',promoCode.trim().toUpperCase());
     return url.toString();
-  },[campaign,content,path,settings.defaultMedium,settings.defaultSource,settings.siteUrl]);
+  },[campaign,content,path,promoCode,settings.defaultMedium,settings.defaultSource,settings.siteUrl]);
   const copyLink=async()=>{try{await navigator.clipboard.writeText(targetUrl);toast.success('Đã sao chép link quảng cáo')}catch{window.prompt('Sao chép liên kết',targetUrl)}};
 
   const campaignRows=useMemo(()=>{
@@ -139,7 +148,6 @@ export function MetaAdsV57(){
     return[...groups.values()].sort((a,b)=>b.purchases-a.purchases||b.checkouts-a.checkouts||b.sessions.size-a.sessions.size);
   },[metaEvents]);
 
-  const activeProducts=useMemo(()=>products.filter(product=>product.status==='active'&&product.published),[products]);
   const catalogIssues=useMemo(()=>{
     const duplicateSkus=new Map<string,number>();
     activeProducts.forEach(product=>{const sku=product.sku.trim().toUpperCase();if(sku)duplicateSkus.set(sku,(duplicateSkus.get(sku)||0)+1)});
@@ -202,6 +210,20 @@ export function MetaAdsV57(){
     download(`timeforge-events-${rangeDays==='all'?'all-time':`${rangeDays}d`}-${new Date().toISOString().slice(0,10)}.csv`,`\uFEFF${[headers,...rows].map(row=>row.map(csvCell).join(',')).join('\r\n')}`,'text/csv;charset=utf-8');
   };
   const latestEvent=scopedEvents[0];
+  const validPixel=/^\d{5,24}$/.test(settings.pixelId);
+  const validSiteUrl=(()=>{try{const url=new URL(settings.siteUrl);return url.protocol==='https:'&&Boolean(url.hostname)}catch{return false}})();
+  const setupChecks=[
+    {label:'Pixel đang bật',detail:'Cho phép storefront nạp mã Pixel.',ready:settings.enabled},
+    {label:'Pixel ID hợp lệ',detail:validPixel?settings.pixelId:'Chỉ nhập 5–24 chữ số.',ready:validPixel},
+    {label:'Website dùng HTTPS',detail:validSiteUrl?siteRoot(settings.siteUrl):'Nhập URL website chính đang chạy quảng cáo.',ready:validSiteUrl},
+    {label:'Đã chạy event thử',detail:runtime.lastTestAt?`ViewContent test: ${dateTime(runtime.lastTestAt)}`:runtime.queueReady?'Pixel đã sẵn sàng; bấm Gửi event thử.':'Lưu cấu hình rồi bấm Gửi event thử.',ready:Boolean(runtime.lastTestAt)},
+  ];
+  const setupReady=setupChecks.filter(item=>item.ready).length;
+  const setupScore=Math.round(setupReady/setupChecks.length*100);
+  const eventCoverage=eventDefinitions.map(definition=>{
+    const matches=scopedEvents.filter(event=>event.name===definition.name);
+    return{...definition,count:matches.length,latest:matches[0]?.createdAt||''};
+  });
 
   if(loadingSettings)return <div className="tf57-meta-loading"><span/><span/><span/></div>;
   return <div className="tf57-meta-page">
@@ -221,13 +243,24 @@ export function MetaAdsV57(){
         <label className="tf57-meta-switch"><span><b>Kích hoạt Meta Pixel</b><small>Gửi PageView, ViewContent, AddToCart, InitiateCheckout và Purchase.</small></span><button type="button" className={settings.enabled?'is-on':''} onClick={()=>patch({enabled:!settings.enabled})} aria-pressed={settings.enabled}><i/></button></label>
         <div className="tf57-meta-fields"><label><span>Pixel ID</span><input inputMode="numeric" value={settings.pixelId} onChange={event=>patch({pixelId:event.target.value.replace(/\D/g,'').slice(0,24)})} placeholder="Ví dụ: 123456789012345"/></label><label><span>URL website chính</span><input value={settings.siteUrl} onChange={event=>patch({siteUrl:event.target.value})} placeholder={window.location.origin}/></label></div>
         <div className="tf57-meta-config-actions"><button type="button" className="secondary" onClick={testPixel}><Activity/>Gửi event thử</button><button type="button" className="primary" onClick={()=>void save()} disabled={saving||!dirty}><Save/>{saving?'Đang lưu...':'Lưu cấu hình'}</button></div>
+        <ol className="tf59-pixel-howto"><li><b>1</b><span>Bật Pixel và nhập đúng ID</span></li><li><b>2</b><span>Lưu cấu hình</span></li><li><b>3</b><span>Gửi event thử rồi xem Test Events</span></li></ol>
       </section>
 
       <section className="tf57-meta-card tf57-event-health"><header><span><ShieldCheck/></span><div><small>EVENT HEALTH · {eventScope==='meta'?'META':'TẤT CẢ'}</small><h2>Sức khỏe dữ liệu</h2><p>{latestEvent?`Event gần nhất: ${dateTime(latestEvent.createdAt)} · ${rangeLabel}`:'Chưa ghi nhận sự kiện'}</p></div><button type="button" onClick={()=>void loadEvents()} disabled={eventsLoading} aria-label="Tải lại dữ liệu"><RefreshCw className={eventsLoading?'is-spinning':''}/></button></header>
-        <div className="tf57-health-summary"><span className={settings.enabled&&/^\d{5,24}$/.test(settings.pixelId)?'good':'warn'}>{settings.enabled&&/^\d{5,24}$/.test(settings.pixelId)?<CheckCircle2/>:<TriangleAlert/>}<b>{settings.enabled?'Pixel đã cấu hình':'Pixel đang tắt'}</b></span><span className={runtime.queueReady?'good':'neutral'}>{runtime.queueReady?<CheckCircle2/>:<Activity/>}<b>{runtime.queueReady?'Runtime sẵn sàng':'Chờ lưu cấu hình'}</b></span></div>
+        <div className="tf57-health-summary"><span className={settings.enabled&&validPixel?'good':'warn'}>{settings.enabled&&validPixel?<CheckCircle2/>:<TriangleAlert/>}<b>{settings.enabled&&validPixel?'Pixel đã cấu hình':settings.enabled?'Pixel ID chưa hợp lệ':'Pixel đang tắt'}</b></span><span className={runtime.queueReady?'good':'neutral'}>{runtime.queueReady?<CheckCircle2/>:<Activity/>}<b>{runtime.queueReady?'Runtime sẵn sàng':'Chưa chạy event thử'}</b></span></div>
         <div className="tf572-health-note"><Activity/><span><b>{scopedEvents.length} event · {scopedSessions} phiên</b><small>{eventStorage.source==='firebase'?'Đã hợp nhất Firebase và dữ liệu chưa đồng bộ trên máy này.':'Đang dùng dữ liệu lưu trên trình duyệt này.'}</small></span></div>
       </section>
     </div>
+
+    <section className="tf57-meta-card tf59-pixel-readiness">
+      <header><span><ShieldCheck/></span><div><small>PIXEL READINESS CENTER</small><h2>Mức sẵn sàng và độ phủ event</h2><p>Kiểm tra cấu hình trình duyệt cùng 5 hành vi commerce mà website đã ghi nhận trong {rangeLabel}.</p></div><a href="https://business.facebook.com/events_manager2/list" target="_blank" rel="noreferrer">Mở Test Events<ExternalLink/></a></header>
+      <div className="tf59-pixel-readiness-layout">
+        <article className="tf59-pixel-score"><div><strong>{setupScore}</strong><span>/100</span></div><b>{setupReady}/{setupChecks.length} bước cấu hình đã đạt</b><i><span style={{width:`${setupScore}%`}}/></i><small>{setupScore===100?'Cấu hình trình duyệt đã sẵn sàng để kiểm tra event.':'Hoàn tất các mục còn cảnh báo trước khi tăng ngân sách quảng cáo.'}</small></article>
+        <div className="tf59-pixel-checks">{setupChecks.map(item=><article className={item.ready?'is-ready':'is-warning'} key={item.label}>{item.ready?<CheckCircle2/>:<TriangleAlert/>}<span><b>{item.label}</b><small>{item.detail}</small></span><em>{item.ready?'Đạt':'Kiểm tra'}</em></article>)}</div>
+      </div>
+      <div className="tf59-event-coverage" aria-label="Độ phủ event commerce">{eventCoverage.map(item=><article className={item.count?'is-observed':'is-empty'} key={item.name}><span>{item.count?<CheckCircle2/>:<Activity/>}</span><div><b>{item.label}</b><small>{item.meta}</small></div><strong>{item.count}</strong><em>{item.latest?`Gần nhất ${dateTime(item.latest)}`:'Chưa ghi nhận'}</em></article>)}</div>
+      <p className="tf59-pixel-note"><Globe2/><span><b>Dữ liệu ở đây là first-party analytics của website.</b> Sau khi gửi thử, đối chiếu thêm trong Events Manager → Test Events; Purchase chỉ nên phát sinh khi đơn hàng được tạo thành công.</span></p>
+    </section>
 
     <section className="tf57-meta-card tf572-funnel-card">
       <header><span><Funnel/></span><div><small>CONVERSION FUNNEL · {eventScope==='meta'?'META':'TẤT CẢ'}</small><h2>Phễu chuyển đổi {rangeLabel}</h2><p>Đọc nhanh lượng người đi từ xem trang đến hoàn tất đơn, cùng tỷ lệ giữ lại ở từng bước.</p></div></header>
@@ -241,7 +274,7 @@ export function MetaAdsV57(){
       {filteredEvents.length?<><div className="tf571-event-table"><div className="head"><span>Event / thời gian</span><span>Nguồn / campaign</span><span>Trang</span><span>Giá trị</span></div>{visibleEvents.map(event=><div key={event.id}><span><b>{eventLabel.get(event.name)||event.name}</b><small>{dateTime(event.createdAt)}</small></span><span><b>{event.attribution?.source||'direct'}</b><small>{event.attribution?.campaign||'Không có campaign'}</small></span><code>{event.path||'/'}</code><strong>{Number(event.value||0)>0?money(Number(event.value)):event.productId||event.orderId||'—'}</strong></div>)}</div><div className="tf572-event-more"><span>Đang xem {visibleEvents.length}/{filteredEvents.length} event</span><div>{eventLimit>5&&<button type="button" onClick={()=>setEventLimit(5)}><ChevronUp/>Thu gọn</button>}{eventLimit<filteredEvents.length&&<button type="button" className="primary" onClick={()=>setEventLimit(value=>Math.min(value+20,filteredEvents.length))}>Xem thêm<ChevronDown/></button>}</div></div></>:<div className="tf57-meta-empty is-compact"><Search/><h3>Không có event phù hợp</h3><p>Đổi phạm vi, khoảng ngày hoặc bộ lọc để kiểm tra lại.</p></div>}
     </section>
 
-    <section className="tf57-meta-card tf57-utm-builder"><header><span><Link2/></span><div><small>CAMPAIGN URL BUILDER</small><h2>Tạo link UTM nhất quán</h2><p>Dùng link này cho từng mẫu quảng cáo để báo cáo không bị gộp sai nguồn.</p></div></header><div className="tf57-utm-grid"><label><span>Trang đích</span><input value={path} onChange={event=>setPath(event.target.value)} placeholder="/collections/adidas"/></label><label><span>utm_campaign</span><input value={campaign} onChange={event=>setCampaign(event.target.value)} placeholder="meta_prospecting_aug"/></label><label><span>utm_content</span><input value={content} onChange={event=>setContent(event.target.value)} placeholder="carousel_01"/></label><label><span>utm_source / medium</span><div className="tf57-double-field"><input value={settings.defaultSource} onChange={event=>patch({defaultSource:event.target.value})}/><input value={settings.defaultMedium} onChange={event=>patch({defaultMedium:event.target.value})}/></div></label></div><div className="tf57-generated-link"><code>{targetUrl}</code><button type="button" onClick={()=>void copyLink()}><Copy/>Sao chép</button></div></section>
+    <section className="tf57-meta-card tf57-utm-builder tf59-ad-link-kit"><header><span><Link2/></span><div><small>PRODUCT AD LINK KIT</small><h2>Tạo link quảng cáo theo sản phẩm</h2><p>Chọn landing page và ưu đãi; website sẽ giữ mã đến tận giỏ hàng/checkout và vẫn ghi nhận UTM/fbclid.</p></div></header><div className="tf57-utm-grid tf59-ad-link-grid"><label><span>Sản phẩm quảng cáo</span><select value={adProductId} onChange={event=>{const id=event.target.value;setAdProductId(id);const product=activeProducts.find(item=>item.id===id);if(product)setPath(`/products/${product.handle}`)}}><option value="">Trang đích tùy chỉnh</option>{activeProducts.map(product=><option key={product.id} value={product.id}>{product.title} · {product.sku}</option>)}</select></label><label><span>Mã ưu đãi đính kèm</span><select value={promoCode} onChange={event=>setPromoCode(event.target.value)}><option value="">Không đính kèm mã</option>{activeDiscounts.map(item=><option value={item.code} key={item.id}>{item.code} · {item.title}</option>)}</select></label><label><span>Trang đích</span><input value={path} onChange={event=>{setPath(event.target.value);setAdProductId('')}} placeholder="/collections/adidas"/></label><label><span>utm_campaign</span><input value={campaign} onChange={event=>setCampaign(event.target.value)} placeholder="meta_prospecting_aug"/></label><label><span>utm_content</span><input value={content} onChange={event=>setContent(event.target.value)} placeholder="carousel_01"/></label><label><span>utm_source / medium</span><div className="tf57-double-field"><input value={settings.defaultSource} onChange={event=>patch({defaultSource:event.target.value})}/><input value={settings.defaultMedium} onChange={event=>patch({defaultMedium:event.target.value})}/></div></label></div>{adProduct&&<article className="tf59-ad-product-preview"><SmartImage src={productImage(adProduct)} alt={adProduct.title} width={180} height={180}/><span><small>LANDING SẢN PHẨM</small><b>{adProduct.title}</b><p>{adProduct.sku} · {adProduct.inventory>0?`Còn ${adProduct.inventory}`:'Hết hàng'}</p></span><strong>{money(adProduct.price)}</strong>{promoCode&&<em><BadgePercent/>{promoCode}</em>}</article>}<div className="tf57-generated-link"><code>{targetUrl}</code><button type="button" onClick={()=>void copyLink()}><Copy/>Sao chép</button></div></section>
 
     <section className={`tf57-meta-card tf57-catalog-card tf573-catalog-card ${catalogOpen?'is-open':''}`}>
       <button type="button" className="tf573-catalog-toggle" onClick={()=>setCatalogOpen(value=>!value)} aria-expanded={catalogOpen} aria-controls="tf573-catalog-details">
