@@ -116,6 +116,7 @@ import './v574-storefront-polish.css';
 import './v575-storefront-polish.css';
 import './v576-storefront-readability.css';
 import './v580-storefront-polish.css';
+import './v581-storefront-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -252,6 +253,30 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
     setSearchOpen(false);
     setMobileOpen(false);
   };
+  useLayoutEffect(() => {
+    const header = document.getElementById('tf-storefront-header');
+    const storefront = header?.closest<HTMLElement>('.tf-storefront-v4912');
+    if (!header || !storefront) return;
+    let frame = 0;
+    const syncStickyOffset = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const sticky = theme.settings.stickyHeader && getComputedStyle(header).position === 'sticky';
+        const height = sticky ? Math.ceil(header.getBoundingClientRect().height) : 0;
+        storefront.style.setProperty('--tf-sticky-header-offset', `${height}px`);
+      });
+    };
+    syncStickyOffset();
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncStickyOffset) : null;
+    observer?.observe(header);
+    window.addEventListener('resize', syncStickyOffset, {passive: true});
+    return () => {
+      cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', syncStickyOffset);
+      storefront.style.removeProperty('--tf-sticky-header-offset');
+    };
+  }, [theme.settings.stickyHeader, identity.logoImage, identity.storeName]);
   return (
     <>
       {theme.settings.showAnnouncement && (
