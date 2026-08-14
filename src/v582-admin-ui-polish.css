@@ -1,0 +1,230 @@
+/* V58.2 — admin visual system: richer cards, useful pills and calmer form controls. */
+.tf-admin-v499{
+  --tf582-green-950:#173c28;
+  --tf582-green-900:#204b32;
+  --tf582-green-700:#397052;
+  --tf582-green-100:#eaf3ed;
+  --tf582-green-50:#f5f9f6;
+  --tf582-line:#dbe5de;
+  --tf582-ink:#26322b;
+  --tf582-muted:#6f7c73;
+}
+
+/* Page heading becomes a useful card instead of an empty title strip. */
+.tf-admin-v499 .tf582-admin-page-header{
+  width:min(1320px,calc(100% - 40px));
+  min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(285px,360px);
+  align-items:stretch;
+  gap:14px;
+  margin:18px auto 20px;
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.tf-admin-v499 .tf582-admin-page-copy{
+  min-width:0;
+  display:grid;
+  align-content:center;
+  gap:5px;
+  padding:20px 22px;
+  overflow:hidden;
+  border:1px solid var(--tf582-line);
+  border-radius:17px;
+  background:
+    radial-gradient(circle at 96% 8%,rgba(91,139,105,.12),transparent 28%),
+    linear-gradient(145deg,#fff,#f8fbf9);
+  box-shadow:0 10px 30px rgba(35,56,42,.055);
+}
+.tf-admin-v499 .tf582-admin-page-copy .v35-page-breadcrumb{margin-bottom:2px}
+.tf-admin-v499 .tf582-admin-page-copy>small{
+  width:max-content;
+  display:inline-flex!important;
+  align-items:center;
+  min-height:24px;
+  padding:0 9px;
+  border:1px solid #d7e5da;
+  border-radius:999px;
+  background:#edf5ef;
+  color:#356548;
+  font-size:9px!important;
+  font-weight:850;
+  letter-spacing:.12em;
+}
+.tf-admin-v499 .tf582-admin-page-copy h1{margin-top:2px!important}
+.tf-admin-v499 .tf582-admin-page-copy p{max-width:760px!important}
+.tf-admin-v499 .tf582-admin-meta-pills{
+  min-width:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+.tf-admin-v499 .tf582-admin-meta-pills>span{
+  min-height:27px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:0 9px;
+  border:1px solid #dce5de;
+  border-radius:999px;
+  background:rgba(255,255,255,.82);
+  color:#5a6a60;
+  font-size:10px!important;
+  font-weight:720;
+  white-space:nowrap;
+  box-shadow:0 2px 8px rgba(35,53,41,.035);
+}
+.tf-admin-v499 .tf582-admin-meta-pills>span>i{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#a3aea7;
+  box-shadow:0 0 0 3px rgba(139,154,144,.12);
+}
+.tf-admin-v499 .tf582-admin-meta-pills>span.is-live{border-color:#c9decf;background:#f0f7f2;color:#326147}
+.tf-admin-v499 .tf582-admin-meta-pills>span.is-live>i{background:#3b8a57;box-shadow:0 0 0 3px rgba(59,138,87,.13)}
+
+.tf-admin-v499 .tf582-admin-status-card{
+  min-width:0;
+  display:grid;
+  align-content:space-between;
+  gap:15px;
+  padding:18px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:17px;
+  background:
+    radial-gradient(circle at 92% 0%,rgba(219,191,116,.18),transparent 35%),
+    linear-gradient(140deg,#183c29,#28543a);
+  color:#fff;
+  box-shadow:0 13px 32px rgba(26,63,41,.14);
+}
+.tf-admin-v499 .tf582-admin-status-card>div{display:grid;gap:5px}
+.tf-admin-v499 .tf582-admin-status-card>div small{color:#e1ca8c;font-size:9px!important;font-weight:850;letter-spacing:.14em}
+.tf-admin-v499 .tf582-admin-status-card>div b{font-size:15px;line-height:1.25}
+.tf-admin-v499 .tf582-admin-status-card dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0}
+.tf-admin-v499 .tf582-admin-status-card dl>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.06)}
+.tf-admin-v499 .tf582-admin-status-card dt{overflow:hidden;color:rgba(255,255,255,.67);font-size:8.5px!important;text-overflow:ellipsis;white-space:nowrap}
+.tf-admin-v499 .tf582-admin-status-card dd{margin:3px 0 0;color:#fff;font-size:16px;font-weight:850}
+
+/* Cards: stronger hierarchy without turning every block into a box. */
+.tf-admin-v499 .v16-admin-content :is(.card,.v10-index-card,.s11-index-card,.v13-index-card,.v25-resource-surface,.drawer-card){
+  border-color:var(--tf582-line);
+  background:linear-gradient(180deg,#fff,#fdfefd);
+  box-shadow:0 10px 30px rgba(31,55,39,.055);
+}
+.tf-admin-v499 .v16-admin-content :is(.card,.v10-index-card,.s11-index-card,.v13-index-card,.v25-resource-surface)>header{
+  border-bottom-color:#e6ece8;
+}
+.tf-admin-v499 .v16-admin-content :is(.metrics,.customer-stats)>div{
+  border:1px solid #e0e8e2;
+  border-radius:14px;
+  background:linear-gradient(145deg,#fff,#f6faf7);
+  box-shadow:0 5px 16px rgba(37,61,45,.035);
+}
+.tf-admin-v499 .tf53-dashboard-metric{
+  border-color:#dbe5de;
+  background:linear-gradient(145deg,#fff,#f7faf8);
+  box-shadow:0 10px 28px rgba(31,57,40,.06);
+}
+.tf-admin-v499 .tf53-dashboard-metric::after{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:3px;
+  border-radius:15px 15px 0 0;
+  background:linear-gradient(90deg,#356d4c,#8fb29b);
+  opacity:.75;
+}
+
+/* Labels become subtle pills; controls live inside a soft card-like field group. */
+.tf-admin-v499 .v16-admin-content :is(.form-grid>label,.s11-form-grid>label,.tf509-settings-fields>.field,.global-theme-settings>.field){
+  min-width:0;
+  padding:10px;
+  border:1px solid #e4ebe6;
+  border-radius:13px;
+  background:linear-gradient(180deg,#fbfdfb,#f8fbf9);
+}
+.tf-admin-v499 .v16-admin-content :is(.field>span,.form-grid>label>span,.s11-form-grid label>span,.tf509-settings-fields .field>span){
+  width:max-content;
+  max-width:100%;
+  display:inline-flex;
+  align-items:center;
+  min-height:23px;
+  margin-bottom:7px;
+  padding:0 8px;
+  border-radius:999px;
+  background:#edf4ef;
+  color:#3a6248!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  line-height:1.2;
+}
+.tf-admin-v499 .v16-admin-content :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  select,
+  textarea
+){
+  min-height:44px;
+  border-color:#c9d7cd;
+  border-radius:11px;
+  background:linear-gradient(180deg,#fff,#fbfdfb);
+  color:var(--tf582-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 2px 7px rgba(31,57,40,.035);
+}
+.tf-admin-v499 .v16-admin-content :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  select,
+  textarea
+):hover{border-color:#9fb5a6;background:#fff}
+.tf-admin-v499 .v16-admin-content :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  select,
+  textarea
+):focus{
+  border-color:#427557;
+  background:#fff;
+  outline:0;
+  box-shadow:0 0 0 4px rgba(66,117,87,.13),0 5px 13px rgba(31,64,43,.055);
+}
+.tf-admin-v499 .v16-admin-content textarea{min-height:104px}
+.tf-admin-v499 .v16-admin-content :is(input,textarea)::placeholder{color:#96a29a}
+.tf-admin-v499 .v16-admin-content select{cursor:pointer}
+
+/* Toolbars/tabs/statuses feel intentionally grouped. */
+.tf-admin-v499 .v16-admin-content :is(.admin-actions,.table-tools,.v9-index-tools,.s11-toolbar,.v12-admin-toolbar,.v13-toolbar){
+  border-color:#dce5df;
+  border-radius:14px;
+  background:linear-gradient(180deg,#f8fbf9,#f4f8f5);
+  box-shadow:0 5px 18px rgba(34,57,42,.035);
+}
+.tf-admin-v499 .v16-admin-content :is(.badge,[class*="pill"],.tabs button,.s11-view-tabs button){
+  border:1px solid rgba(57,106,76,.12);
+  box-shadow:0 2px 7px rgba(36,60,44,.03);
+}
+.tf-admin-v499 .v16-admin-content :is(.badge.success,[class*="pill"].success){background:#eaf5ed;color:#2f6a45}
+
+@media(max-width:980px){
+  .tf-admin-v499 .tf582-admin-page-header{grid-template-columns:1fr}
+  .tf-admin-v499 .tf582-admin-status-card{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+  .tf-admin-v499 .tf582-admin-status-card dl{min-width:280px}
+}
+@media(max-width:640px){
+  .tf-admin-v499 .tf582-admin-page-header{width:100%;margin:12px auto 14px;gap:9px}
+  .tf-admin-v499 .tf582-admin-page-copy{padding:15px;border-radius:14px}
+  .tf-admin-v499 .tf582-admin-page-copy h1{font-size:23px!important}
+  .tf-admin-v499 .tf582-admin-page-copy p{font-size:11px!important}
+  .tf-admin-v499 .tf582-admin-meta-pills{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .tf-admin-v499 .tf582-admin-meta-pills::-webkit-scrollbar{display:none}
+  .tf-admin-v499 .tf582-admin-meta-pills>span{flex:0 0 auto}
+  .tf-admin-v499 .tf582-admin-status-card{grid-template-columns:1fr;padding:13px 14px;border-radius:14px}
+  .tf-admin-v499 .tf582-admin-status-card dl{min-width:0}
+  .tf-admin-v499 .tf582-admin-status-card>div b{font-size:13px}
+  .tf-admin-v499 .v16-admin-content :is(.form-grid>label,.s11-form-grid>label,.tf509-settings-fields>.field,.global-theme-settings>.field){padding:8px;border-radius:11px}
+  .tf-admin-v499 .v16-admin-content :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),select,textarea){font-size:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .tf-admin-v499 .v16-admin-content :is(input,select,textarea){transition:none!important}
+}

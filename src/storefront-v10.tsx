@@ -117,6 +117,7 @@ import './v575-storefront-polish.css';
 import './v576-storefront-readability.css';
 import './v580-storefront-polish.css';
 import './v581-storefront-polish.css';
+import './v582-storefront-ui-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -334,6 +335,12 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
           </nav>
         </div>
       </section>
+      <div className="tf582-storefront-pills" aria-label="Điểm nổi bật khi mua sắm">
+        <span><ShieldCheck/>Chính hãng</span>
+        <span><Check/>Thanh toán an toàn</span>
+        <Link to="/track-order"><PackageCheck/>Theo dõi đơn hàng</Link>
+        <span><Clock3/>Hỗ trợ sau bán</span>
+      </div>
 
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
         <DialogContent className="lux-search-dialog-v29" overlayClassName="lux-search-overlay-v29" description="Tìm đồng hồ theo thương hiệu, tên sản phẩm hoặc mã SKU.">

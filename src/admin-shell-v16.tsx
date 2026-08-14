@@ -31,6 +31,7 @@ import './v564-admin-polish.css';
 import './v565-admin-performance.css';
 import './v566-admin-polish.css';
 import './v580-admin-polish.css';
+import './v582-admin-ui-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -221,7 +222,21 @@ export function AdminLayoutV16(){
         </div>
       </header>
       <div className={`v16-admin-page ${meta.fullBleed?'is-fullbleed':''}`}>
-        {!meta.fullBleed&&<header className="v16-page-header"><div><div className="v35-page-breadcrumb"><Link to="/admin">TimeForge</Link><ChevronRight/><span>{meta.title}</span></div><small>{meta.eyebrow}</small><h1>{meta.title}</h1><p>{meta.description}</p></div><ChevronRight aria-hidden="true"/></header>}
+        {!meta.fullBleed&&<header className="v16-page-header tf582-admin-page-header">
+          <div className="tf582-admin-page-copy">
+            <div className="v35-page-breadcrumb"><Link to="/admin">TimeForge</Link><ChevronRight/><span>{meta.title}</span></div>
+            <small>{meta.eyebrow}</small><h1>{meta.title}</h1><p>{meta.description}</p>
+            <div className="tf582-admin-meta-pills" aria-label="Thông tin phiên quản trị">
+              <span className={liveData?'is-live':''}><i/>{dataSourceLabel}</span>
+              <span>{density==='compact'?'Bảng gọn':'Bảng thoáng'}</span>
+              <span>{user?.role?roleLabels[user.role]:'Quản trị viên'}</span>
+            </div>
+          </div>
+          <aside className="tf582-admin-status-card" aria-label="Tóm tắt vận hành">
+            <div><small>VẬN HÀNH</small><b>{pendingOrders+pendingReturns+lowStock>0?`${pendingOrders+pendingReturns+lowStock} việc cần chú ý`:'Cửa hàng ổn định'}</b></div>
+            <dl><div><dt>Đơn mở</dt><dd>{pendingOrders}</dd></div><div><dt>Hoàn trả</dt><dd>{pendingReturns}</dd></div><div><dt>Tồn thấp</dt><dd>{lowStock}</dd></div></dl>
+          </aside>
+        </header>}
         <main className="v16-admin-content"><AdminRouteBoundary key={location.pathname}><Outlet/></AdminRouteBoundary></main>
       </div>
     </div>
