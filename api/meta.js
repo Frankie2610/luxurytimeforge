@@ -49,18 +49,29 @@ async function fetchImage(url){
 }
 
 async function sendSitemap(_req,res){
-  const site=baseSite(),today=new Date().toISOString().slice(0,10);let products=[],collections=[];
-  try{[products,collections]=await Promise.all([readPrivate('timeforge/products').then(list),readPrivate('timeforge/collections').then(list)])}catch{}
+  const site=baseSite(),today=new Date().toISOString().slice(0,10);let products=[],collections=[],posts=[];
+  try{[products,collections,posts]=await Promise.all([readPrivate('timeforge/products').then(list),readPrivate('timeforge/collections').then(list),readPrivate('timeforge/blogPosts').then(list)])}catch{}
   const urls=[
     {loc:'/',priority:'1.0',freq:'daily'},{loc:'/collections',priority:'0.9',freq:'daily'},{loc:'/watch-finder',priority:'0.7',freq:'monthly'},{loc:'/blogs',priority:'0.7',freq:'weekly'},
     {loc:'/pages/about',priority:'0.6',freq:'monthly'},{loc:'/pages/warranty',priority:'0.7',freq:'monthly'},{loc:'/pages/shipping',priority:'0.6',freq:'monthly'},{loc:'/pages/returns',priority:'0.6',freq:'monthly'},
     ...collections.filter(c=>c?.handle&&c?.status!=='draft').map(c=>({loc:`/collections/${encodeURIComponent(c.handle)}`,priority:'0.8',freq:'weekly',lastmod:String(c.updatedAt||today).slice(0,10)})),
     ...products.filter(p=>p?.handle&&p?.published!==false&&p?.status==='active').map(p=>({loc:`/products/${encodeURIComponent(p.handle)}`,priority:'0.8',freq:'weekly',lastmod:String(p.updatedAt||today).slice(0,10)})),
+    ...posts.filter(post=>post?.handle&&post?.status==='published').map(post=>({loc:`/blogs/${encodeURIComponent(post.handle)}`,priority:'0.65',freq:'monthly',lastmod:String(post.updatedAt||post.publishedAt||today).slice(0,10)})),
   ];
   const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u=>`  <url><loc>${esc(site+u.loc)}</loc>${u.lastmod?`<lastmod>${esc(u.lastmod)}</lastmod>`:''}<changefreq>${u.freq}</changefreq><priority>${u.priority}</priority></url>`).join('\n')}\n</urlset>`;
   res.setHeader('Content-Type','application/xml; charset=utf-8');
   res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
   return res.status(200).send(xml);
+}
+
+function sendRobots(_req,res){
+  const site=baseSite();
+  const body=[
+    'User-agent: *','Allow: /','Disallow: /admin/','Disallow: /checkout','Disallow: /account/','Disallow: /order-confirmation/','Disallow: /payment/','Disallow: /search',`Sitemap: ${site}/sitemap.xml`,'',
+  ].join('\n');
+  res.setHeader('Content-Type','text/plain; charset=utf-8');
+  res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
+  return res.status(200).send(body);
 }
 
 async function sendSocialImage(req,res){
@@ -98,6 +109,7 @@ export default async function handler(req,res){
     if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');
     return sendSitemap(req,res);
   }
+  if(resource==='robots'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendRobots(req,res)}
   if(resource==='social-image')return sendSocialImage(req,res);
   return res.status(404).json({error:'Unknown metadata resource'});
 }

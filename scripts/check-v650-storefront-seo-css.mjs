@@ -14,15 +14,15 @@ ok('warranty title reduced',polish.includes('font-size:clamp(34px,4vw,48px)!impo
 ok('two customer decision tools added',tools.includes('Tư vấn kích thước cổ tay')&&tools.includes('Báo khi giá giảm'));
 ok('price alerts protected by Firebase rules',rules.includes('"priceAlerts"')&&rules.includes("newData.child('source').val() == 'product_page'"));
 ok('price alerts have automatic notification processor',fs.existsSync('api/price-alerts/process.js')&&read('src/context.tsx').includes('/api/price-alerts/process')&&read('api/price-alerts/process.js').includes("status:'notified'"));
-ok('admin brighter final owner exists',admin.includes('background:linear-gradient(180deg,#fbfdfb,#eef4ef)')&&admin.includes('--tf65-admin-green'));
+ok('admin V65 polish is feature-scoped after V64 layout restore',admin.includes('.tf65-settings-seo')&&!admin.includes('.v16-admin-sidebar')&&!admin.includes('.v16-admin-page'));
 ok('dynamic sitemap API exists',(fs.existsSync('api/sitemap.js')||fs.existsSync('api/meta.js'))&&read('vercel.json').includes('/sitemap.xml'));
 ok('SEO JSON-LD has Product and BreadcrumbList',seo.includes("'@type':'Product'")&&seo.includes("'@type':'BreadcrumbList'"));
 ok('Google verification hook exists',seo.includes('VITE_GOOGLE_SITE_VERIFICATION')&&read('vite.config.ts').includes('googleVerificationMeta'));
 ok('Admin can edit homepage Google SEO',adminTsx.includes('SEO Google')&&adminTsx.includes('seoTitle')&&adminTsx.includes('seoDescription')&&profile.includes('seoTitle'));
 ok('newsletter uses narrow actions context',news.includes('useNewsletterActions')&&!news.includes('useCommerce'));
 const cssFiles=fs.readdirSync('src').filter(x=>x.endsWith('.css'));let cssBytes=0,important=0;for(const f of cssFiles){const text=read(path.join('src',f));cssBytes+=Buffer.byteLength(text);postcss.parse(text).walkDecls(d=>{if(d.important)important++})}
-ok('CSS source below 900 KB after dead-file cleanup',cssBytes<900000);
-ok('important count below 2500',important<2500);
-const dead=JSON.parse(read('docs/CSS_DEAD_FILES_V65.json'));ok('dead CSS manifest records >400KB removed',dead.totalBytes>400000&&dead.files.length>=20);
+ok('CSS source stays within V0.64 visual-baseline budget plus scoped features',cssBytes<1300000);
+ok('important count stays within restored V0.64 baseline budget',important<2750);
+const dead=JSON.parse(read('docs/CSS_DEAD_FILES_V65.json'));ok('unsafe V65 dead-CSS cleanup is explicitly reverted',dead.status==='reverted_in_0.65.3'&&dead.safeToDelete===false);
 const codeFiles=fs.readdirSync('src').filter(x=>/\.(tsx?|jsx?)$/.test(x));const imports=[];for(const f of codeFiles){const t=read(path.join('src',f));for(const m of t.matchAll(/import\s*['\"]([^'\"]+\.css)['\"]/g)){if(m[1].startsWith('./'))imports.push(path.join('src',m[1].slice(2)))}}ok('all CSS imports resolve',imports.every(f=>fs.existsSync(f)));
 console.log(`\nV0.65 checks: ${passed} passed, ${failed} failed`);if(failed)process.exit(1);

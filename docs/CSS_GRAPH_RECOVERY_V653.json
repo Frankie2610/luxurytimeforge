@@ -1,0 +1,42 @@
+{
+  "version": "0.65.3",
+  "baseline": "0.64.0",
+  "policy": "V0.64 visual CSS is authoritative. New CSS must be component-scoped. Dead CSS detection must traverse TS/TSX imports and nested CSS @import edges.",
+  "restoredNestedDependencies": [
+    "styles.css",
+    "sprint10.css",
+    "sprint11.css",
+    "sprint12.css",
+    "sprint13.css",
+    "sprint14.css",
+    "sprint15.css",
+    "sprint16.css",
+    "sprint17.css",
+    "sprint18.css",
+    "sprint19.css",
+    "sprint20.css",
+    "sprint21.css",
+    "sprint22.css",
+    "sprint23.css",
+    "v499-admin.css",
+    "v4917-admin-catalog.css",
+    "v4921-admin-operations.css",
+    "v4922-admin-customers.css",
+    "v4923-admin-content.css",
+    "v4925-admin-resources.css",
+    "v4915-product-editor.css",
+    "v4917-team.css",
+    "v499-theme-editor.css"
+  ],
+  "restoredFoundations": [
+    "app.css Tailwind/design-system/base/tokens imports",
+    "legacy.css storefront/admin owner",
+    "admin-v4938.css admin bridge"
+  ],
+  "allowedBaselineDifference": [
+    "v630-purchase-assist.css (tf63-scoped only)",
+    "v650-storefront-polish.css (targeted storefront components only)",
+    "v650-admin-polish.css (SEO settings only)",
+    "v650-product-tools.css (tf65-scoped only)"
+  ]
+}

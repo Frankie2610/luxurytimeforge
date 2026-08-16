@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+let pass=0,fail=0;const ok=(name,v)=>{if(v){console.log('✓',name);pass++}else{console.error('✗',name);fail++}};
+const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));const seo=fs.readFileSync('src/seo-head-v60.tsx','utf8');const meta=fs.readFileSync('api/meta.js','utf8');const vercel=fs.readFileSync('vercel.json','utf8');
+ok('version is 0.65.4',pkg.version==='0.65.4');
+ok('build enforces CSS budget',pkg.scripts.build.includes('check-css-budget-v654.mjs'));
+ok('CSS graph audit traverses nested @import',fs.readFileSync('scripts/css-graph-audit-v654.mjs','utf8').includes('nested CSS @import'));
+ok('pagination canonical keeps page query',seo.includes("searchParams.get('page')"));
+ok('filter params are not copied into canonical',seo.includes('canonicalSearch'));
+ok('sitemap includes published blog posts',meta.includes("readPrivate('timeforge/blogPosts')")&&meta.includes('/blogs/'));
+ok('dynamic robots endpoint exists',meta.includes("resource==='robots'")&&vercel.includes('resource=robots'));
+ok('Organization exposes sameAs social profiles',seo.includes('sameAs'));
+console.log(`\nV0.65.4 checks: ${pass} passed, ${fail} failed`);if(fail)process.exit(1);

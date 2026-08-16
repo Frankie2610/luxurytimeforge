@@ -1,3 +1,4 @@
+import './legacy.css';
 import {
   ArrowLeft,
   ArrowRight,

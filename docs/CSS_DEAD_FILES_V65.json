@@ -107,5 +107,8 @@
       "bytes": 25729
     }
   ],
-  "totalBytes": 425070
+  "totalBytes": 425070,
+  "status": "reverted_in_0.65.3",
+  "revertedReason": "V0.65 dead-file analysis missed nested CSS @import edges and removed V0.64 visual foundations. Files were restored in V0.65.3.",
+  "safeToDelete": false
 }

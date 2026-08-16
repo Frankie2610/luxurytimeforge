@@ -22,6 +22,7 @@ export function SeoHeadV60(){
   const seo=useMemo(()=>{
     const site=(String(import.meta.env.VITE_PUBLIC_SITE_URL||'').trim()||FALLBACK_SITE).replace(/\/$/,'');
     const storeName=resolveStoreName(storeProfile.storeName),path=location.pathname;
+    const searchParams=new URLSearchParams(location.search);const pageParam=Number(searchParams.get('page')||'1');const page=Number.isInteger(pageParam)&&pageParam>1?pageParam:1;
     const productHandle=path.startsWith('/products/')?decodeURIComponent(path.slice('/products/'.length)):'';
     const product=productHandle?products.find(item=>item.handle===productHandle):undefined;
     const collectionHandle=path.startsWith('/collections/')?decodeURIComponent(path.slice('/collections/'.length)):'';
@@ -36,9 +37,9 @@ export function SeoHeadV60(){
     else if(pageSeo[path]){title=`${pageSeo[path].title} | ${storeName}`;description=pageSeo[path].description}
     else if(path.startsWith('/pages/')){const slug=path.split('/').filter(Boolean).pop()||'';title=`${slug.replace(/-/g,' ')} | ${storeName}`}
     else if(path==='/search'||path==='/wishlist'||path==='/compare'||path==='/cart'||path==='/checkout'||path==='/404'||path.startsWith('/account')||path.startsWith('/order-confirmation')||path.startsWith('/payment/')||path.startsWith('/admin'))noindex=true;
-    const canonicalPath=path==='/'?'':path.replace(/\/$/,'');const canonical=`${site}${canonicalPath}`;const absoluteImage=/^https?:\/\//i.test(image)?image:`${site}${image.startsWith('/')?'':'/'}${image}`;
+    const canonicalPath=path==='/'?'':path.replace(/\/$/,'');const paginatedRoute=path==='/collections'||path.startsWith('/collections/')||path==='/blogs';const canonicalSearch=paginatedRoute&&page>1?`?page=${page}`:'';if(canonicalSearch)title=`${title} – Trang ${page}`;const canonical=`${site}${canonicalPath}${canonicalSearch}`;const absoluteImage=/^https?:\/\//i.test(image)?image:`${site}${image.startsWith('/')?'':'/'}${image}`;
     return{site,storeName,path,title:clamp(clean(title),68),description:clamp(clean(description),158),image:absoluteImage,type,noindex,canonical,product,collection};
-  },[collections,location.pathname,products,storeProfile]);
+  },[collections,location.pathname,location.search,products,storeProfile]);
 
   useEffect(()=>{
     document.documentElement.lang='vi';document.title=seo.title;
@@ -49,12 +50,13 @@ export function SeoHeadV60(){
     setMeta('meta[name="twitter:card"]',{name:'twitter:card',content:'summary_large_image'});setMeta('meta[name="twitter:title"]',{name:'twitter:title',content:seo.title});setMeta('meta[name="twitter:description"]',{name:'twitter:description',content:seo.description});setMeta('meta[name="twitter:image"]',{name:'twitter:image',content:seo.image});setLink('canonical',seo.canonical);
     const id='tf60-structured-data';let script=document.getElementById(id) as HTMLScriptElement|null;if(!script){script=document.createElement('script');script.id=id;script.type='application/ld+json';document.head.appendChild(script)}
     const logo=/^https?:\/\//i.test(storeProfile.logoImage)?storeProfile.logoImage:`${seo.site}${storeProfile.logoImage||'/luxury-timeforge-logo.svg'}`;
-    const organization={'@type':'Organization','@id':`${seo.site}/#organization`,name:seo.storeName,url:seo.site,logo,email:storeProfile.storeEmail||undefined,telephone:storeProfile.storePhone||undefined,address:storeProfile.storeAddress||undefined};
+    const sameAs=[storeProfile.facebookUrl,storeProfile.instagramUrl,storeProfile.tiktokUrl].filter(value=>/^https?:\/\//i.test(String(value||'')));
+    const organization={'@type':'Organization','@id':`${seo.site}/#organization`,name:seo.storeName,url:seo.site,logo,email:storeProfile.storeEmail||undefined,telephone:storeProfile.storePhone||undefined,address:storeProfile.storeAddress||undefined,sameAs:sameAs.length?sameAs:undefined};
     const website={'@type':'WebSite','@id':`${seo.site}/#website`,url:seo.site,name:seo.storeName,alternateName:'TimeForge',inLanguage:'vi-VN',publisher:{'@id':`${seo.site}/#organization`}};
     const crumbs=[{name:'Trang chủ',url:seo.site}];if(seo.path!=='/'){if(seo.product)crumbs.push({name:'Đồng hồ',url:`${seo.site}/collections`});crumbs.push({name:seo.product?.title||seo.collection?.title||pageSeo[seo.path]?.title||seo.title,url:seo.canonical})}
     const breadcrumb={'@type':'BreadcrumbList','@id':`${seo.canonical}#breadcrumb`,itemListElement:crumbs.map((item,index)=>({'@type':'ListItem',position:index+1,name:item.name,item:item.url}))};
     const pageEntity=seo.product?{'@type':'Product','@id':`${seo.canonical}#product`,name:seo.product.title,url:seo.canonical,image:seo.product.images.filter(Boolean),description:seo.description,sku:seo.product.sku,brand:{'@type':'Brand',name:seo.product.vendor||seo.storeName},offers:{'@type':'Offer',url:seo.canonical,priceCurrency:'VND',price:seo.product.price,availability:seo.product.inventory>0?'https://schema.org/InStock':'https://schema.org/OutOfStock',itemCondition:'https://schema.org/NewCondition',seller:{'@id':`${seo.site}/#organization`}}}:seo.collection?{'@type':'CollectionPage','@id':`${seo.canonical}#webpage`,url:seo.canonical,name:seo.title,description:seo.description,isPartOf:{'@id':`${seo.site}/#website`}}:{'@type':'WebPage','@id':`${seo.canonical}#webpage`,url:seo.canonical,name:seo.title,description:seo.description,inLanguage:'vi-VN',isPartOf:{'@id':`${seo.site}/#website`},breadcrumb:{'@id':`${seo.canonical}#breadcrumb`}};
     script.textContent=JSON.stringify({'@context':'https://schema.org','@graph':[organization,website,breadcrumb,pageEntity]});
-  },[seo,storeProfile.logoImage,storeProfile.storeAddress,storeProfile.storeEmail,storeProfile.storePhone]);
+  },[seo,storeProfile.facebookUrl,storeProfile.instagramUrl,storeProfile.logoImage,storeProfile.storeAddress,storeProfile.storeEmail,storeProfile.storePhone,storeProfile.tiktokUrl]);
   return null;
 }
