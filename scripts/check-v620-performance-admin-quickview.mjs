@@ -18,8 +18,8 @@ ok('quick view lazy chunk',storefront.includes("lazy(() => import('./quick-view-
 ok('quick view action on cards',storefront.includes('tf62-card-quick-view')&&storefront.includes('Xem nhanh'));
 ok('quick view cart flow',quick.includes('addToCart(product.id,variant.id,1)')&&quick.includes('Thêm vào giỏ'));
 ok('quick view specs',quick.includes('extractProductSpecsV571')&&quick.includes('Chống nước'));
-ok('quick view responsive CSS',quickCss.includes('@media(max-width:760px)')&&quickCss.includes('position:sticky'));
-ok('card quick view mobile control',cardCss.includes('@media(max-width:680px)')&&cardCss.includes('.tf62-card-quick-view'));
+ok('quick view responsive CSS',/@media\s*\(max-width:760px\)/.test(quickCss)&&quickCss.includes('position:sticky'));
+ok('card quick view mobile control',/@media\s*\(max-width:680px\)/.test(cardCss)&&cardCss.includes('.tf62-card-quick-view'));
 ok('collection DOM bounded',storefront.includes('Math.max(24, Math.min(48, configuredPageSize))'));
 ok('new theme page size',theme.includes('pageSize: 36'));
 ok('editor page size range',editor.includes('pageSize: {min: 24, max: 48, step: 12}'));

@@ -1,0 +1,12 @@
+{
+  "root": "/mnt/data/LuxuryTimeForge-v0.64.0_work/LuxuryTimeForge-v0.63.0/src",
+  "files": 142,
+  "bytes": 1278930,
+  "rules": 12856,
+  "declarations": 39126,
+  "important": 2695,
+  "contextDuplicateGroups": 1075,
+  "contextDuplicateExcessRules": 1502,
+  "exactDuplicateRuleGroups": 31,
+  "exactDuplicateExcessRules": 33
+}

@@ -1,15 +1,1 @@
-.tf4912-cart-lines{align-items:stretch}
-.tf4912-cart-line{align-items:center!important;contain:layout paint style;transform:none!important;transition:border-color .14s ease,box-shadow .14s ease!important}
-.tf4912-cart-line-image{display:grid!important;place-items:center!important;align-self:center;justify-self:center;overflow:hidden}
-.tf4912-cart-line-image .tf4912-product-image{width:100%;height:100%;margin:auto;object-fit:contain;object-position:center}
-.tf4912-cart-line-copy{align-self:center;align-content:center}
-.tf4912-cart-line-price{align-self:center}
-.tf4912-cart-line :is(button,a){touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.tf4912-quantity button,.tf4912-remove-line{transition:background-color .12s ease,color .12s ease,border-color .12s ease!important}
-@supports(content-visibility:auto){.tf4912-cart-line{content-visibility:auto;contain-intrinsic-size:auto 152px}}
-@media(max-width:640px){.tf4912-cart-line{align-content:center}
-.tf4912-cart-line-image{grid-row:1/3}
-.tf4912-cart-line-copy,.tf4912-cart-line-price{align-self:center}
-@supports(content-visibility:auto){.tf4912-cart-line{contain-intrinsic-size:auto 110px}}}
-@media(hover:none){.tf4912-cart-line:hover{transform:none!important}}
-@media(prefers-reduced-motion:reduce){.tf4912-cart-line,.tf4912-quantity button,.tf4912-remove-line{transition:none!important}}
+.tf4912-cart-lines{align-items:stretch}.tf4912-cart-line{align-items:center!important;contain:layout paint style;transform:none!important;transition:border-color .14s ease,box-shadow .14s ease!important}.tf4912-cart-line-image{display:grid!important;place-items:center!important;align-self:center;justify-self:center;overflow:hidden}.tf4912-cart-line-image .tf4912-product-image{width:100%;height:100%;margin:auto;object-fit:contain;object-position:center}.tf4912-cart-line-copy{align-self:center;align-content:center}.tf4912-cart-line-price{align-self:center}.tf4912-cart-line :is(button,a){touch-action:manipulation;-webkit-tap-highlight-color:transparent}.tf4912-quantity button,.tf4912-remove-line{transition:background-color .12s ease,color .12s ease,border-color .12s ease!important}@supports (content-visibility:auto){.tf4912-cart-line{content-visibility:auto;contain-intrinsic-size:auto 152px}}@media (max-width:640px){.tf4912-cart-line{align-content:center}.tf4912-cart-line-image{grid-row:1/3}.tf4912-cart-line-copy,.tf4912-cart-line-price{align-self:center}@supports (content-visibility:auto){.tf4912-cart-line{contain-intrinsic-size:auto 110px}}}@media (hover:none){.tf4912-cart-line:hover{transform:none!important}}@media (prefers-reduced-motion:reduce){.tf4912-cart-line,.tf4912-quantity button,.tf4912-remove-line{transition:none!important}}

@@ -1,7 +1,1 @@
-.tf53-wishlist-page .tf55-wishlist-sort>select{font-size:11px!important;font-weight:680!important;letter-spacing:-.005em;line-height:1.2}
-.tf53-wishlist-page .tf55-wishlist-sort>select option{font-size:12px;font-weight:500}
-.tf53-wishlist-page .tf55-wishlist-sort:focus-within{border-color:#789985;box-shadow:0 0 0 3px rgba(51,105,70,.1),0 5px 16px rgba(30,57,39,.055)}
-@media(max-width:1024px){.tf53-wishlist-page .tf55-wishlist-sort>select{font-size:10.5px!important}
-.tf53-wishlist-page .tf55-wishlist-sort>select option{font-size:11px}}
-@media(max-width:640px){.tf53-wishlist-page .tf55-wishlist-sort>select{font-size:10px!important}
-.tf53-wishlist-page .tf55-wishlist-sort>select option{font-size:10px}}
+.tf53-wishlist-page .tf55-wishlist-sort>select{font-size:11px!important;font-weight:680!important;letter-spacing:-.005em;line-height:1.2}.tf53-wishlist-page .tf55-wishlist-sort>select option{font-size:12px;font-weight:500}.tf53-wishlist-page .tf55-wishlist-sort:focus-within{border-color:#789985;box-shadow:0 0 0 3px rgba(51,105,70,.1),0 5px 16px rgba(30,57,39,.055)}@media (max-width:1024px){.tf53-wishlist-page .tf55-wishlist-sort>select{font-size:10.5px!important}.tf53-wishlist-page .tf55-wishlist-sort>select option{font-size:11px}}@media (max-width:640px){.tf53-wishlist-page .tf55-wishlist-sort>select{font-size:10px!important}.tf53-wishlist-page .tf55-wishlist-sort>select option{font-size:10px}}

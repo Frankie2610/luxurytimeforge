@@ -1,0 +1,10 @@
+{
+  "mergedRules": 19,
+  "byFile": {
+    "styles.css": 2,
+    "v4912-storefront.css": 15,
+    "v524-print-documents.css": 1,
+    "v601-storefront-fixes.css": 1
+  },
+  "policy": "Repeated same-selector rules are merged only when no intervening rule declares any property from the earlier rule; declarations are prepended to the later rule, preserving winner order."
+}

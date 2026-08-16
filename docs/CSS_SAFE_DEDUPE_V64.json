@@ -1,0 +1,11 @@
+{
+  "files": 142,
+  "filesChanged": 0,
+  "beforeBytes": 1307941,
+  "afterBytes": 1307941,
+  "savedBytes": 0,
+  "removedDeclarations": 0,
+  "removedRules": 0,
+  "removedAtRules": 0,
+  "policy": "Same-file/same-parent exact duplicates only; no differing-value winner removal and no cross-file route assumptions."
+}

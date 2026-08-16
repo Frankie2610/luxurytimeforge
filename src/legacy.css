@@ -1,16 +1,1 @@
-@layer legacy;
-@import "./styles.css" layer(legacy);
-@import "./sprint10.css" layer(legacy);
-@import "./sprint11.css" layer(legacy);
-@import "./sprint12.css" layer(legacy);
-@import "./sprint13.css" layer(legacy);
-@import "./sprint14.css" layer(legacy);
-@import "./sprint15.css" layer(legacy);
-@import "./sprint16.css" layer(legacy);
-@import "./sprint17.css" layer(legacy);
-@import "./sprint18.css" layer(legacy);
-@import "./sprint19.css" layer(legacy);
-@import "./sprint20.css" layer(legacy);
-@import "./sprint21.css" layer(legacy);
-@import "./sprint22.css" layer(legacy);
-@import "./sprint23.css" layer(legacy);
+@layer legacy;@import "./styles.css" layer(legacy);@import "./sprint10.css" layer(legacy);@import "./sprint11.css" layer(legacy);@import "./sprint12.css" layer(legacy);@import "./sprint13.css" layer(legacy);@import "./sprint14.css" layer(legacy);@import "./sprint15.css" layer(legacy);@import "./sprint16.css" layer(legacy);@import "./sprint17.css" layer(legacy);@import "./sprint18.css" layer(legacy);@import "./sprint19.css" layer(legacy);@import "./sprint20.css" layer(legacy);@import "./sprint21.css" layer(legacy);@import "./sprint22.css" layer(legacy);@import "./sprint23.css" layer(legacy);

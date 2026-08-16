@@ -17,7 +17,7 @@ ok('stock alert rules create-only',rules.includes('"stockAlerts"')&&rules.includ
 ok('installment periods',assist.includes('const MONTHS=[3,6,9,12] as const'));
 ok('installment upfront choices',assist.includes('const UPFRONT=[0,20,30] as const'));
 ok('installment disclaimer',assist.includes('chưa bao gồm lãi/phí của ngân hàng'));
-ok('purchase assist responsive',assistCss.includes('@media(max-width:680px)')&&assistCss.includes('grid-template-columns:1fr'));
+ok('purchase assist responsive',/@media\s*\(max-width:680px\)/.test(assistCss)&&assistCss.includes('grid-template-columns:1fr'));
 ok('new feature CSS adds no important override',!assistCss.includes('!important'));
 ok('storefront data context split',context.includes('StorefrontDataC')&&context.includes('useStorefrontData'));
 ok('product sales context split',context.includes('ProductSalesC')&&context.includes('useProductSales'));

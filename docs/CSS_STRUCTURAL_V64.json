@@ -1,0 +1,11 @@
+{
+  "files": 142,
+  "beforeBytes": 1278930,
+  "afterBytes": 1278930,
+  "savedBytes": 0,
+  "mergedSameSelector": 0,
+  "mergedSameBody": 0,
+  "mergedAtRules": 0,
+  "commentsRemoved": 0,
+  "policy": "Adjacent-only structural merges + AST whitespace/comment minification; no selector/rule reordering."
+}

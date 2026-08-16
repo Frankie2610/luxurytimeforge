@@ -1,0 +1,12 @@
+{
+  "root": "/mnt/data/v63_clean/LuxuryTimeForge-v0.63.0/src",
+  "files": 142,
+  "bytes": 1282858,
+  "rules": 12900,
+  "declarations": 38954,
+  "important": 2686,
+  "contextDuplicateGroups": 1091,
+  "contextDuplicateExcessRules": 1538,
+  "exactDuplicateRuleGroups": 31,
+  "exactDuplicateExcessRules": 33
+}
