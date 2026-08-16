@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const apiDir=path.join(root,'api');
+const files=[];
+const walk=dir=>{for(const name of fs.readdirSync(dir)){const p=path.join(dir,name);const st=fs.statSync(p);if(st.isDirectory())walk(p);else if(/\.(?:js|mjs|cjs|ts)$/.test(name))files.push(path.relative(root,p).replaceAll('\\','/'));}};
+walk(apiDir);
+const vercel=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const vite=fs.readFileSync(path.join(root,'vite.config.ts'),'utf8');
+const failures=[];
+if(files.length>12)failures.push(`Vercel Hobby supports at most 12 functions; found ${files.length}`);
+if(fs.existsSync(path.join(apiDir,'sitemap.js')))failures.push('api/sitemap.js should be merged into api/meta.js');
+if(fs.existsSync(path.join(apiDir,'social-image.js')))failures.push('api/social-image.js should be merged into api/meta.js');
+if(!files.includes('api/meta.js'))failures.push('api/meta.js is missing');
+const rewrites=vercel.rewrites||[];
+if(!rewrites.some(r=>r.source==='/sitemap.xml'&&String(r.destination).includes('/api/meta?resource=sitemap')))failures.push('sitemap rewrite is missing');
+if(!rewrites.some(r=>r.source==='/api/social-image'&&String(r.destination).includes('/api/meta?resource=social-image')))failures.push('social-image rewrite is missing');
+if(html.includes('%VITE_GOOGLE_SITE_VERIFICATION%'))failures.push('raw Vite env placeholder still exists in index.html');
+if(!html.includes('<!--TIMEFORGE_GOOGLE_VERIFICATION-->'))failures.push('Google verification marker is missing');
+if(!vite.includes('TIMEFORGE_GOOGLE_VERIFICATION'))failures.push('Vite verification injection plugin is missing');
+if(failures.length){console.error(failures.map(x=>`FAIL: ${x}`).join('\n'));process.exit(1)}
+console.log(`V0.65.2 Vercel check: PASS (${files.length}/12 functions)`);

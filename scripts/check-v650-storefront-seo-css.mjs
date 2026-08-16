@@ -15,7 +15,7 @@ ok('two customer decision tools added',tools.includes('Tư vấn kích thước 
 ok('price alerts protected by Firebase rules',rules.includes('"priceAlerts"')&&rules.includes("newData.child('source').val() == 'product_page'"));
 ok('price alerts have automatic notification processor',fs.existsSync('api/price-alerts/process.js')&&read('src/context.tsx').includes('/api/price-alerts/process')&&read('api/price-alerts/process.js').includes("status:'notified'"));
 ok('admin brighter final owner exists',admin.includes('background:linear-gradient(180deg,#fbfdfb,#eef4ef)')&&admin.includes('--tf65-admin-green'));
-ok('dynamic sitemap API exists',fs.existsSync('api/sitemap.js')&&read('vercel.json').includes('/sitemap.xml'));
+ok('dynamic sitemap API exists',(fs.existsSync('api/sitemap.js')||fs.existsSync('api/meta.js'))&&read('vercel.json').includes('/sitemap.xml'));
 ok('SEO JSON-LD has Product and BreadcrumbList',seo.includes("'@type':'Product'")&&seo.includes("'@type':'BreadcrumbList'"));
 ok('Google verification hook exists',seo.includes('VITE_GOOGLE_SITE_VERIFICATION')&&read('vite.config.ts').includes('googleVerificationMeta'));
 ok('Admin can edit homepage Google SEO',adminTsx.includes('SEO Google')&&adminTsx.includes('seoTitle')&&adminTsx.includes('seoDescription')&&profile.includes('seoTitle'));

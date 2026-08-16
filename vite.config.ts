@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import {fileURLToPath,URL} from 'node:url';
 
 function googleVerificationMeta(value:string):Plugin{
-  return{name:'timeforge-google-verification',transformIndexHtml(html){const token=value.trim();const meta=/<meta name="google-site-verification" content="%VITE_GOOGLE_SITE_VERIFICATION%"\/>/;return token?html.replace(meta,`<meta name="google-site-verification" content="${token.replace(/["<>]/g,'')}"/>`):html.replace(meta,'')}};
+  return{name:'timeforge-google-verification',transformIndexHtml(html){const token=value.trim();const marker='<!--TIMEFORGE_GOOGLE_VERIFICATION-->';return token?html.replace(marker,`<meta name="google-site-verification" content="${token.replace(/["<>]/g,'')}"/>`):html.replace(marker,'')}};
 }
 
 export default defineConfig(({mode})=>{
