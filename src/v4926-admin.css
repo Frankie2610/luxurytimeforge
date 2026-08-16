@@ -1,5 +1,5 @@
-/* Sprint 49.26 — URL-only CDN media fields. */
 .cdn-image-field{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:10px}
 .cdn-image-field>img{width:88px;height:88px;padding:5px;border:1px solid #d9dedb;border-radius:9px;background:#f7f8f7;object-fit:contain}
 .cdn-image-field>.input{min-width:0}
-@media(max-width:520px){.cdn-image-field{grid-template-columns:1fr}.cdn-image-field>img{width:100%;height:150px}}
+@media(max-width:520px){.cdn-image-field{grid-template-columns:1fr}
+.cdn-image-field>img{width:100%;height:150px}}

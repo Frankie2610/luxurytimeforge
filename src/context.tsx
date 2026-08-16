@@ -69,7 +69,7 @@ type V={
  theme:Theme;draftTheme:Theme;themeState:ThemeState;storeProfile:StoreProfile;headers:string[];firebaseEnabled:boolean;isLoading:boolean;dataSource:CommerceDataSource;dataError:string;
  setHeaders:(h:string[])=>void;saveProduct:(p:Product)=>void;deleteProducts:(ids:string[])=>void;replaceProducts:(p:Product[])=>Promise<void>;mergeProducts:(p:Product[])=>Promise<void>;
  saveCollection:(c:Collection)=>void;deleteCollection:(id:string)=>void;saveProductGroup:(group:ProductGroup)=>void;replaceProductGroups:(groups:ProductGroup[])=>void;deleteProductGroup:(id:string)=>void;saveCustomer:(u:Customer)=>void;
- subscribeNewsletter:(email:string,source?:string)=>'created'|'exists'|'reactivated'|'invalid';updateNewsletterSubscriber:(id:string,patch:Partial<NewsletterSubscriber>)=>void;deleteNewsletterSubscriber:(id:string)=>void;saveReview:(review:StoreReview)=>void;deleteReview:(id:string)=>void;
+ subscribeNewsletter:(email:string,source?:string)=>'created'|'exists'|'reactivated'|'invalid';updateNewsletterSubscriber:(id:string,patch:Partial<NewsletterSubscriber>)=>void;deleteNewsletterSubscriber:(id:string)=>void;saveReview:(review:StoreReview)=>Promise<void>;deleteReview:(id:string)=>void;
  saveThemeDraft:(t:Theme)=>void;publishTheme:(t?:Theme,note?:string)=>void;restoreThemeVersion:(id:string)=>void;saveStoreProfile:(profile:Omit<StoreProfile,'updatedAt'>)=>Promise<void>;
  evaluateDiscount:(code:string,subtotal:number,shipping?:number)=>DiscountEvaluation;saveDiscount:(d:Discount)=>void;deleteDiscount:(id:string)=>void;
  createOrder:(payload:CheckoutPayload)=>Order|null;submitStorefrontOrder:(payload:CheckoutPayload)=>Promise<Order>;createAdminOrder:(order:Order)=>Order|null;updateOrder:(id:string,patch:Partial<Order>)=>void;cancelOrder:(id:string)=>void;
@@ -77,6 +77,12 @@ type V={
  reset:()=>void;collectionProducts:(c:Collection)=>Product[]
 };
 const C=createContext<V|null>(null);
+type ProductCatalogContextValue={products:Product[];productGroups:ProductGroup[]};
+const ProductCatalogC=createContext<ProductCatalogContextValue|null>(null);
+type StorefrontDataContextValue={products:Product[];collections:Collection[];productGroups:ProductGroup[];theme:Theme;storeProfile:StoreProfile;isLoading:boolean;dataError:string;collectionProducts:(collection:Collection)=>Product[]};
+const StorefrontDataC=createContext<StorefrontDataContextValue|null>(null);
+type ProductSalesContextValue=ReadonlyMap<string,number>;
+const ProductSalesC=createContext<ProductSalesContextValue|null>(null);
 type CartActions={addToCart:(pid:string,vid:string,q?:number)=>void;updateCart:(pid:string,vid:string,q:number)=>void;clearCart:()=>void};
 const CartStateC=createContext<CartLine[]|null>(null);
 const CartActionsC=createContext<CartActions|null>(null);
@@ -171,7 +177,10 @@ export function CommerceProvider({children}:{children:ReactNode}){
     if(collectionResult.status==='fulfilled')setCollections(normalizeCollections(collectionResult.value));
     if(groupResult.status==='fulfilled')setProductGroups(firebaseList(groupResult.value));
     if(discountResult.status==='fulfilled')setDiscounts(firebaseList(discountResult.value));
-    if(reviewsResult.status==='fulfilled')setReviews(firebaseList(reviewsResult.value));
+    if(reviewsResult.status==='fulfilled'){
+     const remoteReviews=firebaseList(reviewsResult.value);
+     setReviews(current=>remoteReviews.length?remoteReviews:(current.some(item=>item.status==='published')?current:remoteReviews));
+    }
     const published=publishedResult.status==='fulfilled'&&publishedResult.value?normalizeTheme(publishedResult.value):null;
     const firebaseIdentityFallback=published?storeProfileFromTheme(published):DEFAULT_STORE_PROFILE;
     const remoteProfile=profileResult.status==='fulfilled'&&profileResult.value
@@ -256,7 +265,12 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const subscribeNewsletter=(rawEmail:string,source='footer')=>{const email=rawEmail.trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return'invalid' as const;const existing=newsletterSubscribers.find(item=>item.email===email);const now=new Date().toISOString();if(existing?.status==='active')return'exists' as const;const created:NewsletterSubscriber={id:existing?.id||newsletterKey(email),email,source,status:'active',createdAt:existing?.createdAt||now,updatedAt:now};const next:NewsletterSubscriber[]=existing?newsletterSubscribers.map(item=>item.id===existing.id?created:item):[created,...newsletterSubscribers];setNewsletterSubscribers(next);if(firebaseClient.enabled)void firebaseClient.write(`timeforge/newsletterSubscribers/${created.id}`,created).catch(()=>{});const matching=customers.find(item=>item.email.toLowerCase()===email);if(matching&&!matching.acceptsMarketing){const nextCustomers=customers.map(item=>item.id===matching.id?{...item,acceptsMarketing:true}:item);setCustomers(nextCustomers);sync('timeforge/customers',nextCustomers)}log('customer',existing?.id||email,existing?'Kích hoạt lại email marketing':'Đăng ký email marketing',email);return existing?'reactivated' as const:'created' as const};
  const updateNewsletterSubscriber=(id:string,patch:Partial<NewsletterSubscriber>)=>setNewsletterSubscribers(cur=>{const now=new Date().toISOString();const updated=cur.find(item=>item.id===id);const next=cur.map(item=>item.id===id?{...item,...patch,updatedAt:now}:item);const value=updated?{...updated,...patch,updatedAt:now}:null;if(value&&firebaseClient.enabled)void firebaseClient.write(`timeforge/newsletterSubscribers/${id}`,value).catch(()=>{});return next});
  const deleteNewsletterSubscriber=(id:string)=>setNewsletterSubscribers(cur=>{const found=cur.find(item=>item.id===id);const next=cur.filter(item=>item.id!==id);if(firebaseClient.enabled)void firebaseClient.remove(`timeforge/newsletterSubscribers/${id}`).catch(()=>{});if(found)log('customer',id,'Xóa email marketing',found.email);return next});
- const saveReview=(review:StoreReview)=>setReviews(cur=>{const exists=cur.some(item=>item.id===review.id);const next=exists?cur.map(item=>item.id===review.id?review:item):[review,...cur];if(firebaseClient.enabled)void firebaseClient.write(`timeforge/reviews/${review.id}`,review).catch(reportFirebaseError);log('customer',review.id,exists?'Cập nhật testimonial':'Tạo testimonial',review.customerName);return next});
+ const saveReview=async(review:StoreReview)=>{
+  const exists=reviews.some(item=>item.id===review.id);
+  if(firebaseClient.enabled)await firebaseClient.write(`timeforge/reviews/${review.id}`,review);
+  setReviews(cur=>{const found=cur.some(item=>item.id===review.id);return found?cur.map(item=>item.id===review.id?review:item):[review,...cur]});
+  log('customer',review.id,exists?'Cập nhật testimonial':'Tạo testimonial',review.customerName);
+ };
  const deleteReview=(id:string)=>setReviews(cur=>{const found=cur.find(item=>item.id===id);const next=cur.filter(item=>item.id!==id);if(firebaseClient.enabled)void firebaseClient.remove(`timeforge/reviews/${id}`).catch(reportFirebaseError);if(found)log('customer',id,'Xóa testimonial',found.customerName);return next});
  const saveThemeDraft=(theme:Theme)=>setThemeState(cur=>{const n={...cur,draft:normalizeTheme(theme)};sync('timeforge/themes/draft',n.draft);return n});
  const publishTheme=(theme?:Theme,note='Xuất bản từ Theme Editor')=>setThemeState(cur=>{const next=normalizeTheme(theme||cur.draft);const version:ThemeVersion={id:uid('theme'),createdAt:new Date().toISOString(),note,theme:normalizeTheme(cur.published)};const n={draft:structuredClone(next),published:next,publishedAt:new Date().toISOString(),versions:[version,...(cur.versions||[])].slice(0,15)};sync('timeforge/themes/draft',n.draft);sync('timeforge/themes/published',n.published);sync('timeforge/themes/versions',n.versions);log('theme',String(next.version),'Xuất bản theme',next.name);return n});
@@ -371,8 +385,14 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const draftTheme=useMemo(()=>applyStoreProfileToTheme(themeState.draft,storeProfile),[themeState.draft,storeProfile]);
  const value=useMemo(()=>({products,collections,productGroups,customers,newsletterSubscribers,reviews,orders,discounts,adjustments,activities,theme:activeTheme,draftTheme,themeState,storeProfile,headers,firebaseEnabled:firebaseClient.enabled,isLoading,dataSource,dataError,setHeaders,saveProduct,deleteProducts,replaceProducts,mergeProducts,saveCollection,deleteCollection,saveProductGroup,replaceProductGroups,deleteProductGroup,saveCustomer,subscribeNewsletter,updateNewsletterSubscriber,deleteNewsletterSubscriber,saveReview,deleteReview,saveThemeDraft,publishTheme,restoreThemeVersion,saveStoreProfile,evaluateDiscount,saveDiscount,deleteDiscount,createOrder,submitStorefrontOrder,createAdminOrder,updateOrder,cancelOrder,adjustInventory,reset,collectionProducts}),[products,collections,productGroups,customers,newsletterSubscribers,reviews,orders,discounts,adjustments,activities,activeTheme,draftTheme,themeState,storeProfile,headers,isLoading,dataSource,dataError,collectionProducts]);
  const cartActions=useMemo<CartActions>(()=>({addToCart,updateCart,clearCart}),[addToCart,updateCart,clearCart]);
- return <C.Provider value={value}><CartActionsC.Provider value={cartActions}><CartStateC.Provider value={cart}>{children}</CartStateC.Provider></CartActionsC.Provider></C.Provider>
+ const productCatalog=useMemo<ProductCatalogContextValue>(()=>({products,productGroups}),[products,productGroups]);
+ const storefrontData=useMemo<StorefrontDataContextValue>(()=>({products,collections,productGroups,theme:activeTheme,storeProfile,isLoading,dataError,collectionProducts}),[products,collections,productGroups,activeTheme,storeProfile,isLoading,dataError,collectionProducts]);
+ const productSales=useMemo<ProductSalesContextValue>(()=>{const counts=new Map<string,number>();orders.forEach(order=>{if(order.status==='cancelled')return;order.lines.forEach(line=>counts.set(line.productId,(counts.get(line.productId)||0)+line.quantity))});return counts},[orders]);
+ return <C.Provider value={value}><StorefrontDataC.Provider value={storefrontData}><ProductCatalogC.Provider value={productCatalog}><ProductSalesC.Provider value={productSales}><CartActionsC.Provider value={cartActions}><CartStateC.Provider value={cart}>{children}</CartStateC.Provider></CartActionsC.Provider></ProductSalesC.Provider></ProductCatalogC.Provider></StorefrontDataC.Provider></C.Provider>
 }
 export const useCommerce=()=>{const c=useContext(C);if(!c)throw new Error('CommerceProvider missing');return c};
+export const useStorefrontData=()=>{const c=useContext(StorefrontDataC);if(!c)throw new Error('StorefrontDataProvider missing');return c};
+export const useProductCatalog=()=>{const c=useContext(ProductCatalogC);if(!c)throw new Error('ProductCatalogProvider missing');return c};
+export const useProductSales=()=>{const c=useContext(ProductSalesC);if(!c)throw new Error('ProductSalesProvider missing');return c};
 export const useCartState=()=>{const cart=useContext(CartStateC);if(!cart)throw new Error('CartStateProvider missing');return cart};
 export const useCartActions=()=>{const actions=useContext(CartActionsC);if(!actions)throw new Error('CartActionsProvider missing');return actions};

@@ -1,0 +1,147 @@
+{
+  "baselineV62": {
+    "files": 141,
+    "bytes": 1629534
+  },
+  "beforeOptimizationIncludingV63FeatureCss": {
+    "files": 142,
+    "bytes": 1634865
+  },
+  "optimized": {
+    "files": 142,
+    "bytes": 1282858
+  },
+  "savedVsV62Bytes": 346676,
+  "savedVsV62Percent": 21.27,
+  "savedVsPreOptimizationBytes": 352007,
+  "savedVsPreOptimizationPercent": 21.53,
+  "purgedUnusedRules": 2339,
+  "supersededDeclarationsRemoved": 1709,
+  "supersededByGroup": {
+    "legacy": 653,
+    "storefront": 871,
+    "admin": 185
+  },
+  "cascadeWinnerEquivalence": {
+    "legacy": {
+      "retainedWinners": 9337,
+      "mismatches": 0,
+      "sample": []
+    },
+    "storefront": {
+      "retainedWinners": 9820,
+      "mismatches": 0,
+      "sample": []
+    },
+    "admin": {
+      "retainedWinners": 8219,
+      "mismatches": 0,
+      "sample": []
+    }
+  },
+  "topPurgedFiles": [
+    [
+      "v4912-storefront.css",
+      1076
+    ],
+    [
+      "sprint18.css",
+      240
+    ],
+    [
+      "sprint10.css",
+      231
+    ],
+    [
+      "styles.css",
+      220
+    ],
+    [
+      "sprint11.css",
+      161
+    ],
+    [
+      "sprint14.css",
+      74
+    ],
+    [
+      "sprint22.css",
+      74
+    ],
+    [
+      "sprint21.css",
+      68
+    ],
+    [
+      "sprint20.css",
+      48
+    ],
+    [
+      "sprint23.css",
+      27
+    ],
+    [
+      "sprint15.css",
+      25
+    ],
+    [
+      "v4913-storefront-compat.css",
+      17
+    ],
+    [
+      "sprint17.css",
+      8
+    ],
+    [
+      "v570-meta-ads.css",
+      7
+    ],
+    [
+      "v576-storefront-readability.css",
+      7
+    ],
+    [
+      "v4912-commerce.css",
+      6
+    ],
+    [
+      "v4922-admin-customers.css",
+      6
+    ],
+    [
+      "v499-admin.css",
+      6
+    ],
+    [
+      "sprint16.css",
+      5
+    ],
+    [
+      "auth.css",
+      4
+    ],
+    [
+      "sprint13.css",
+      3
+    ],
+    [
+      "v4927-commerce.css",
+      3
+    ],
+    [
+      "v502-commerce-polish.css",
+      3
+    ],
+    [
+      "v573-commerce-polish.css",
+      3
+    ],
+    [
+      "v4915-commerce-fixes.css",
+      2
+    ]
+  ],
+  "parseErrors": [],
+  "importantDeclarationsAfter": 2686,
+  "responsiveRegressionGuard": "Restored final 366–520px two-column owner and <=365px one-column owner after regression caught an over-pruned declaration."
+}

@@ -1,13 +1,4 @@
-/* Sprint 49.15 — checkout contrast and badge alignment fixes. */
-.tf4912-checkout-page .tf4912-checkout-cart-link>span{
-  right:-6px;top:-6px;min-width:21px;width:auto;height:21px;display:flex;align-items:center;justify-content:center;
-  padding:0 5px;border:2px solid #fff;border-radius:999px;background:#8f1f34;color:#fff;
-  font-size:8px;font-weight:950;line-height:1;text-align:center;transform:none;
-}
 .tf4912-checkout-page .tf4912-delivery-method :where(b,small,strong){opacity:1}
 .tf4912-checkout-page .tf4912-delivery-method b{color:#211b15}
 .tf4912-checkout-page .tf4912-delivery-method small{color:#5d5143}
 .tf4912-checkout-page .tf4912-delivery-method strong{color:#17603f}
-@media(max-width:680px){
-  .tf4912-checkout-page .tf4912-checkout-cart-link>span{right:-4px;top:-4px;min-width:19px;height:19px;font-size:7px}
-}

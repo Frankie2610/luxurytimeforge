@@ -46,7 +46,12 @@ export function useCompareV57():CompareValue{
   return useMemo(()=>({ids,includes,toggle:toggleId,remove:removeId,clear:clearIds,replace:replaceIds,limit:LIMIT}),[ids,includes]);
 }
 
-export const useCompareItemV57=(id:string)=>{const compare=useCompareV57();return{...compare,selected:Boolean(id&&compare.includes(id))}};
+const serverItemSnapshot=()=>false;
+export const useCompareItemV57=(id:string)=>{
+  const selected=useSyncExternalStore(subscribe,()=>Boolean(id&&currentIds.includes(id)),serverItemSnapshot);
+  const toggle=useCallback((productId=id)=>toggleId(productId),[id]);
+  return useMemo(()=>({selected,toggle}),[selected,toggle]);
+};
 
 export function CompareDockV57(){
   const{ids,remove,clear,replace}=useCompareV57();

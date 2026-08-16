@@ -32,6 +32,7 @@ import './v565-admin-performance.css';
 import './v566-admin-polish.css';
 import './v580-admin-polish.css';
 import './v582-admin-ui-polish.css';
+import './v620-admin-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,

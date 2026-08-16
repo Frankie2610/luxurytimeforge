@@ -1,74 +1,10 @@
-/* V0.56.4 — consistent navigation type, editable footer identity and low-cost interactions. */
-#tf-storefront-header .lux-main-nav>a,
-#tf-storefront-header .lux-search-button>span,
-#tf-storefront-brand-rail .tf-brand-rail-nav-v39>a,
-#tf-storefront-brand-rail .tf-brand-rail-nav-v39>a>span,
-.tf-storefront-v4912 .tf563-mobile-menu nav>a{
-  font-size:13px!important;
-  line-height:1.3!important;
-}
-
-.tf-storefront-v4912 .tf-footer-brand-v4910{
-  align-items:start;
-  grid-template-rows:auto auto;
-}
-.tf-storefront-v4912 .tf-footer-brand-v4910>.tf522-store-brand{
-  grid-column:1;
-  grid-row:1/3;
-  align-self:start;
-}
-.tf-storefront-v4912 .tf-footer-brand-v4910>.tf564-footer-store-name{
-  min-width:0;
-  grid-column:2;
-  grid-row:1;
-  display:block;
-  overflow:hidden;
-  margin:1px 0 7px;
-  color:#fff!important;
-  font-family:var(--lux-heading-font,Georgia,serif);
-  font-size:clamp(16px,1.45vw,18px)!important;
-  font-weight:900!important;
-  letter-spacing:-.015em;
-  line-height:1.15;
-  text-shadow:0 2px 12px rgba(0,0,0,.18);
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.tf-storefront-v4912 .tf-footer-brand-v4910>.tf-footer-brand-copy-v4910{grid-column:2;grid-row:2}
-
-.tf-storefront-v4912 .tf564-pdp-share{
-  width:44px;
-  height:44px;
-  flex:0 0 44px;
-  display:grid;
-  place-items:center;
-  padding:0;
-  border:1px solid #aeb6b0;
-  border-radius:8px;
-  background:#fff;
-  color:#264934;
-  cursor:pointer;
-  transition:border-color .14s ease,background-color .14s ease,color .14s ease;
-}
+#tf-storefront-header .lux-main-nav>a, #tf-storefront-header .lux-search-button>span, #tf-storefront-brand-rail .tf-brand-rail-nav-v39>a, #tf-storefront-brand-rail .tf-brand-rail-nav-v39>a>span, .tf-storefront-v4912 .tf563-mobile-menu nav>a{font-size:13px!important;line-height:1.3!important}
+.tf-storefront-v4912 .tf564-pdp-share{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;padding:0;border:1px solid #aeb6b0;border-radius:8px;background:#fff;color:#264934;cursor:pointer;transition:border-color .14s ease,background-color .14s ease,color .14s ease}
 .tf-storefront-v4912 .tf564-pdp-share:hover{border-color:#557963;background:#edf4ef;color:#173923}
 .tf-storefront-v4912 .tf564-pdp-share svg{width:17px;height:17px;stroke-width:1.8}
-
-/* These fixed overlays previously repainted a blurred page on every frame. */
-.tf-storefront-v4912 :is(.lux-search-overlay-v29,.tf510-filter-overlay){
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-.tf-storefront-v4912 :is(.tf-product-card-v4918,.lux-product-card,.tf4922-journal-card){
-  backface-visibility:hidden;
-}
-
-@media(max-width:600px){
-  .tf-storefront-v4912 .tf-footer-brand-v4910>.tf564-footer-store-name{font-size:16px!important;margin-bottom:5px}
-  .tf-storefront-v4912 .tf564-pdp-share{width:40px;height:40px;flex-basis:40px;border-radius:9px}
-}
-@media(hover:none){
-  .tf-storefront-v4912 .tf564-pdp-share{transition:none}
-}
-@media(prefers-reduced-motion:reduce){
-  .tf-storefront-v4912 .tf564-pdp-share{transition:none}
-}
+.tf-storefront-v4912 :is(.lux-search-overlay-v29,.tf510-filter-overlay){-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.tf-storefront-v4912 :is(.tf-product-card-v4918,.lux-product-card,.tf4922-journal-card){backface-visibility:hidden}
+@media(max-width:600px){.tf-storefront-v4912 .tf-footer-brand-v4910>.tf564-footer-store-name{font-size:16px!important;margin-bottom:5px}
+.tf-storefront-v4912 .tf564-pdp-share{width:40px;height:40px;flex-basis:40px;border-radius:9px}}
+@media(hover:none){.tf-storefront-v4912 .tf564-pdp-share{transition:none}}
+@media(prefers-reduced-motion:reduce){.tf-storefront-v4912 .tf564-pdp-share{transition:none}}

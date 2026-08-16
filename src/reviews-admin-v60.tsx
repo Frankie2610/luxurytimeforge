@@ -16,21 +16,25 @@ export function ReviewsAdminV60(){
   const{reviews,saveReview,deleteReview}=useCommerce();
   const[editing,setEditing]=useState<StoreReview|null>(null);
   const[uploading,setUploading]=useState(false);
+  const[saving,setSaving]=useState(false);
   const sorted=useMemo(()=>[...reviews].sort((a,b)=>Number(b.featured)-Number(a.featured)||a.sortOrder-b.sortOrder||new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()),[reviews]);
   const publishedCount=reviews.filter(item=>item.status==='published').length;
   const imageCount=reviews.filter(item=>Boolean(item.image)).length;
 
   const startNew=()=>setEditing({...blankReview(),sortOrder:reviews.length});
   const patch=<K extends keyof StoreReview>(key:K,value:StoreReview[K])=>setEditing(current=>current?{...current,[key]:value}:current);
-  const save=()=>{
-    if(!editing)return;
+  const save=async()=>{
+    if(!editing||saving)return;
     if(!editing.customerName.trim())return toast.error('Nhập tên khách hàng hoặc tên hiển thị.');
     if(!editing.text.trim()&&!editing.image.trim())return toast.error('Review cần có nội dung text hoặc hình ảnh.');
     const now=new Date().toISOString();
     const next={...editing,id:editing.id||uid('review'),customerName:editing.customerName.trim(),title:editing.title.trim(),text:editing.text.trim(),image:editing.image.trim(),source:editing.source.trim()||'Khách hàng TimeForge',rating:Math.min(5,Math.max(1,Number(editing.rating)||5)),sortOrder:Number.isFinite(Number(editing.sortOrder))?Number(editing.sortOrder):0,createdAt:editing.id?editing.createdAt:now,updatedAt:now};
-    saveReview(next);
-    setEditing(null);
-    toast.success(editing.id?'Đã cập nhật testimonial.':'Đã thêm testimonial mới.');
+    try{
+      setSaving(true);
+      await saveReview(next);
+      setEditing(null);
+      toast.success(editing.id?'Đã cập nhật testimonial.':'Đã thêm testimonial mới.');
+    }catch(error){toast.error(error instanceof Error?error.message:'Không thể lưu review lên Firebase.')}finally{setSaving(false)}
   };
   const remove=(item:StoreReview)=>{
     if(!window.confirm(`Xóa review của ${item.customerName}?`))return;
@@ -80,7 +84,7 @@ export function ReviewsAdminV60(){
         <label><span>Thứ tự</span><input type="number" value={editing.sortOrder} onChange={event=>patch('sortOrder',Number(event.target.value))}/></label>
         <label className="tf60-review-check full"><input type="checkbox" checked={editing.featured} onChange={event=>patch('featured',event.target.checked)}/><span><b>Đánh dấu nổi bật</b><small>Review nổi bật được đưa lên đầu storefront.</small></span></label>
       </div>
-      <footer><button type="button" className="secondary" onClick={()=>setEditing(null)}>Hủy</button><button type="button" className="primary" onClick={save}><Save/>Lưu review</button></footer>
+      <footer><button type="button" className="secondary" onClick={()=>setEditing(null)}>Hủy</button><button type="button" className="primary" onClick={()=>void save()} disabled={saving}><Save/>{saving?'Đang lưu...':'Lưu review'}</button></footer>
     </section></div>}
   </div>;
 }

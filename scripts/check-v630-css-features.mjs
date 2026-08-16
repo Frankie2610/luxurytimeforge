@@ -1,0 +1,34 @@
+import fs from 'node:fs';
+const read=(p)=>fs.readFileSync(p,'utf8');
+const checks=[];const ok=(name,value)=>checks.push([name,Boolean(value)]);
+const storefront=read('src/storefront-v10.tsx');
+const context=read('src/context.tsx');
+const assist=read('src/purchase-assist-v63.tsx');
+const assistCss=read('src/v630-purchase-assist.css');
+const rules=read('firebase.rules.json');
+const report=JSON.parse(read('docs/CSS_OPTIMIZATION_V63.json'));
+const audit=JSON.parse(read('docs/CSS_AUDIT_V42.json'));
+
+ok('purchase assist lazy chunk',storefront.includes("lazy(() => import('./purchase-assist-v63')")&&storefront.includes('<LazyPurchaseAssistV63'));
+ok('stock alert only for sold out',assist.includes("props.inventory<=0?<StockAlert")&&assist.includes('timeforge/stockAlerts/${id}'));
+ok('stock alert accepts email or phone',assist.includes('validEmail')&&assist.includes('validPhone')&&assist.includes("contactType:kind"));
+ok('stock alert anti spam guard',assist.includes('tf63-stock-trap')&&assist.includes('localStorage.setItem(storageKey,value)'));
+ok('stock alert rules create-only',rules.includes('"stockAlerts"')&&rules.includes('|| !data.exists()')&&rules.includes("newData.child('status').val() == 'waiting'"));
+ok('installment periods',assist.includes('const MONTHS=[3,6,9,12] as const'));
+ok('installment upfront choices',assist.includes('const UPFRONT=[0,20,30] as const'));
+ok('installment disclaimer',assist.includes('chưa bao gồm lãi/phí của ngân hàng'));
+ok('purchase assist responsive',assistCss.includes('@media(max-width:680px)')&&assistCss.includes('grid-template-columns:1fr'));
+ok('new feature CSS adds no important override',!assistCss.includes('!important'));
+ok('storefront data context split',context.includes('StorefrontDataC')&&context.includes('useStorefrontData'));
+ok('product sales context split',context.includes('ProductSalesC')&&context.includes('useProductSales'));
+ok('homepage no longer uses commerce mega context',storefront.includes('const productSales = useProductSales()')&&!storefront.includes('const {theme, products, collections, orders} = useCommerce()'));
+ok('commerce mega context kept off hot storefront paths',(storefront.match(/useCommerce\(\)/g)||[]).length===1);
+ok('CSS optimizer removed unused rules',report.purgedUnusedRules>=2000);
+ok('CSS optimizer removed superseded declarations',report.supersededDeclarationsRemoved>=1500);
+ok('cascade equivalence legacy',report.cascadeWinnerEquivalence?.legacy?.mismatches===0);
+ok('cascade equivalence storefront',report.cascadeWinnerEquivalence?.storefront?.mismatches===0);
+ok('cascade equivalence admin',report.cascadeWinnerEquivalence?.admin?.mismatches===0);
+ok('CSS source reduced >20% vs V0.62',audit.sourceBytes<=1300000&&((report.baselineV62.bytes-audit.sourceBytes)/report.baselineV62.bytes)>0.20);
+ok('important declarations reduced >25%',audit.importantDeclarations<=2866);
+let failed=0;for(const[name,pass]of checks){console.log(`${pass?'PASS':'FAIL'} ${name}`);if(!pass)failed++}
+console.log(`\nV0.63 checks: ${checks.length-failed}/${checks.length} passed`);if(failed)process.exit(1);

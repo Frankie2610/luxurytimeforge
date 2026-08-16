@@ -3,25 +3,37 @@
 .tf-storefront-v4912 .tf-route-view-v4910.is-checkout-route{min-height:0;height:auto}
 .tf-storefront-v4912.is-checkout-route>main{min-height:0;height:auto}
 .tf-storefront-v4912.is-checkout-route>.tf-footer-v4910{display:block;margin-top:0}
-@media(min-width:681px) and (max-width:1024px){
-  .tf4912-checkout-layout{width:min(760px,calc(100% - 36px));gap:20px;padding:28px 0 20px}
-  .tf4912-checkout-section h2{font-size:24px}.tf4912-checkout-section header p{font-size:11px}
-  .tf4912-fields label>span,.tf4912-order-note>span{font-size:11px}.tf4912-fields input,.tf4912-order-note textarea{font-size:13px}
-  .tf4912-payment-options b,.tf4912-delivery-method b{font-size:12px}.tf4912-payment-options small,.tf4912-delivery-method small{font-size:10px}
-  .tf4912-checkout-products article>div a{font-size:11px}.tf4912-checkout-products article>strong{font-size:10px}
-}
-@media(max-width:680px){
-  .tf4912-checkout-layout{padding-bottom:12px}
-  .tf4912-mobile-summary-toggle>span{font-size:11px}.tf4912-mobile-summary-toggle b{font-size:11px}
-  .tf4912-back-link{font-size:10px}
-  .tf4912-checkout-section h2{font-size:18px}.tf4912-checkout-section header p{font-size:10px;line-height:1.4}
-  .tf4912-checkout-section>header>span{font-size:9px}
-  .tf4912-fields label>span,.tf4912-order-note>span{font-size:10px}.tf4912-fields label em{font-size:9px}
-  .tf4912-fields input,.tf4912-order-note textarea{font-size:12px}
-  .tf4912-delivery-method b{font-size:10px}.tf4912-delivery-method small{font-size:9px}.tf4912-delivery-method strong{font-size:9px}
-  .tf4912-payment-options b{font-size:10px}.tf4912-payment-options small{font-size:9px;line-height:1.35}
-  .tf4912-mobile-place-order{font-size:11px}.tf4912-legal{font-size:9px;line-height:1.45}
-  .tf4912-checkout-summary>header p{font-size:9px}.tf4912-checkout-summary>header>span{font-size:9px}
-  .tf4912-checkout-products article>div a{font-size:10px}.tf4912-checkout-products article>div small{font-size:8px}.tf4912-checkout-products article>div em{font-size:8px}.tf4912-checkout-products article>strong{font-size:9px}
-  .tf4912-checkout-trust b{font-size:8px}.tf4912-checkout-trust small{font-size:7px}
-}
+@media(min-width:681px) and (max-width:1024px){.tf4912-checkout-layout{width:min(760px,calc(100% - 36px));gap:20px;padding:28px 0 20px}
+.tf4912-checkout-section h2{font-size:24px}
+.tf4912-checkout-section header p{font-size:11px}
+.tf4912-fields label>span,.tf4912-order-note>span{font-size:11px}
+.tf4912-fields input,.tf4912-order-note textarea{font-size:13px}
+.tf4912-payment-options b,.tf4912-delivery-method b{font-size:12px}
+.tf4912-payment-options small,.tf4912-delivery-method small{font-size:10px}
+.tf4912-checkout-products article>div a{font-size:11px}
+.tf4912-checkout-products article>strong{font-size:10px}}
+@media(max-width:680px){.tf4912-checkout-layout{padding-bottom:12px}
+.tf4912-mobile-summary-toggle>span{font-size:11px}
+.tf4912-mobile-summary-toggle b{font-size:11px}
+.tf4912-back-link{font-size:10px}
+.tf4912-checkout-section h2{font-size:18px}
+.tf4912-checkout-section header p{font-size:10px;line-height:1.4}
+.tf4912-checkout-section>header>span{font-size:9px}
+.tf4912-fields label>span,.tf4912-order-note>span{font-size:10px}
+.tf4912-fields label em{font-size:9px}
+.tf4912-fields input,.tf4912-order-note textarea{font-size:12px}
+.tf4912-delivery-method b{font-size:10px}
+.tf4912-delivery-method small{font-size:9px}
+.tf4912-delivery-method strong{font-size:9px}
+.tf4912-payment-options b{font-size:10px}
+.tf4912-payment-options small{font-size:9px;line-height:1.35}
+.tf4912-mobile-place-order{font-size:11px}
+.tf4912-legal{font-size:9px;line-height:1.45}
+.tf4912-checkout-summary>header p{font-size:9px}
+.tf4912-checkout-summary>header>span{font-size:9px}
+.tf4912-checkout-products article>div a{font-size:10px}
+.tf4912-checkout-products article>div small{font-size:8px}
+.tf4912-checkout-products article>div em{font-size:8px}
+.tf4912-checkout-products article>strong{font-size:9px}
+.tf4912-checkout-trust b{font-size:8px}
+.tf4912-checkout-trust small{font-size:7px}}

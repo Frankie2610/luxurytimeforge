@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.60.0",
+  "version": "0.63.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -56,7 +56,10 @@
     "v576:check": "node scripts/check-v576-storefront-polish.mjs",
     "v580:check": "node scripts/check-v580-polish-features.mjs",
     "v590:check": "node scripts/check-v590-meta-performance.mjs",
-    "v600:check": "node scripts/check-v600-share-seo-reviews.mjs"
+    "v600:check": "node scripts/check-v600-share-seo-reviews.mjs",
+    "v610:check": "node scripts/check-v610-social-review-contrast.mjs",
+    "v620:check": "node scripts/check-v620-performance-admin-quickview.mjs",
+    "v630:check": "node scripts/check-v630-css-features.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -99,7 +102,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.60.0: shareable catalog filters, SEO/social previews, managed testimonials, and storefront rendering polish.",
+  "description": "Luxury TimeForge V0.63.0: aggressive CSS de-duplication with responsive regression guards, leaner storefront contexts, stock-back alerts, and installment estimates.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

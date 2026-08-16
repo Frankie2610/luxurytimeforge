@@ -1,148 +1,27 @@
-/* TimeForge V0.52.3 — restore PDP details and refine Admin surfaces. */
-
-/* Product details are core content and must not disappear because an older
-   saved theme omitted the optional accordion block. */
-.tf-storefront-v4912 .tf-pdp491-details {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr);
-  margin-top: 14px;
-  border-top: 1px solid rgba(39, 70, 49, .14);
-}
-.tf-storefront-v4912 .tf-pdp491-description,
-.tf-storefront-v4912 .tf-pdp491-specs {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-.tf-storefront-v4912 .tf-pdp491-details h2 {
-  color: #1d3024;
-}
-
-/* Remove the oversized runway between related products and the footer. */
-.tf-storefront-v4912 .tf-pdp491 {
-  padding-bottom: clamp(14px, 1.8vw, 24px) !important;
-}
-.tf-storefront-v4912 .tf-related-v4916 {
-  margin-bottom: 0 !important;
-  padding-bottom: clamp(16px, 2vw, 28px) !important;
-}
-@media (max-width: 599px) {
-  .tf-storefront-v4912 .tf-pdp491 { padding-bottom: 10px !important; }
-  .tf-storefront-v4912 .tf-related-v4916 { padding-bottom: 16px !important; }
-}
-
-/* Admin topbar: crisp white account control and clearer separation between
-   search, status and actions. */
-.tf-admin-v499.tf-admin-v499 .v16-admin-topbar {
-  border-bottom: 1px solid #dfe7e1;
-  background: rgba(255, 255, 255, .97) !important;
-  box-shadow: 0 8px 24px rgba(31, 54, 39, .055);
-}
-.tf-admin-v499.tf-admin-v499 .v16-command-button {
-  border-color: #d7e1da !important;
-  background: #f7faf8 !important;
-  box-shadow: inset 0 1px 0 #fff, 0 4px 12px rgba(35, 59, 43, .035) !important;
-}
-.tf-admin-v499.tf-admin-v499 .v16-command-button:hover {
-  border-color: #9eb2a4 !important;
-  background: #fff !important;
-}
-.tf-admin-v499.tf-admin-v499 .v16-topbar-actions {
-  align-items: center;
-}
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger {
-  min-width: 202px !important;
-  gap: 10px !important;
-  padding: 5px 10px 5px 6px !important;
-  border: 1px solid #d2ddd5 !important;
-  background: #fff !important;
-  color: #203128 !important;
-  box-shadow: 0 5px 15px rgba(31, 52, 39, .07) !important;
-}
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger > span:first-child {
-  background: #274631 !important;
-  color: #fff !important;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
-}
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger > span:nth-child(2) b {
-  color: #1d2c23 !important;
-}
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger > span:nth-child(2) small {
-  color: #718078 !important;
-}
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger > svg {
-  color: #6d7b72 !important;
-}
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger:hover,
-.tf-admin-v499.tf-admin-v499 .v16-user-trigger[data-state="open"] {
-  border-color: #8ca393 !important;
-  background: #f4f8f5 !important;
-  color: #17251d !important;
-  box-shadow: 0 8px 20px rgba(31, 52, 39, .1) !important;
-}
-
-/* Page-level polish: one restrained surface rather than disconnected text. */
-.tf-admin-v499 .v16-page-header {
-  margin-top: 18px !important;
-  margin-bottom: 22px !important;
-  padding: clamp(20px, 2vw, 28px) !important;
-  border: 1px solid #e0e7e2 !important;
-  border-radius: 16px !important;
-  background: linear-gradient(135deg, #fff 0%, #f7faf8 100%) !important;
-  box-shadow: 0 10px 28px rgba(34, 56, 42, .045);
-}
-.tf-admin-v499 .v16-page-header h1 {
-  color: #1b2b21 !important;
-  letter-spacing: -.03em;
-}
-.tf-admin-v499 .v16-page-header p {
-  color: #68766e !important;
-}
-.tf-admin-v499 .v16-page-header > svg {
-  border-color: #d7e1da !important;
-  color: #46604f !important;
-}
-
-/* Make the shared Admin actions feel consistent without touching compact
-   table controls, toggles or icon-only buttons. */
-.tf-admin-v499 .v16-admin-content :is(
-  button[type="submit"],
-  .tf-button,
-  .v10-primary-button,
-  .v10-secondary-button,
-  .btn
-):not([role="switch"]):not(.v16-icon-action) {
-  border-radius: 10px !important;
-  font-weight: 720;
-  box-shadow: 0 4px 12px rgba(31, 52, 39, .055);
-}
-.tf-admin-v499 .v16-admin-content :is(
-  button[type="submit"],
-  .tf-button,
-  .v10-primary-button,
-  .v10-secondary-button,
-  .btn
-):not([role="switch"]):not(.v16-icon-action):active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 2px 7px rgba(31, 52, 39, .07);
-}
-
-@media (max-width: 1050px) {
-  .tf-admin-v499.tf-admin-v499 .v16-user-trigger {
-    min-width: 42px !important;
-    padding: 4px !important;
-  }
-  .tf-admin-v499 .v16-page-header {
-    margin-top: 12px !important;
-    padding: 20px !important;
-  }
-}
-@media (max-width: 640px) {
-  .tf-admin-v499 .v16-page-header {
-    border-radius: 13px !important;
-    padding: 17px 16px !important;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .tf-admin-v499 .v16-admin-content button { transition: none !important; }
-}
+.tf-storefront-v4912 .tf-pdp491-details{display:grid!important;grid-template-columns:minmax(0, 1fr);margin-top:14px;border-top:1px solid rgba(39, 70, 49, .14)}
+.tf-storefront-v4912 .tf-pdp491-description, .tf-storefront-v4912 .tf-pdp491-specs{display:block!important;visibility:visible!important;opacity:1!important}
+.tf-storefront-v4912 .tf-pdp491-details h2{color:#1d3024}
+.tf-storefront-v4912 .tf-pdp491{padding-bottom:clamp(14px, 1.8vw, 24px)!important}
+.tf-storefront-v4912 .tf-related-v4916{margin-bottom:0!important;padding-bottom:clamp(16px, 2vw, 28px)!important}
+@media(max-width: 599px){.tf-storefront-v4912 .tf-pdp491{padding-bottom:10px!important}
+.tf-storefront-v4912 .tf-related-v4916{padding-bottom:16px!important}}
+.tf-admin-v499.tf-admin-v499 .v16-admin-topbar{border-bottom:1px solid #dfe7e1;background:rgba(255, 255, 255, .97)!important;box-shadow:0 8px 24px rgba(31, 54, 39, .055)}
+.tf-admin-v499.tf-admin-v499 .v16-command-button{border-color:#d7e1da!important;background:#f7faf8!important;box-shadow:inset 0 1px 0 #fff, 0 4px 12px rgba(35, 59, 43, .035)!important}
+.tf-admin-v499.tf-admin-v499 .v16-command-button:hover{border-color:#9eb2a4!important;background:#fff!important}
+.tf-admin-v499.tf-admin-v499 .v16-topbar-actions{align-items:center}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger{min-width:202px!important;gap:10px!important;padding:5px 10px 5px 6px!important;border:1px solid #d2ddd5!important;background:#fff!important;color:#203128!important;box-shadow:0 5px 15px rgba(31, 52, 39, .07)!important}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger > span:first-child{background:#274631!important;color:#fff!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger > span:nth-child(2) b{color:#1d2c23!important}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger > span:nth-child(2) small{color:#718078!important}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger > svg{color:#6d7b72!important}
+.tf-admin-v499.tf-admin-v499 .v16-user-trigger:hover, .tf-admin-v499.tf-admin-v499 .v16-user-trigger[data-state="open"]{border-color:#8ca393!important;background:#f4f8f5!important;color:#17251d!important;box-shadow:0 8px 20px rgba(31, 52, 39, .1)!important}
+.tf-admin-v499 .v16-page-header{margin-top:18px!important;margin-bottom:22px!important;padding:clamp(20px, 2vw, 28px)!important;border:1px solid #e0e7e2!important;border-radius:16px!important;background:linear-gradient(135deg, #fff 0%, #f7faf8 100%)!important;box-shadow:0 10px 28px rgba(34, 56, 42, .045)}
+.tf-admin-v499 .v16-page-header h1{color:#1b2b21!important;letter-spacing:-.03em}
+.tf-admin-v499 .v16-page-header p{color:#68766e!important}
+.tf-admin-v499 .v16-page-header > svg{border-color:#d7e1da!important;color:#46604f!important}
+.tf-admin-v499 .v16-admin-content :is( button[type="submit"], .tf-button, .v10-primary-button, .v10-secondary-button, .btn ):not([role="switch"]):not(.v16-icon-action){border-radius:10px!important;font-weight:720;box-shadow:0 4px 12px rgba(31, 52, 39, .055)}
+.tf-admin-v499 .v16-admin-content :is( button[type="submit"], .tf-button, .v10-primary-button, .v10-secondary-button, .btn ):not([role="switch"]):not(.v16-icon-action):active:not(:disabled){transform:translateY(1px);box-shadow:0 2px 7px rgba(31, 52, 39, .07)}
+@media(max-width: 1050px){.tf-admin-v499.tf-admin-v499 .v16-user-trigger{min-width:42px!important;padding:4px!important}
+.tf-admin-v499 .v16-page-header{margin-top:12px!important;padding:20px!important}}
+@media(max-width: 640px){.tf-admin-v499 .v16-page-header{border-radius:13px!important;padding:17px 16px!important}}
+@media(prefers-reduced-motion: reduce){.tf-admin-v499 .v16-admin-content button{transition:none!important}}

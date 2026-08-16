@@ -1,18 +1,6 @@
-/* TimeForge Sprint 17 — focused layout repair and Shopify/L&M parity */
-
-/* ---------- Admin: resilient page headers and actions ---------- */
 .v16-admin-content,.v16-admin-content>*{min-width:0}
 .v16-page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:4px 2px 20px}
 .v16-page-header>div{min-width:0;max-width:780px}
-.v16-page-header h1{font-size:clamp(28px,2.4vw,38px);line-height:1.15;font-weight:750;letter-spacing:-.025em}
-.v16-page-header p{max-width:720px;font-size:15px;line-height:1.55}
+.v16-page-header h1{line-height:1.15;font-weight:750}
+.v16-page-header p{line-height:1.55}
 .v16-page-header>svg{display:none}
-.products-v9{display:grid;gap:16px;min-width:0}
-.v17-product-page-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 16px;border:1px solid #dfe5e1;border-radius:14px;background:#fff;box-shadow:0 1px 0 rgba(26,43,34,.03)}
-.v17-product-actions-copy{display:grid;gap:2px;min-width:0}
-.v17-product-actions-copy b{font-size:15px;font-weight:720;color:#18221c}
-.v17-product-actions-copy span{font-size:13px;color:#66716a}
-.v17-product-actions-buttons{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.v17-product-actions-buttons .btn{min-height:38px;padding:0 13px;white-space:nowrap}
-.v17-product-actions-buttons svg{width:16px;height:16px}
-

@@ -135,7 +135,7 @@ export const createSection = (type: SectionType): Section => {
     case 'collectionBanner': return s(type, {height: 360, showImage: true, alignment: 'left', overlay: 52, colorScheme: 'dark'}, [
       b('heading', {eyebrow: 'TIMEFORGE COLLECTION', text: 'Tên bộ sưu tập'}), b('text', {text: 'Mô tả bộ sưu tập sẽ được lấy tự động.'}),
     ]);
-    case 'collectionGrid': return s(type, {columns: 4, showFilter: true, showSort: true, showCount: true, pageSize: 50});
+    case 'collectionGrid': return s(type, {columns: 4, showFilter: true, showSort: true, showCount: true, pageSize: 36});
     case 'searchResults': return s(type, {columns: 4, showSuggestions: true});
     case 'cartMain': return s(type, {showCoupon: true, showShippingEstimate: true, showTrust: true});
     case 'pageContent': return s(type, {width: 'narrow', alignment: 'left'}, [b('heading', {eyebrow: 'TIMEFORGE', text: 'Tiêu đề trang'}), b('text', {text: 'Nội dung trang được lấy từ trình quản trị nội dung.'})]);

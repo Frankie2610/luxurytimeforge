@@ -1,155 +1,35 @@
-/* V0.52.5 — customer order detail readability and action hierarchy. */
-.v524-account-page .v524-account-brand-mark{
-  background:linear-gradient(145deg,#0b5a42,#073d2f);
-  border:1px solid rgba(255,255,255,.2);
-}
-.v524-account-page .v524-account-brand-mark img{
-  object-fit:contain;
-  padding:7px;
-  filter:brightness(0) invert(1);
-}
-.v524-account-page .v12-order-detail{
-  max-width:1460px;
-  padding-top:42px;
-  font-size:15px;
-}
-.v524-account-page .v12-back{
-  margin-bottom:28px;
-  color:#3f5e51;
-  font-size:14px;
-  font-weight:800;
-}
+.v524-account-page .v524-account-brand-mark{background:linear-gradient(145deg,#0b5a42,#073d2f);border:1px solid rgba(255,255,255,.2)}
+.v524-account-page .v524-account-brand-mark img{object-fit:contain;padding:7px;filter:brightness(0) invert(1)}
+.v524-account-page .v12-order-detail{max-width:1460px;padding-top:42px;font-size:15px}
+.v524-account-page .v12-back{margin-bottom:28px;color:#3f5e51;font-size:14px;font-weight:800}
 .v524-account-page .v12-back svg{width:17px;height:17px}
-.v524-account-page .v12-order-detail>header{
-  align-items:center;
-  padding:25px 28px;
-  border:1px solid #d9e4de;
-  border-radius:22px;
-  background:
-    radial-gradient(circle at 96% 0,rgba(97,167,136,.16),transparent 34%),
-    linear-gradient(145deg,#fff,#f5f9f7);
-  box-shadow:0 16px 42px rgba(24,64,47,.07);
-}
-.v524-account-page .v12-order-detail>header small{
-  color:#477361;
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:.18em;
-}
-.v524-account-page .v12-order-detail>header h1{
-  margin:9px 0 7px;
-  color:#153b2d;
-  font-family:"Avenir Next","Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif;
-  font-size:48px;
-  font-weight:850;
-  letter-spacing:-.045em;
-}
-.v524-account-page .v12-order-detail>header p{
-  margin:0;
-  color:#66756e;
-  font-size:16px;
-  font-weight:620;
-}
-.v524-account-page .v12-order-detail>header>div:last-child{
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  gap:10px;
-}
-.v524-account-page .v12-order-detail>header button,
-.v524-account-page .v12-order-detail>header .v13-return-link{
-  min-height:46px;
-  padding:0 16px;
-  border:1px solid #cddad3;
-  border-radius:13px;
-  background:#fff;
-  color:#29483b;
-  font-size:14px;
-  font-weight:800;
-  box-shadow:0 7px 18px rgba(25,63,46,.055);
-  transition:transform .16s ease,background .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease;
-}
-.v524-account-page .v12-order-detail>header button:hover,
-.v524-account-page .v12-order-detail>header .v13-return-link:hover{
-  transform:translateY(-1px);
-  border-color:#9ebcac;
-  background:#f2f7f4;
-  color:#143e2d;
-  box-shadow:0 10px 24px rgba(25,63,46,.09);
-}
-.v524-account-page .v12-order-detail>header .v12-primary{
-  border-color:#0b5a42;
-  background:#0b5a42;
-  color:#fff;
-  box-shadow:0 10px 24px rgba(11,90,66,.2);
-}
-.v524-account-page .v12-order-detail>header .v12-primary:hover{
-  border-color:#073d2f;
-  background:#073d2f;
-  color:#fff;
-}
-.v524-account-page .v12-order-progress{
-  margin:30px 0 24px;
-  padding:20px 20px 17px;
-  border:1px solid #dae4de;
-  border-radius:18px;
-  background:#fff;
-  box-shadow:0 9px 28px rgba(27,62,47,.045);
-}
+.v524-account-page .v12-order-detail>header{align-items:center;padding:25px 28px;border:1px solid #d9e4de;border-radius:22px;background:radial-gradient(circle at 96% 0,rgba(97,167,136,.16),transparent 34%), linear-gradient(145deg,#fff,#f5f9f7);box-shadow:0 16px 42px rgba(24,64,47,.07)}
+.v524-account-page .v12-order-detail>header small{color:#477361;font-size:12px;font-weight:900;letter-spacing:.18em}
+.v524-account-page .v12-order-detail>header h1{margin:9px 0 7px;color:#153b2d;font-family:"Avenir Next","Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif;font-size:48px;font-weight:850;letter-spacing:-.045em}
+.v524-account-page .v12-order-detail>header p{margin:0;color:#66756e;font-size:16px;font-weight:620}
+.v524-account-page .v12-order-detail>header>div:last-child{flex-wrap:wrap;justify-content:flex-end;gap:10px}
+.v524-account-page .v12-order-detail>header button, .v524-account-page .v12-order-detail>header .v13-return-link{min-height:46px;padding:0 16px;border:1px solid #cddad3;border-radius:13px;background:#fff;color:#29483b;font-size:14px;font-weight:800;box-shadow:0 7px 18px rgba(25,63,46,.055);transition:transform .16s ease,background .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease}
+.v524-account-page .v12-order-detail>header button:hover, .v524-account-page .v12-order-detail>header .v13-return-link:hover{transform:translateY(-1px);border-color:#9ebcac;background:#f2f7f4;color:#143e2d;box-shadow:0 10px 24px rgba(25,63,46,.09)}
+.v524-account-page .v12-order-detail>header .v12-primary{border-color:#0b5a42;background:#0b5a42;color:#fff;box-shadow:0 10px 24px rgba(11,90,66,.2)}
+.v524-account-page .v12-order-detail>header .v12-primary:hover{border-color:#073d2f;background:#073d2f;color:#fff}
+.v524-account-page .v12-order-progress{margin:30px 0 24px;padding:20px 20px 17px;border:1px solid #dae4de;border-radius:18px;background:#fff;box-shadow:0 9px 28px rgba(27,62,47,.045)}
 .v524-account-page .v12-order-progress:before{top:39px;left:8%;right:8%;background:#cbd9d1}
 .v524-account-page .v12-order-progress>div{gap:9px;color:#748078;font-size:13px;font-weight:750}
-.v524-account-page .v12-order-progress>div>span{
-  width:40px;height:40px;
-  border-color:#cbd8d1;
-  background:#f4f7f5;
-  font-size:13px;
-  box-shadow:0 4px 10px rgba(25,58,43,.055);
-}
+.v524-account-page .v12-order-progress>div>span{width:40px;height:40px;border-color:#cbd8d1;background:#f4f7f5;font-size:13px;box-shadow:0 4px 10px rgba(25,58,43,.055)}
 .v524-account-page .v12-order-progress>div.done{color:#185d42}
 .v524-account-page .v12-order-progress>div.done>span{border-color:#72ab8e;background:#dff2e8;color:#175e42}
 .v524-account-page .v12-order-detail-grid{grid-template-columns:minmax(0,1fr) 360px;gap:22px}
-.v524-account-page .v12-order-detail-grid main,
-.v524-account-page .v12-order-detail-grid aside{gap:18px}
-.v524-account-page .v12-detail-card{
-  padding:26px;
-  border:1px solid #dce5e0;
-  border-radius:20px;
-  background:#fff;
-  box-shadow:0 12px 34px rgba(28,62,47,.05);
-}
+.v524-account-page .v12-order-detail-grid main, .v524-account-page .v12-order-detail-grid aside{gap:18px}
+.v524-account-page .v12-detail-card{padding:26px;border:1px solid #dce5e0;border-radius:20px;background:#fff;box-shadow:0 12px 34px rgba(28,62,47,.05)}
 .v524-account-page .v12-detail-card>header{gap:13px;padding-bottom:18px;border-bottom-color:#e1e8e4}
-.v524-account-page .v12-detail-card>header>svg{
-  width:38px;height:38px;padding:9px;border-radius:12px;background:#eaf4ef;color:#0b5a42;
-}
-.v524-account-page .v12-detail-card h2{
-  color:#18392c;
-  font-family:"Avenir Next","Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif;
-  font-size:26px;
-  font-weight:830;
-  letter-spacing:-.028em;
-}
+.v524-account-page .v12-detail-card>header>svg{width:38px;height:38px;padding:9px;border-radius:12px;background:#eaf4ef;color:#0b5a42}
+.v524-account-page .v12-detail-card h2{color:#18392c;font-family:"Avenir Next","Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif;font-size:26px;font-weight:830;letter-spacing:-.028em}
 .v524-account-page .v12-detail-card header p{font-size:13px;line-height:1.5}
-.v524-account-page .v12-detail-line{
-  grid-template-columns:84px minmax(0,1fr) auto;
-  gap:16px;
-  padding:18px 0;
-  border-bottom-color:#e6ece8;
-}
-.v524-account-page .v12-detail-line .tf-smart-image{
-  width:78px;height:78px;
-  border:1px solid #e0e8e3;
-  border-radius:14px;
-  background:#f3f6f4;
-}
+.v524-account-page .v12-detail-line{grid-template-columns:84px minmax(0,1fr) auto;gap:16px;padding:18px 0;border-bottom-color:#e6ece8}
+.v524-account-page .v12-detail-line .tf-smart-image{width:78px;height:78px;border:1px solid #e0e8e3;border-radius:14px;background:#f3f6f4}
 .v524-account-page .v12-detail-line>div{gap:7px}
-.v524-account-page .v12-detail-line a{
-  color:#173a2c;
-  font-family:"Avenir Next","Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif;
-  font-size:19px;
-  font-weight:800;
-  line-height:1.3;
-}
-.v524-account-page .v12-detail-line small,
-.v524-account-page .v12-detail-line span{color:#6d7972;font-size:13px;line-height:1.45}
+.v524-account-page .v12-detail-line a{color:#173a2c;font-family:"Avenir Next","Segoe UI",Inter,ui-sans-serif,system-ui,sans-serif;font-size:19px;font-weight:800;line-height:1.3}
+.v524-account-page .v12-detail-line small, .v524-account-page .v12-detail-line span{color:#6d7972;font-size:13px;line-height:1.45}
 .v524-account-page .v12-detail-line>b{color:#18392c;font-size:15px;font-weight:850}
 .v524-account-page .v12-tracking-button{min-height:47px;border-radius:12px;background:#0b5a42;font-size:14px}
 .v524-account-page .v12-customer-timeline{padding-top:20px}
@@ -161,56 +41,33 @@
 .v524-account-page .v12-customer-timeline span{font-size:12px;font-weight:650}
 .v524-account-page .v12-detail-card>h2{margin-bottom:18px}
 .v524-account-page .v12-detail-card dl{gap:0;margin-top:0}
-.v524-account-page .v12-detail-card dl>div{
-  min-height:42px;
-  align-items:center;
-  padding:9px 0;
-  border-bottom:1px solid #edf0ee;
-  font-size:14px;
-}
+.v524-account-page .v12-detail-card dl>div{min-height:42px;align-items:center;padding:9px 0;border-bottom:1px solid #edf0ee;font-size:14px}
 .v524-account-page .v12-detail-card dl dt{color:#65736b;font-weight:650}
 .v524-account-page .v12-detail-card dl dd{color:#24392f;font-weight:820}
-.v524-account-page .v12-detail-card dl .total{
-  min-height:58px;
-  margin:11px -10px 0;
-  padding:14px 12px;
-  border:0;
-  border-radius:13px;
-  background:#0b5a42;
-  color:#fff;
-  font-size:18px;
-}
-.v524-account-page .v12-detail-card dl .total dt,
-.v524-account-page .v12-detail-card dl .total dd{color:#fff}
+.v524-account-page .v12-detail-card dl .total{min-height:58px;margin:11px -10px 0;padding:14px 12px;border:0;border-radius:13px;background:#0b5a42;color:#fff;font-size:18px}
+.v524-account-page .v12-detail-card dl .total dt, .v524-account-page .v12-detail-card dl .total dd{color:#fff}
 .v524-account-page .v12-payment{margin-top:17px;padding:8px 11px;font-size:12px;font-weight:850}
 .v524-account-page .v12-detail-card address{gap:8px;margin-top:0;color:#65736c;font-size:14px;line-height:1.55}
 .v524-account-page .v12-detail-card address b{margin-bottom:3px;color:#18392c;font-size:17px;font-weight:850}
-
-@media(max-width:980px){
-  .v524-account-page .v12-order-detail-grid{grid-template-columns:1fr}
-  .v524-account-page .v12-order-detail-grid>aside{grid-template-columns:1fr 1fr}
-  .v524-account-page .v12-order-detail-grid>aside .v12-detail-card:first-child{grid-column:auto}
-}
-@media(max-width:720px){
-  .v524-account-page .v12-order-detail{padding:24px 13px 68px;font-size:14px}
-  .v524-account-page .v12-back{margin-bottom:18px;font-size:13px}
-  .v524-account-page .v12-order-detail>header{align-items:flex-start;padding:21px 17px;border-radius:17px}
-  .v524-account-page .v12-order-detail>header h1{font-size:36px}
-  .v524-account-page .v12-order-detail>header p{font-size:14px}
-  .v524-account-page .v12-order-detail>header>div:last-child{width:100%;display:grid;grid-template-columns:1fr}
-  .v524-account-page .v12-order-detail>header button,
-  .v524-account-page .v12-order-detail>header .v13-return-link{width:100%;justify-content:center;font-size:13px}
-  .v524-account-page .v12-order-progress{grid-template-columns:repeat(4,96px);margin:18px 0;padding:16px 8px 13px;overflow:auto}
-  .v524-account-page .v12-order-progress:before{left:48px;right:auto;top:35px;width:288px}
-  .v524-account-page .v12-order-progress>div{font-size:11.5px}
-  .v524-account-page .v12-order-progress>div>span{width:38px;height:38px}
-  .v524-account-page .v12-order-detail-grid>aside{grid-template-columns:1fr}
-  .v524-account-page .v12-detail-card{padding:20px 17px;border-radius:16px}
-  .v524-account-page .v12-detail-card h2{font-size:22px}
-  .v524-account-page .v12-detail-line{grid-template-columns:64px minmax(0,1fr);gap:12px}
-  .v524-account-page .v12-detail-line .tf-smart-image{width:60px;height:60px;border-radius:11px}
-  .v524-account-page .v12-detail-line a{font-size:16px}
-  .v524-account-page .v12-detail-line small,
-  .v524-account-page .v12-detail-line span{font-size:12px}
-  .v524-account-page .v12-detail-line>b{grid-column:2;font-size:14px}
-}
+@media(max-width:980px){.v524-account-page .v12-order-detail-grid{grid-template-columns:1fr}
+.v524-account-page .v12-order-detail-grid>aside{grid-template-columns:1fr 1fr}
+.v524-account-page .v12-order-detail-grid>aside .v12-detail-card:first-child{grid-column:auto}}
+@media(max-width:720px){.v524-account-page .v12-order-detail{padding:24px 13px 68px;font-size:14px}
+.v524-account-page .v12-back{margin-bottom:18px;font-size:13px}
+.v524-account-page .v12-order-detail>header{align-items:flex-start;padding:21px 17px;border-radius:17px}
+.v524-account-page .v12-order-detail>header h1{font-size:36px}
+.v524-account-page .v12-order-detail>header p{font-size:14px}
+.v524-account-page .v12-order-detail>header>div:last-child{width:100%;display:grid;grid-template-columns:1fr}
+.v524-account-page .v12-order-detail>header button, .v524-account-page .v12-order-detail>header .v13-return-link{width:100%;justify-content:center;font-size:13px}
+.v524-account-page .v12-order-progress{grid-template-columns:repeat(4,96px);margin:18px 0;padding:16px 8px 13px;overflow:auto}
+.v524-account-page .v12-order-progress:before{left:48px;right:auto;top:35px;width:288px}
+.v524-account-page .v12-order-progress>div{font-size:11.5px}
+.v524-account-page .v12-order-progress>div>span{width:38px;height:38px}
+.v524-account-page .v12-order-detail-grid>aside{grid-template-columns:1fr}
+.v524-account-page .v12-detail-card{padding:20px 17px;border-radius:16px}
+.v524-account-page .v12-detail-card h2{font-size:22px}
+.v524-account-page .v12-detail-line{grid-template-columns:64px minmax(0,1fr);gap:12px}
+.v524-account-page .v12-detail-line .tf-smart-image{width:60px;height:60px;border-radius:11px}
+.v524-account-page .v12-detail-line a{font-size:16px}
+.v524-account-page .v12-detail-line small, .v524-account-page .v12-detail-line span{font-size:12px}
+.v524-account-page .v12-detail-line>b{grid-column:2;font-size:14px}}

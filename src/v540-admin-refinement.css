@@ -1,17 +1,4 @@
-/* V0.54.0 — scoped reliability and interaction refinements for Admin only. */
-.v16-admin-content .tf54-admin-route-error{
-  min-height:min(560px,70vh);
-  display:grid;
-  place-items:center;
-  align-content:center;
-  gap:10px;
-  padding:clamp(26px,6vw,72px);
-  border:1px solid #dfe5e0;
-  border-radius:18px;
-  background:radial-gradient(circle at 50% 0,rgba(176,117,48,.1),transparent 34%),#fff;
-  color:#273129;
-  text-align:center;
-}
+.v16-admin-content .tf54-admin-route-error{min-height:min(560px,70vh);display:grid;place-items:center;align-content:center;gap:10px;padding:clamp(26px,6vw,72px);border:1px solid #dfe5e0;border-radius:18px;background:radial-gradient(circle at 50% 0,rgba(176,117,48,.1),transparent 34%),#fff;color:#273129;text-align:center}
 .v16-admin-content .tf54-admin-route-error>span{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:#fff1dc;color:#9a5c0b}
 .v16-admin-content .tf54-admin-route-error>span svg{width:25px}
 .v16-admin-content .tf54-admin-route-error>small{margin-top:7px;color:#7c674e;font-size:10px;font-weight:850;letter-spacing:.15em}
@@ -23,18 +10,15 @@
 .v16-admin-content .tf54-admin-route-error :is(button,a) svg{width:16px}
 .v16-admin-content .tf54-admin-route-error details{max-width:620px;margin-top:8px;color:#7a837c;font-size:10px}
 .v16-admin-content .tf54-admin-route-error details code{display:block;overflow:auto;max-width:100%;margin-top:7px;padding:9px;border-radius:8px;background:#f3f5f3;color:#4d5750;text-align:left}
-
 .v16-admin-content .tf4921-ops-surface .s11-toolbar>button.is-active{border-color:#35684a;background:#eaf3ed;color:#285a3d}
 .v16-admin-content .tf4921-ops-surface .s11-link{display:inline-flex;align-items:center;min-height:34px;color:#285d40;text-decoration:none}
 .v16-admin-content .tf4921-ops-surface a.s11-icon-button{display:grid;place-items:center;text-decoration:none}
 .v16-admin-content .tf4921-ops-surface tbody tr:focus-within{position:relative;z-index:1;outline:2px solid rgba(45,104,69,.35);outline-offset:-2px}
-
 .tf53-dashboard :is(.tf53-priority-center,.tf53-quick-actions,.tf53-dashboard-lists) a{transition:background-color .18s ease,border-color .18s ease,transform .18s ease}
-@media(hover:hover){.tf53-dashboard :is(.tf53-priority-center,.tf53-quick-actions,.tf53-dashboard-lists) a:hover{transform:translateY(-1px)}.tf53-priority-center a:hover{background:#f8faf8}.tf53-quick-actions>div>a:hover{border-color:#b9cbbf;background:#f5f9f6}}
-
-@media(max-width:680px){
-  .v16-admin-content .tf54-admin-route-error{min-height:430px;padding:28px 16px;border-radius:14px}
-  .v16-admin-content .tf54-admin-route-error>div{display:grid;width:100%;grid-template-columns:1fr}
-  .v16-admin-content .tf54-admin-route-error :is(button,a){width:100%}
-}
+@media(hover:hover){.tf53-dashboard :is(.tf53-priority-center,.tf53-quick-actions,.tf53-dashboard-lists) a:hover{transform:translateY(-1px)}
+.tf53-priority-center a:hover{background:#f8faf8}
+.tf53-quick-actions>div>a:hover{border-color:#b9cbbf;background:#f5f9f6}}
+@media(max-width:680px){.v16-admin-content .tf54-admin-route-error{min-height:430px;padding:28px 16px;border-radius:14px}
+.v16-admin-content .tf54-admin-route-error>div{display:grid;width:100%;grid-template-columns:1fr}
+.v16-admin-content .tf54-admin-route-error :is(button,a){width:100%}}
 @media(prefers-reduced-motion:reduce){.tf53-dashboard :is(.tf53-priority-center,.tf53-quick-actions,.tf53-dashboard-lists) a{transition:none!important}}

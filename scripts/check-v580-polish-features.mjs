@@ -16,12 +16,12 @@ const contrast=read('src/v502-storefront-contrast.css');
 const pkg=JSON.parse(read('package.json'));
 
 const checks=[
-  ['package keeps the v0.58 polish baseline',/^0\.(?:58|59|60)\./.test(pkg.version)],
+  ['package keeps the v0.58 polish baseline',Number(pkg.version.split('.')[0]||0)===0&&Number(pkg.version.split('.')[1]||0)>=58],
   ['storefront final stylesheet loads after v576',storefront.indexOf("./v580-storefront-polish.css")>storefront.indexOf("./v576-storefront-readability.css")],
   ['commerce final stylesheet loads after v576',commerce.indexOf("./v580-commerce-polish.css")>commerce.indexOf("./v576-commerce-polish.css")],
   ['journal final stylesheet loads after v576',journal.indexOf("./v580-journal-polish.css")>journal.indexOf("./v576-journal-readability.css")],
   ['admin final stylesheet loads after v566',adminShell.indexOf("./v580-admin-polish.css")>adminShell.indexOf("./v566-admin-polish.css")],
-  ['critical desktop header repair stays in legacy layer',storefrontCss.includes('@layer legacy')&&storefrontCss.includes('@media (min-width:821px)')],
+  ['critical desktop header repair stays in legacy layer',storefrontCss.includes('@layer legacy')&&/@media\s*\(min-width:821px\)/.test(storefrontCss)],
   ['desktop navigation and search own 13px type',storefrontCss.includes('.lux-main-nav > a')&&storefrontCss.includes('.lux-search-button > span')&&storefrontCss.includes('font-size:13px!important')],
   ['brand rail color is repaired for light surface',storefrontCss.includes('.tf-brand-rail-nav-v39 > a:not(.tf-brand-rail-all-v39)')],
   ['stale v502 important 11px header owner removed',!/@layer legacy\s*\{[^}]*lux-main-nav[^}]*font-size:\s*11px\s*!important/s.test(contrast)],

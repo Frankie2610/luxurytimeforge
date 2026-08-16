@@ -15,8 +15,8 @@ expect(storefront.includes('navigator.clipboard.writeText(window.location.href)'
 expect(storefront.includes('if(page<=pageCount)return;'),'Pagination clamps and repairs invalid page query values');
 
 const index=read('index.html');
-expect(index.includes('og:image')&&index.includes('social-cover.jpg'),'Static Open Graph cover exists for non-JS social crawlers');
-expect(index.includes('og:image:width')&&index.includes('1200')&&index.includes('og:image:height')&&index.includes('630'),'Open Graph cover dimensions are declared');
+expect(index.includes('og:image')&&(index.includes('social-cover.jpg')||index.includes('/api/social-image')),'Static Open Graph image exists for non-JS social crawlers');
+expect(index.includes('/api/social-image')||index.includes('og:image:width'),'Open Graph image is directly crawlable or has declared dimensions');
 expect(index.includes('twitter:card')&&index.includes('summary_large_image'),'Large social card metadata is present');
 expect(fs.existsSync(path.join(root,'public/social-cover.jpg')),'Social share image file exists');
 expect(fs.statSync(path.join(root,'public/social-cover.jpg')).size<250_000,'Social share image is lightweight (<250 KB)');
@@ -41,7 +41,7 @@ const rulesTemplate=read('firebase.rules.template.json');
 expect(rules.includes('\"reviews\"')&&rulesTemplate.includes("query.orderByChild == 'status'")&&rulesTemplate.includes('__CONTENT_MANAGE_CONDITION__'),'Firebase rules keep drafts admin-only while allowing published review queries');
 
 const css=read('src/v581-storefront-polish.css');
-expect(css.includes('content-visibility:auto')&&css.includes('contain-intrinsic-size'),'Offscreen product/testimonial cards use paint containment');
+expect(css.includes('content-visibility:auto')&&css.includes('contain-intrinsic-size'),'Offscreen product cards use paint containment');
 
 for(const item of checks)console.log(`${item.ok?'PASS':'FAIL'}  ${item.label}`);
 const passed=checks.filter(item=>item.ok).length;

@@ -44,7 +44,7 @@ export type SectionType='hero'|'trust'|'collections'|'products'|'bestSellers'|'b
 export interface Section{id:string;type:SectionType;visible:boolean;settings:Record<string,string|number|boolean>;blocks:ThemeBlock[]}
 export interface ThemeTemplate{key:TemplateKey;name:string;sections:Section[]}
 export interface ThemeSettings{storeName:string;storeDescription:string;storePhone:string;storeEmail:string;storeAddress:string;taxId:string;facebookUrl:string;instagramUrl:string;tiktokUrl:string;recruitmentUrl:string;announcement:string;accent:string;background:string;surface:string;text:string;muted:string;textOnDark:string;radius:number;cardRadius:number;buttonRadius:number;contentWidth:number;sectionSpacing:number;headingScale:number;headingWeight:number;bodyWeight:number;headingFont:string;bodyFont:string;motion:'none'|'subtle'|'expressive';logoText:string;logoImage:string;showAnnouncement:boolean;stickyHeader:boolean}
-export interface StoreProfile{storeName:string;storeDescription:string;storePhone:string;storeEmail:string;storeAddress:string;taxId:string;facebookUrl:string;instagramUrl:string;tiktokUrl:string;recruitmentUrl:string;logoImage:string;updatedAt:string}
+export interface StoreProfile{storeName:string;storeDescription:string;storePhone:string;storeEmail:string;storeAddress:string;taxId:string;facebookUrl:string;instagramUrl:string;tiktokUrl:string;recruitmentUrl:string;logoImage:string;socialShareImage:string;updatedAt:string}
 export interface Theme{version:number;name:string;settings:ThemeSettings;templates:Record<TemplateKey,ThemeTemplate>}
 export interface ThemeVersion{id:string;createdAt:string;note:string;theme:Theme}
 export interface ThemeState{draft:Theme;published:Theme;publishedAt:string;versions:ThemeVersion[]}

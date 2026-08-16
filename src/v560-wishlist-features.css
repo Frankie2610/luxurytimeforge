@@ -1,53 +1,25 @@
-/* Shareable wishlist controls; comparison now uses the single V0.57 store and page. */
 .tf53-wishlist-media-wrap{position:relative;min-width:0;overflow:hidden;background:linear-gradient(145deg,#faf9f6,#f1efe9)}
 .tf56-share-wishlist{border-color:#bac9be!important;color:#274631!important}
 .tf56-share-wishlist:hover{border-color:#779381!important;background:#f4f8f5!important}
-
-.tf56-compare-toggle{
-  position:absolute;
-  z-index:3;
-  top:12px;
-  right:12px;
-  min-height:31px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  padding:0 10px;
-  border:1px solid rgba(35,58,43,.16);
-  border-radius:9px;
-  background:rgba(255,255,255,.94);
-  color:#32443a;
-  box-shadow:0 5px 18px rgba(24,45,31,.09);
-  font:780 9px/1 var(--lux-body-font,Inter,system-ui,sans-serif);
-  cursor:pointer;
-  transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease;
-}
+.tf56-compare-toggle{position:absolute;z-index:3;top:12px;right:12px;min-height:31px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;border:1px solid rgba(35,58,43,.16);border-radius:9px;background:rgba(255,255,255,.94);color:#32443a;box-shadow:0 5px 18px rgba(24,45,31,.09);font:780 9px/1 var(--lux-body-font,Inter,system-ui,sans-serif);cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
 .tf56-compare-toggle svg{width:14px;height:14px}
 .tf56-compare-toggle:hover{border-color:#60816b;background:#fff;color:#1f5132;transform:translateY(-1px)}
 .tf56-compare-toggle.is-active{border-color:#244e32;background:#244e32;color:#fff;box-shadow:0 7px 20px rgba(24,69,40,.2)}
 .tf53-wishlist-card.is-selected-for-compare{border-color:#6f967c;box-shadow:0 16px 42px rgba(28,73,44,.12)}
-
 @supports(content-visibility:auto){.tf53-wishlist-card{content-visibility:auto;contain-intrinsic-size:460px}}
-
-@media(max-width:640px){
-  .tf55-wishlist-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}
-  .tf55-wishlist-sort{grid-column:1/-1}
-  .tf55-wishlist-actions .tf56-share-wishlist,.tf55-wishlist-actions .tf55-wishlist-add-all{width:100%;padding-inline:8px;white-space:nowrap}
-  .tf55-wishlist-actions .tf55-wishlist-clear{grid-column:3}
-  .tf53-wishlist-media-wrap{grid-row:1/3;min-height:184px;border-right:1px solid #e5e8e5}
-  .tf53-wishlist-media-wrap .tf53-wishlist-media{height:100%;min-height:184px;border-right:0}
-  .tf56-compare-toggle{top:8px;right:7px;min-width:31px;min-height:29px;padding:0 7px;border-radius:8px}
-  .tf56-compare-toggle span{display:none}.tf56-compare-toggle svg{width:13px;height:13px}
-  @supports(content-visibility:auto){.tf53-wishlist-card{contain-intrinsic-size:184px}}
-}
-
-@media(max-width:380px){
-  .tf55-wishlist-actions{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) 40px}
-  .tf55-wishlist-actions button{font-size:9px}
-  .tf53-wishlist-media-wrap,.tf53-wishlist-media-wrap .tf53-wishlist-media{min-height:176px}
-  @supports(content-visibility:auto){.tf53-wishlist-card{contain-intrinsic-size:176px}}
-}
-
+@media(max-width:640px){.tf55-wishlist-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 40px}
+.tf55-wishlist-sort{grid-column:1/-1}
+.tf55-wishlist-actions .tf56-share-wishlist,.tf55-wishlist-actions .tf55-wishlist-add-all{width:100%;padding-inline:8px;white-space:nowrap}
+.tf55-wishlist-actions .tf55-wishlist-clear{grid-column:3}
+.tf53-wishlist-media-wrap{grid-row:1/3;min-height:184px;border-right:1px solid #e5e8e5}
+.tf53-wishlist-media-wrap .tf53-wishlist-media{height:100%;min-height:184px;border-right:0}
+.tf56-compare-toggle{top:8px;right:7px;min-width:31px;min-height:29px;padding:0 7px;border-radius:8px}
+.tf56-compare-toggle span{display:none}
+.tf56-compare-toggle svg{width:13px;height:13px}
+@supports(content-visibility:auto){.tf53-wishlist-card{contain-intrinsic-size:184px}}}
+@media(max-width:380px){.tf55-wishlist-actions{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) 40px}
+.tf55-wishlist-actions button{font-size:9px}
+.tf53-wishlist-media-wrap,.tf53-wishlist-media-wrap .tf53-wishlist-media{min-height:176px}
+@supports(content-visibility:auto){.tf53-wishlist-card{contain-intrinsic-size:176px}}}
 @media(hover:none){.tf56-compare-toggle:hover{transform:none}}
 @media(prefers-reduced-motion:reduce){.tf56-compare-toggle{transition:none}}

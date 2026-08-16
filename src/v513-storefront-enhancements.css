@@ -1,91 +1,12 @@
-/* V51.3 — final storefront identity, desktop header typography and compact payment marks. */
-.tf-storefront-v4912 .tf-store-logo-image-v513{
-  width:auto;
-  max-width:210px;
-  height:54px;
-  object-fit:contain;
-}
-
-/* Strong IDs plus runtime enforcement in LuxuryHeader remove every historical
-   10–11px rule from the desktop/tablet header range. */
-@media(min-width:821px){
-  #tf-storefront-announcement,
-  #tf-storefront-announcement .lux-announcement-copy,
-  #tf-storefront-header .lux-main-nav>a,
-  #tf-storefront-header .lux-search-button>span,
-  #tf-storefront-brand-rail .tf-brand-rail-heading-v39>small,
-  #tf-storefront-brand-rail .tf-brand-rail-heading-v39>span,
-  #tf-storefront-brand-rail .tf-brand-rail-nav-v39>a,
-  #tf-storefront-brand-rail .tf-brand-rail-nav-v39>a>span{
-    font-size:13px!important;
-    line-height:1.2!important;
-  }
-}
-
-/* Reuse the green TimeForge Selection badge treatment on all requested cards. */
-.tf-storefront-v4912 :is(
-  .tf-journal-v4912,
-  .tf-related-v4916,
-  .tf-search-results-v498
-) .tf-section-title-v4912>small,
-.tf-storefront-v4912 .v27-search-hero>small,
-.tf4922-journal-page .tf4922-journal-hero-copy>span,
-.tf4922-article-page .tf4922-article>header>span{
-  width:max-content;
-  min-height:30px;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:0 13px;
-  border:1px solid #234330!important;
-  border-radius:7px!important;
-  background:linear-gradient(135deg,#1d3827,#315c40)!important;
-  color:#fff!important;
-  font-size:11px!important;
-  font-weight:900!important;
-  letter-spacing:.13em!important;
-  line-height:1!important;
-  text-transform:uppercase;
-  box-shadow:0 8px 18px rgba(29,56,39,.13);
-}
+.tf-storefront-v4912 .tf-store-logo-image-v513{width:auto;max-width:210px;height:54px;object-fit:contain}
+@media(min-width:821px){#tf-storefront-announcement, #tf-storefront-announcement .lux-announcement-copy, #tf-storefront-header .lux-main-nav>a, #tf-storefront-header .lux-search-button>span, #tf-storefront-brand-rail .tf-brand-rail-heading-v39>small, #tf-storefront-brand-rail .tf-brand-rail-heading-v39>span, #tf-storefront-brand-rail .tf-brand-rail-nav-v39>a, #tf-storefront-brand-rail .tf-brand-rail-nav-v39>a>span{font-size:13px!important;line-height:1.2!important}}
+.tf-storefront-v4912 :is( .tf-journal-v4912, .tf-related-v4916, .tf-search-results-v498 ) .tf-section-title-v4912>small, .tf-storefront-v4912 .v27-search-hero>small, .tf4922-journal-page .tf4922-journal-hero-copy>span, .tf4922-article-page .tf4922-article>header>span{width:max-content;min-height:30px;display:inline-flex;align-items:center;gap:6px;padding:0 13px;border:1px solid #234330!important;border-radius:7px!important;background:linear-gradient(135deg,#1d3827,#315c40)!important;color:#fff!important;font-size:11px!important;font-weight:900!important;letter-spacing:.13em!important;line-height:1!important;text-transform:uppercase;box-shadow:0 8px 18px rgba(29,56,39,.13)}
 .tf4922-journal-page .tf4922-journal-hero-copy>span svg{width:13px;height:13px}
-
-/* Payment marks are deliberately smaller so the footer feels lighter. */
-.tf-storefront-v4912 .tf509-payment-marks{gap:6px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark{
-  height:42px;
-  min-width:56px;
-  padding:3px 9px;
-  border-radius:9px;
-}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark svg{width:36px;height:23px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-bank svg{width:18px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-bank b{font-size:10px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-visa svg{width:39px;height:24px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-mastercard svg{width:40px;height:25px}
 .tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-momo{min-width:88px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-momo .tf509-momo-logo{width:68px;height:29px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-zalopay{min-width:94px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-zalopay svg{width:78px;height:25px}
 .tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-payos{min-width:88px}
-.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-payos svg{width:69px;height:24px}
-
-@media(max-width:820px){
-  .tf-storefront-v4912 .tf-store-logo-image-v513{max-width:168px;height:44px}
-}
-@media(max-width:680px){
-  .tf-storefront-v4912 :is(.tf-journal-v4912,.tf-related-v4916,.tf-search-results-v498) .tf-section-title-v4912>small,
-  .tf-storefront-v4912 .v27-search-hero>small,
-  .tf4922-journal-page .tf4922-journal-hero-copy>span,
-  .tf4922-article-page .tf4922-article>header>span{
-    min-height:24px;
-    padding:0 9px;
-    font-size:8px!important;
-    letter-spacing:.1em!important;
-    border-radius:6px!important;
-  }
-  .tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark{height:39px;padding-inline:5px}
-  .tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-momo .tf509-momo-logo{width:61px;height:26px}
-  .tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-zalopay svg{width:70px}
-  .tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-payos svg{width:63px}
-}
+@media(max-width:820px){.tf-storefront-v4912 .tf-store-logo-image-v513{max-width:168px;height:44px}}
+@media(max-width:680px){.tf-storefront-v4912 :is(.tf-journal-v4912,.tf-related-v4916,.tf-search-results-v498) .tf-section-title-v4912>small, .tf-storefront-v4912 .v27-search-hero>small, .tf4922-journal-page .tf4922-journal-hero-copy>span, .tf4922-article-page .tf4922-article>header>span{min-height:24px;padding:0 9px;font-size:8px!important;letter-spacing:.1em!important;border-radius:6px!important}
+.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark{height:39px;padding-inline:5px}
+.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-momo .tf509-momo-logo{width:61px;height:26px}
+.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-zalopay svg{width:70px}
+.tf-storefront-v4912 .tf509-payment-marks .tf509-brand-mark.is-payos svg{width:63px}}

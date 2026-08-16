@@ -42,7 +42,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import {useCartActions, useCartState, useCommerce} from './context';
+import {useCartActions, useCartState, useCommerce, useProductCatalog, useProductSales, useStorefrontData} from './context';
 import type {Collection, Product, ProductGroup, ProductGroupItem, Section, ThemeBlock} from './types';
 import {discount, money} from './utils';
 import {optimizedImage, optimizedImageSrcSet, productImage, SmartImage} from './image-utils';
@@ -118,10 +118,15 @@ import './v576-storefront-readability.css';
 import './v580-storefront-polish.css';
 import './v581-storefront-polish.css';
 import './v582-storefront-ui-polish.css';
+import './v601-storefront-fixes.css';
+import './v620-storefront-performance.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
 const LazyBlogCardsV18 = lazy(() => import('./blog-home-cards-v18').then((module) => ({default: module.BlogCardsV18})));
+const LazyQuickViewV62 = lazy(() => import('./quick-view-v62').then((module) => ({default: module.QuickViewV62})));
+const LazyPurchaseAssistV63 = lazy(() => import('./purchase-assist-v63').then((module) => ({default: module.PurchaseAssistV63})));
+const prefetchQuickViewV62 = () => {void import('./quick-view-v62');};
 const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
 const MAX_RECENT_SEARCHES = 6;
 
@@ -223,7 +228,7 @@ const LuxuryLogo = memo(function LuxuryLogo({name, logoImage, showName = true}: 
 });
 
 function LuxuryHeader({openCart}: {openCart: () => void}) {
-  const {collections, theme, products, storeProfile} = useCommerce();
+  const {collections, theme, products, storeProfile} = useStorefrontData();
   const identity=isThemePreviewV26()?theme.settings:storeProfile;
   const cart = useCartState();
   const {ids: wishlistIds} = useWishlist();
@@ -406,7 +411,7 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
 }
 
 function LuxuryCartDrawer({open, close}: {open: boolean; close: () => void}) {
-  const {products} = useCommerce();
+  const {products} = useProductCatalog();
   const cart = useCartState();
   const {updateCart} = useCartActions();
   useOverlayScrollLock(open);
@@ -536,7 +541,7 @@ function StorefrontUtilityDock() {
 }
 
 function LuxuryFooter() {
-  const {theme,storeProfile}=useCommerce();
+  const {theme,storeProfile}=useStorefrontData();
   const settings=theme.settings;
   const identity=isThemePreviewV26()?settings:storeProfile;
   const storeName=resolveStoreName(identity.storeName);
@@ -591,7 +596,7 @@ export function StoreLayoutV10() {
   const [campaignOffer, setCampaignOffer] = useState<CampaignOfferV59 | null>(() => captureCampaignOfferV59());
   const location = useLocation();
   const navigate = useNavigate();
-  const {theme,storeProfile,isLoading,dataError,products} = useCommerce();
+  const {theme,storeProfile,isLoading,dataError,products} = useStorefrontData();
   useLayoutEffect(() => {
     const previousRestoration = window.history.scrollRestoration;
     const previousBehavior = document.documentElement.style.scrollBehavior;
@@ -702,11 +707,12 @@ const getProductFamilyIndex=(groups:ProductGroup[],products:Product[])=>{
 };
 
 export const LuxuryProductCard = memo(function LuxuryProductCard({product, priority = false}: {product: Product; priority?: boolean}) {
-  const {productGroups, products} = useCommerce();
+  const {productGroups, products} = useProductCatalog();
   const {addToCart} = useCartActions();
   const {wished, toggle} = useWishlistItem(product.id);
   const {selected:compareSelected,toggle:toggleCompare} = useCompareItemV57(product.id);
   const [secondaryRequested, setSecondaryRequested] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
   const sale = discount(product.price, product.compareAtPrice);
   const primary = productImage(product);
   const secondary = productImage(product, 1);
@@ -728,7 +734,8 @@ export const LuxuryProductCard = memo(function LuxuryProductCard({product, prior
           <Heart fill={wished ? 'currentColor' : 'none'} />
         </button>
         <button type="button" className={`tf57-card-compare ${compareSelected?'is-active':''}`} onClick={()=>{const result=toggleCompare(product.id);if(result==='limit')toast.info('Chỉ so sánh tối đa 3 sản phẩm');else toast.success(result==='added'?'Đã thêm vào so sánh':'Đã xóa khỏi so sánh')}} aria-label={compareSelected?'Xóa khỏi so sánh':'Thêm vào so sánh'} aria-pressed={compareSelected}><Scale/></button>
-        <button className="tf-product-quick-add-v4918" onClick={() => {addToCart(product.id, product.variants[0]?.id || '', 1); trackCommerceEvent('add_to_cart',{productId:product.id,value:product.price}); toast.success('Đã thêm sản phẩm vào giỏ hàng');}} disabled={product.inventory <= 0}>
+        <button type="button" className="tf62-card-quick-view" onPointerEnter={(event)=>{if(event.pointerType==='mouse'||event.pointerType==='pen')prefetchQuickViewV62()}} onFocus={prefetchQuickViewV62} onClick={()=>setQuickViewOpen(true)} aria-label={`Xem nhanh ${product.title}`} title="Xem nhanh"><ZoomIn/></button>
+        <button className="tf-product-quick-add-v4918" onClick={() => {const variant=product.variants.find(item=>item.inventory>0)||product.variants[0];if(!variant){toast.error('Sản phẩm chưa có biến thể khả dụng');return}addToCart(product.id, variant.id, 1); trackCommerceEvent('add_to_cart',{productId:product.id,value:variant.price||product.price}); toast.success('Đã thêm sản phẩm vào giỏ hàng');}} disabled={product.inventory <= 0}>
           <ShoppingBag />{product.inventory > 0 ? 'Thêm nhanh' : 'Tạm hết hàng'}
         </button>
       </div>
@@ -738,6 +745,7 @@ export const LuxuryProductCard = memo(function LuxuryProductCard({product, prior
         {family&&familyItems.length>1&&<ProductFamilyCardSwatches group={family} items={familyItems} current={product}/>}
         <div className={`tf-product-price-v4918 ${product.compareAtPrice > product.price ? 'is-sale' : ''}`}><strong>{money(product.price)}</strong>{product.compareAtPrice > product.price && <del>{money(product.compareAtPrice)}</del>}</div>
       </div>
+      {quickViewOpen&&<Suspense fallback={null}><LazyQuickViewV62 product={product} onClose={()=>setQuickViewOpen(false)}/></Suspense>}
     </article>
   );
 });
@@ -753,14 +761,13 @@ function LuxurySectionHeading({eyebrow, title, description, link = '/collections
 }
 
 export function HomeV10() {
-  const {theme, products, collections, orders} = useCommerce();
+  const {theme, products, collections} = useStorefrontData();
+  const productSales = useProductSales();
   const activeProducts = useMemo(() => products.filter((item) => item.status === 'active' && item.published), [products]);
   const activeCollections = useMemo(() => collections.filter((item) => item.status === 'active'), [collections]);
   const bestSellers = useMemo(() => {
-    const saleCounts = new Map<string, number>();
-    orders.filter((order) => order.status !== 'cancelled').forEach((order) => order.lines.forEach((line) => saleCounts.set(line.productId, (saleCounts.get(line.productId) || 0) + line.quantity)));
-    return [...activeProducts].sort((a, b) => (saleCounts.get(b.id) || 0) - (saleCounts.get(a.id) || 0) || b.updatedAt.localeCompare(a.updatedAt));
-  }, [activeProducts, orders]);
+    return [...activeProducts].sort((a, b) => (productSales.get(b.id) || 0) - (productSales.get(a.id) || 0) || b.updatedAt.localeCompare(a.updatedAt));
+  }, [activeProducts, productSales]);
   const sections = useMemo(() => theme.templates.home.sections.filter((section) => section.visible), [theme.templates.home.sections]);
   const boundary = (section: Section) => ({
     'data-theme-section-id': section.id,
@@ -1183,7 +1190,7 @@ const compactCollectionPages=(current:number,total:number):(number|'gap')[]=>{
 
 export function CollectionPageV10() {
   const {handle} = useParams();
-  const {products, collections, collectionProducts, theme} = useCommerce();
+  const {products, collections, collectionProducts, theme} = useStorefrontData();
   const collection = collections.find((item) => item.handle === handle);
   const source = useMemo(
     () => (collection ? collectionProducts(collection) : products).filter((item) => item.status === 'active' && item.published),
@@ -1194,8 +1201,10 @@ export function CollectionPageV10() {
   const bannerHeading = getBlock(bannerSection, 'heading');
   const bannerText = getBlock(bannerSection, 'text');
   const gridSection = collectionTemplate.sections.find((section) => section.type === 'collectionGrid');
-  const configuredPageSize = Number(gridSection?.settings.pageSize ?? 50);
-  const pageSize = Number.isFinite(configuredPageSize) ? Math.max(50, Math.min(100, configuredPageSize)) : 50;
+  const configuredPageSize = Number(gridSection?.settings.pageSize ?? 36);
+  // A 100-card DOM was noticeably expensive on mobile Safari. Keep enough
+  // products visible for browsing while bounding image observers and React work.
+  const pageSize = Number.isFinite(configuredPageSize) ? Math.max(24, Math.min(48, configuredPageSize)) : 36;
   const [searchParams,setSearchParams] = useSearchParams();
   const initialQuery=useMemo(()=>readCollectionQuery(searchParams),[]);
   const [selectedVendors, setSelectedVendors] = useState<string[]>(()=>initialQuery.filters.selectedVendors);
@@ -1447,7 +1456,7 @@ function ProductFamilySelector({group,products,current}:{group:ProductGroup;prod
 
 export function ProductPageV10() {
   const {handle} = useParams();
-  const {products, productGroups, theme, storeProfile, isLoading} = useCommerce();
+  const {products, productGroups, theme, storeProfile, isLoading} = useStorefrontData();
   const {addToCart} = useCartActions();
   const {openCart} = useOutletContext<{openCart: () => void}>();
   const product = findProductByRoute(products, handle);
@@ -1579,6 +1588,8 @@ export function ProductPageV10() {
               {Boolean(buyBlock.settings.showBuyNow) && (inventory > 0 ? <Link className="tf-pdp491-buy" to="/checkout" onClick={buyNow}>Mua ngay</Link> : <button className="tf-pdp491-buy" disabled>Tạm hết hàng</button>)}
             </div>}
 
+            <Suspense fallback={null}><LazyPurchaseAssistV63 product={product} variantId={variant?.id||variantId} variantTitle={variant?.title} sku={variant?.sku||product.sku} price={price} inventory={inventory}/></Suspense>
+
             <ProductDeliveryEstimate />
 
             <section className="tf-pdp491-details" {...themeBlockProps(productDetailsBlock)} aria-label="Mô tả và thông số kỹ thuật">
@@ -1620,7 +1631,7 @@ export function ProductPageV10() {
 }
 
 export function SearchPageV10() {
-  const {products, theme} = useCommerce();
+  const {products, theme} = useStorefrontData();
   const [params, setParams] = useSearchParams();
   const [value, setValue] = useState(params.get('q') || '');
   const [recentSearches, setRecentSearches] = useState(readRecentSearches);
@@ -1671,7 +1682,7 @@ const staticContentPages: Record<string, {eyebrow: string; title: string; lead: 
 
 export function ContentPageV10() {
   const {slug = 'about'} = useParams();
-  const {theme} = useCommerce();
+  const {theme} = useStorefrontData();
   const {pages:managedPages}=useManagedContentPages();
   const managedPage=managedPages.find(item=>item.slug===slug);
   const page = staticContentPages[slug] || staticContentPages.about;
@@ -1713,6 +1724,6 @@ export function ContentPageV10() {
 }
 
 export function NotFoundV10() {
-  const{storeProfile}=useCommerce();
+  const{storeProfile}=useStorefrontData();
   return <section className="lux-not-found tf-not-found-v496"><div className="tf-not-found-mark-v496"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),240,240,'fit')} alt={resolveStoreName(storeProfile.storeName)}/><span>404</span></div><small>LOST IN TIME</small><h1>Trang này đã rời khỏi dòng thời gian.</h1><p>Đường dẫn có thể đã thay đổi, hoặc sản phẩm chưa được xuất bản trên cửa hàng.</p><div><Link className="primary" to="/">Về trang chủ<ArrowRight/></Link><Link to="/collections">Khám phá đồng hồ</Link><Link to="/search">Tìm kiếm</Link></div></section>;
 }

@@ -21,6 +21,7 @@ export const DEFAULT_STORE_PROFILE:StoreProfile={
   tiktokUrl:'',
   recruitmentUrl:'',
   logoImage:'',
+  socialShareImage:'',
   updatedAt:'',
 };
 
@@ -41,6 +42,7 @@ export const storeProfileFromTheme=(theme:Theme):StoreProfile=>({
   tiktokUrl:clean(theme.settings.tiktokUrl),
   recruitmentUrl:clean(theme.settings.recruitmentUrl),
   logoImage:resolveCustomStoreLogo(theme.settings.logoImage),
+  socialShareImage:'',
   updatedAt:'',
 });
 
@@ -56,6 +58,7 @@ export const normalizeStoreProfile=(value:Partial<StoreProfile>|null|undefined,f
   tiktokUrl:String(value?.tiktokUrl??fallback.tiktokUrl??'').trim(),
   recruitmentUrl:String(value?.recruitmentUrl??fallback.recruitmentUrl??'').trim(),
   logoImage:value?.logoImage==null?resolveCustomStoreLogo(fallback.logoImage):resolveCustomStoreLogo(value.logoImage),
+  socialShareImage:value?.socialShareImage==null?resolveCustomStoreLogo(fallback.socialShareImage):resolveCustomStoreLogo(value.socialShareImage),
   updatedAt:String(value?.updatedAt??fallback.updatedAt??'').trim(),
 });
 

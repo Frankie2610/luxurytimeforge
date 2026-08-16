@@ -31,7 +31,7 @@ export function SeoHeadV60(){
     const collection=collectionHandle?collections.find(item=>item.handle===collectionHandle):undefined;
     let title=`${storeName} | Đồng hồ chính hãng`;
     let description=storeProfile.storeDescription||'Đồng hồ chính hãng, thông tin minh bạch, giao hàng toàn quốc và hỗ trợ hậu mãi từ Luxury Timeforge.';
-    let image=FALLBACK_IMAGE;
+    let image=storeProfile.socialShareImage||storeProfile.logoImage||FALLBACK_IMAGE;
     let type='website';
     let noindex=false;
     if(product){title=product.seoTitle||`${product.title} | ${storeName}`;description=product.seoDescription||product.descriptionText||clean(product.descriptionHtml)||`${product.title} chính hãng tại ${storeName}, giao hàng toàn quốc và hỗ trợ hậu mãi.`;image=product.images[0]||image;type='product'}
@@ -72,7 +72,7 @@ export function SeoHeadV60(){
     let script=document.getElementById(id) as HTMLScriptElement|null;
     if(!script){script=document.createElement('script');script.id=id;script.type='application/ld+json';document.head.appendChild(script)}
     const organization={
-      '@context':'https://schema.org','@type':'Organization',name:seo.storeName,url:seo.site,logo:`${seo.site}/luxury-timeforge-logo.svg`,
+      '@context':'https://schema.org','@type':'Organization',name:seo.storeName,url:seo.site,logo:/^https?:\/\//i.test(storeProfile.logoImage)?storeProfile.logoImage:`${seo.site}${storeProfile.logoImage||'/luxury-timeforge-logo.svg'}`,
       email:storeProfile.storeEmail||undefined,telephone:storeProfile.storePhone||undefined,address:storeProfile.storeAddress||undefined,
     };
     const data=seo.product?{

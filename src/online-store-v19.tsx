@@ -182,7 +182,7 @@ function SettingField({name, label, value, onChange}: {name: string; label?: str
   };
   const rangeConfig: Partial<Record<string, {min: number; max: number; step: number; suffix?: string}>> = {
     height: {min: 280, max: 900, step: 10, suffix: 'px'}, overlay: {min: 0, max: 90, step: 1, suffix: '%'},
-    columns: {min: 1, max: 6, step: 1}, limit: {min: 1, max: 24, step: 1}, pageSize: {min: 50, max: 100, step: 10},
+    columns: {min: 1, max: 6, step: 1}, limit: {min: 1, max: 24, step: 1}, pageSize: {min: 24, max: 48, step: 12},
     radius: {min: 0, max: 36, step: 1, suffix: 'px'}, cardRadius: {min: 0, max: 36, step: 1, suffix: 'px'},
     buttonRadius: {min: 0, max: 999, step: 1, suffix: 'px'}, contentWidth: {min: 960, max: 1680, step: 20, suffix: 'px'},
     sectionSpacing: {min: 32, max: 140, step: 4, suffix: 'px'}, headingScale: {min: 80, max: 125, step: 1, suffix: '%'},

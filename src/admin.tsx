@@ -71,6 +71,7 @@ import {
   Redo2,
   RotateCcw,
   Save,
+  Share2,
   Search,
   Settings,
   ShoppingBag,
@@ -2872,6 +2873,7 @@ export function SettingsPage() {
     tiktokUrl: value.tiktokUrl,
     recruitmentUrl: value.recruitmentUrl,
     logoImage: value.logoImage,
+    socialShareImage: value.socialShareImage,
   });
   const [profile, setProfile] = useState<StoreProfileDraft>(() =>
     profileDraft(storeProfile),
@@ -2879,13 +2881,17 @@ export function SettingsPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState(storeProfile.logoImage || DEFAULT_STORE_LOGO);
   const [logoError, setLogoError] = useState("");
+  const [socialFile, setSocialFile] = useState<File | null>(null);
+  const [socialPreview, setSocialPreview] = useState(storeProfile.socialShareImage || storeProfile.logoImage || DEFAULT_STORE_LOGO);
+  const [socialError, setSocialError] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (logoFile) return;
+    if (logoFile || socialFile) return;
     setProfile(profileDraft(storeProfile));
     setLogoPreview(storeProfile.logoImage || DEFAULT_STORE_LOGO);
-  }, [storeProfile, logoFile]);
+    setSocialPreview(storeProfile.socialShareImage || storeProfile.logoImage || DEFAULT_STORE_LOGO);
+  }, [storeProfile, logoFile, socialFile]);
 
   useEffect(() => {
     if (!logoFile) {
@@ -2896,6 +2902,16 @@ export function SettingsPage() {
     setLogoPreview(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [logoFile, profile.logoImage]);
+
+  useEffect(() => {
+    if (!socialFile) {
+      setSocialPreview(profile.socialShareImage || profile.logoImage || DEFAULT_STORE_LOGO);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(socialFile);
+    setSocialPreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [socialFile, profile.socialShareImage, profile.logoImage]);
 
   const patchProfile = <K extends keyof StoreProfileDraft>(
     key: K,
@@ -2923,28 +2939,58 @@ export function SettingsPage() {
     setLogoError("");
   };
 
+
+  const chooseSocialImage = (file: File | undefined) => {
+    setSocialError("");
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setSocialError("Chỉ chấp nhận file ảnh PNG, JPG, JPEG, WebP hoặc AVIF.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setSocialError("Ảnh chia sẻ phải nhỏ hơn 10 MB.");
+      return;
+    }
+    setSocialFile(file);
+  };
+
+  const removeSocialImage = () => {
+    setSocialFile(null);
+    patchProfile("socialShareImage", "");
+    setSocialPreview(profile.logoImage || DEFAULT_STORE_LOGO);
+    setSocialError("");
+  };
+
   const saveProfile = async () => {
     if (saving) return;
     setSaving(true);
     setLogoError("");
     try {
       let logoImage = profile.logoImage;
+      let socialShareImage = profile.socialShareImage;
       if (logoFile) {
         const uploaded = await uploadCloudinaryImage(logoFile, "shop/logo");
         logoImage = uploaded.url;
       }
-      const next: StoreProfileDraft = { ...profile, logoImage };
+      if (socialFile) {
+        const uploaded = await uploadCloudinaryImage(socialFile, "shop/social-share");
+        socialShareImage = uploaded.url;
+      }
+      const next: StoreProfileDraft = { ...profile, logoImage, socialShareImage };
       await saveStoreProfile(next);
       setProfile(next);
       setLogoFile(null);
+      setSocialFile(null);
       setLogoPreview(logoImage || DEFAULT_STORE_LOGO);
-      emitToast("Đã lưu thông tin cửa hàng và logo lên Firebase.");
+      setSocialPreview(socialShareImage || logoImage || DEFAULT_STORE_LOGO);
+      emitToast("Đã lưu thông tin cửa hàng, logo và ảnh chia sẻ lên Firebase.");
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : "Không thể lưu thông tin cửa hàng.";
       setLogoError(message);
+      setSocialError(message);
       emitToast(message, "danger");
     } finally {
       setSaving(false);
@@ -3071,6 +3117,60 @@ export function SettingsPage() {
                   </p>
                 )}
                 {logoError && <p className="tf513-logo-error">{logoError}</p>}
+              </div>
+            </div>
+          </section>
+
+          <section className="tf601-social-share-section">
+            <div className="tf509-settings-section-title">
+              <Share2 />
+              <span>
+                <b>Ảnh chia sẻ Messenger / Zalo</b>
+                <small>Ảnh preview khi gửi link. Khuyến nghị 1200 × 630 px; nếu để trống hệ thống tự dùng logo shop trên Firebase.</small>
+              </span>
+            </div>
+            <div className="tf513-logo-uploader tf601-social-uploader">
+              <div className={`tf513-logo-preview tf601-social-preview ${socialPreview ? "has-image" : "is-empty"}`}>
+                {socialPreview ? (
+                  <img src={socialPreview} alt="Xem trước ảnh chia sẻ mạng xã hội" />
+                ) : (
+                  <span><ImagePlus /><b>Chưa có ảnh chia sẻ</b></span>
+                )}
+                {!profile.socialShareImage && !socialFile && <em>Đang dùng logo shop</em>}
+              </div>
+              <div className="tf513-logo-controls">
+                <div>
+                  <b>Cover khi chia sẻ link</b>
+                  <small>Ưu tiên JPG/PNG/WebP tỷ lệ 1.91:1. Ảnh được tải lên Cloudinary rồi URL được lưu trong Firebase.</small>
+                </div>
+                <Field label="URL ảnh chia sẻ (tùy chọn)">
+                  <Input
+                    type="url"
+                    inputMode="url"
+                    value={profile.socialShareImage}
+                    onChange={(event) => {setSocialFile(null); patchProfile("socialShareImage", event.target.value);}}
+                    placeholder="https://res.cloudinary.com/..."
+                  />
+                </Field>
+                <input
+                  id="tf601-social-share-file"
+                  className="tf513-logo-file-input"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/avif"
+                  onChange={(event) => {chooseSocialImage(event.target.files?.[0]); event.currentTarget.value = "";}}
+                />
+                <div className="tf513-logo-actions">
+                  <label className={`tf513-logo-choose ${saving ? "is-disabled" : ""}`} htmlFor="tf601-social-share-file" aria-disabled={saving}>
+                    <UploadCloud />{socialFile || profile.socialShareImage ? "Thay ảnh" : "Chọn ảnh từ thiết bị"}
+                  </label>
+                  {(socialFile || profile.socialShareImage) && (
+                    <button className="tf513-logo-remove" type="button" onClick={removeSocialImage} disabled={saving}>
+                      <Trash2 />Dùng logo shop
+                    </button>
+                  )}
+                </div>
+                {socialFile && <small className="tf513-logo-selected">Đã chọn: <b>{socialFile.name}</b></small>}
+                {socialError && <p className="tf513-logo-error">{socialError}</p>}
               </div>
             </div>
           </section>

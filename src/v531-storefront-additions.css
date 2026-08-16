@@ -1,36 +1,5 @@
-/* V0.53.1 — only styles for new storefront controls. Existing storefront layout stays authoritative. */
-.tf-storefront-v4912 #tf-storefront-header .tf53-wishlist-link{
-  position:relative;
-}
-
-.tf-storefront-v4912 #tf-storefront-header .tf53-wishlist-link>span{
-  position:absolute;
-  top:3px;
-  right:2px;
-  min-width:16px;
-  height:16px;
-  display:grid;
-  place-items:center;
-  padding:0 4px;
-  border:2px solid #fff;
-  border-radius:999px;
-  background:#7f2934;
-  color:#fff;
-  font-size:8px;
-  font-weight:800;
-  line-height:1;
-}
-
-.tf-storefront-v4912 :is(a,button,input,select,textarea):focus-visible{
-  outline:2px solid color-mix(in srgb,var(--lux-accent,#7a3f25) 72%,#fff);
-  outline-offset:3px;
-}
-
-/* Wishlist remains available from the mobile drawer without crowding the compact header. */
-@media(max-width:600px){
-  .tf-storefront-v4912 #tf-storefront-header .tf53-wishlist-link{display:none!important}
-}
-
-@media(prefers-reduced-motion:reduce){
-  .tf-storefront-v4912 .tf53-wishlist-link{transition:none!important}
-}
+.tf-storefront-v4912 #tf-storefront-header .tf53-wishlist-link{position:relative}
+.tf-storefront-v4912 #tf-storefront-header .tf53-wishlist-link>span{position:absolute;top:3px;right:2px;min-width:16px;height:16px;display:grid;place-items:center;padding:0 4px;border:2px solid #fff;border-radius:999px;background:#7f2934;color:#fff;font-size:8px;font-weight:800;line-height:1}
+.tf-storefront-v4912 :is(a,button,input,select,textarea):focus-visible{outline:2px solid color-mix(in srgb,var(--lux-accent,#7a3f25) 72%,#fff);outline-offset:3px}
+@media(max-width:600px){.tf-storefront-v4912 #tf-storefront-header .tf53-wishlist-link{display:none!important}}
+@media(prefers-reduced-motion:reduce){.tf-storefront-v4912 .tf53-wishlist-link{transition:none!important}}
