@@ -4,7 +4,8 @@ import {useNewsletterActions} from './context';
 
 type Status='idle'|'success'|'info'|'error';
 type NewsletterResult='created'|'exists'|'reactivated'|'invalid';
-type Props={source:string;className?:string;actionLabel?:string;onSuccess?:()=>void;buttonProps?:ButtonHTMLAttributes<HTMLButtonElement>};
+type ThemeButtonProps=ButtonHTMLAttributes<HTMLButtonElement>&{'data-theme-block-id'?:string;'data-theme-block-label'?:string};
+type Props={source:string;className?:string;actionLabel?:string;onSuccess?:()=>void;buttonProps?:ThemeButtonProps};
 
 async function serverSubscribe(email:string,source:string):Promise<{result:NewsletterResult;emailSent?:boolean}|null>{
   try{
