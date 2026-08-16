@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.64.0",
+  "version": "0.65.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -60,7 +60,8 @@
     "v610:check": "node scripts/check-v610-social-review-contrast.mjs",
     "v620:check": "node scripts/check-v620-performance-admin-quickview.mjs",
     "v630:check": "node scripts/check-v630-css-features.mjs",
-    "v640:check": "node scripts/check-v640-admin-css-polish.mjs"
+    "v640:check": "node scripts/check-v640-admin-css-polish.mjs",
+    "v650:check": "node scripts/check-v650-storefront-seo-css.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -103,7 +104,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.64.0: Admin layout recovery, route-safe CSS de-duplication, stronger Admin controls, storefront contrast fixes, and polished Quick View/installment UI.",
+  "description": "Luxury TimeForge V0.65.0: functional newsletter signup, premium storefront/admin polish, two new customer decision tools, dynamic Google SEO sitemap, and aggressive runtime-safe CSS cleanup.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

@@ -1,0 +1,111 @@
+{
+  "version": "0.65.0",
+  "reason": "No runtime import reference from src TS/TSX/JS/JSX/CSS graph",
+  "files": [
+    {
+      "file": "base.css",
+      "bytes": 702
+    },
+    {
+      "file": "sprint10.css",
+      "bytes": 27061
+    },
+    {
+      "file": "sprint11.css",
+      "bytes": 24517
+    },
+    {
+      "file": "sprint12.css",
+      "bytes": 33620
+    },
+    {
+      "file": "sprint13.css",
+      "bytes": 17439
+    },
+    {
+      "file": "sprint14.css",
+      "bytes": 10572
+    },
+    {
+      "file": "sprint15.css",
+      "bytes": 12790
+    },
+    {
+      "file": "sprint16.css",
+      "bytes": 23430
+    },
+    {
+      "file": "sprint17.css",
+      "bytes": 337
+    },
+    {
+      "file": "sprint18.css",
+      "bytes": 1839
+    },
+    {
+      "file": "sprint19.css",
+      "bytes": 0
+    },
+    {
+      "file": "sprint20.css",
+      "bytes": 3241
+    },
+    {
+      "file": "sprint21.css",
+      "bytes": 4212
+    },
+    {
+      "file": "sprint22.css",
+      "bytes": 3011
+    },
+    {
+      "file": "sprint23.css",
+      "bytes": 4257
+    },
+    {
+      "file": "styles.css",
+      "bytes": 91074
+    },
+    {
+      "file": "v24-tokens.css",
+      "bytes": 1907
+    },
+    {
+      "file": "v4915-product-editor.css",
+      "bytes": 22576
+    },
+    {
+      "file": "v4917-admin-catalog.css",
+      "bytes": 20090
+    },
+    {
+      "file": "v4917-team.css",
+      "bytes": 13486
+    },
+    {
+      "file": "v4921-admin-operations.css",
+      "bytes": 4482
+    },
+    {
+      "file": "v4922-admin-customers.css",
+      "bytes": 5133
+    },
+    {
+      "file": "v4923-admin-content.css",
+      "bytes": 26515
+    },
+    {
+      "file": "v4925-admin-resources.css",
+      "bytes": 2206
+    },
+    {
+      "file": "v499-admin.css",
+      "bytes": 44844
+    },
+    {
+      "file": "v499-theme-editor.css",
+      "bytes": 25729
+    }
+  ],
+  "totalBytes": 425070
+}

@@ -1,4 +1,3 @@
-import './legacy.css';
 import './v524-print-documents.css';
 import './v525-print-logo.css';
 import {AnimatePresence, motion} from 'framer-motion';

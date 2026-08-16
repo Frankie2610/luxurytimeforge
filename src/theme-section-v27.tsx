@@ -2,6 +2,7 @@ import {useEffect, useMemo, useState, type CSSProperties} from 'react';
 import {ArrowRight, Clock3, Quote, ShieldCheck, Truck} from 'lucide-react';
 import {Link} from 'react-router-dom';
 import {useCommerce} from './context';
+import {NewsletterSignupV65} from './newsletter-signup-v65';
 import {optimizedImage} from './image-utils';
 import {sectionLabels, blockLabels} from './theme';
 import type {Section, ThemeBlock} from './types';
@@ -52,7 +53,7 @@ export function ThemeSectionV27({section}: {section: Section}) {
     return <section {...sectionProps(section)} className={`lux-section v26-rich-text v27-rich-text align-${String(section.settings.alignment || 'center')} width-${String(section.settings.width || 'narrow')} ${surfaceClass}`}><small {...blockProps(heading)}>{String(heading?.settings.eyebrow || 'TIMEFORGE')}</small><h2 {...blockProps(heading)}>{String(heading?.settings.text || 'Một tiêu đề giàu cảm hứng')}</h2><p {...blockProps(text)}>{String(text?.settings.text || '')}</p>{action && <Link {...blockProps(action)} to={String(action.settings.link || '/collections')}>{String(action.settings.label || 'Xem thêm')}<ArrowRight/></Link>}</section>;
   }
   if (section.type === 'newsletter') {
-    return <section {...sectionProps(section)} className={`tf4933-newsletter ${dark ? 'dark tf-dark-section' : ''}`}><div><small {...blockProps(heading)}>{String(heading?.settings.eyebrow || 'TIMEFORGE JOURNAL')}</small><h2 {...blockProps(heading)}>{String(heading?.settings.text || 'Nhận tin tuyển chọn mới')}</h2><p {...blockProps(text)}>{String(text?.settings.text || '')}</p></div><form onSubmit={event => event.preventDefault()}><input type="email" placeholder="Địa chỉ email"/><button {...blockProps(action)}>{String(action?.settings.label || 'Đăng ký')}<ArrowRight/></button></form></section>;
+    return <section {...sectionProps(section)} className={`tf4933-newsletter ${dark ? 'dark tf-dark-section' : ''}`}><div><small {...blockProps(heading)}>{String(heading?.settings.eyebrow || 'TIMEFORGE JOURNAL')}</small><h2 {...blockProps(heading)}>{String(heading?.settings.text || 'Nhận tin tuyển chọn mới')}</h2><p {...blockProps(text)}>{String(text?.settings.text || '')}</p></div><NewsletterSignupV65 source="homepage" className="tf4933-newsletter-signup" actionLabel={String(action?.settings.label || 'Đăng ký')} buttonProps={blockProps(action)}/></section>;
   }
   if (section.type === 'multicolumn') {
     const items = all(section, 'iconText');

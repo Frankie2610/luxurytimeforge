@@ -12,6 +12,8 @@ const clean=(value:unknown,fallback='')=>{
 export const DEFAULT_STORE_PROFILE:StoreProfile={
   storeName:DEFAULT_STORE_NAME,
   storeDescription:'Đồng hồ chính hãng, tuyển chọn kỹ và hậu mãi minh bạch.',
+  seoTitle:'',
+  seoDescription:'',
   storePhone:'',
   storeEmail:'',
   storeAddress:'',
@@ -33,6 +35,8 @@ export const resolveStoreIcon=(value:unknown)=>resolveCustomStoreLogo(value)||DE
 export const storeProfileFromTheme=(theme:Theme):StoreProfile=>({
   storeName:resolveStoreName(theme.settings.storeName),
   storeDescription:clean(theme.settings.storeDescription,DEFAULT_STORE_PROFILE.storeDescription),
+  seoTitle:'',
+  seoDescription:'',
   storePhone:clean(theme.settings.storePhone),
   storeEmail:clean(theme.settings.storeEmail),
   storeAddress:clean(theme.settings.storeAddress),
@@ -49,6 +53,8 @@ export const storeProfileFromTheme=(theme:Theme):StoreProfile=>({
 export const normalizeStoreProfile=(value:Partial<StoreProfile>|null|undefined,fallback:StoreProfile=DEFAULT_STORE_PROFILE):StoreProfile=>({
   storeName:value?.storeName==null?resolveStoreName(fallback.storeName):resolveStoreName(value.storeName),
   storeDescription:String(value?.storeDescription??fallback.storeDescription??'').trim(),
+  seoTitle:String(value?.seoTitle??fallback.seoTitle??'').trim(),
+  seoDescription:String(value?.seoDescription??fallback.seoDescription??'').trim(),
   storePhone:String(value?.storePhone??fallback.storePhone??'').trim(),
   storeEmail:String(value?.storeEmail??fallback.storeEmail??'').trim(),
   storeAddress:String(value?.storeAddress??fallback.storeAddress??'').trim(),

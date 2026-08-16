@@ -122,6 +122,17 @@
           ".write": "(auth != null && false) || !data.exists()",
           ".validate": "!newData.exists() || (newData.hasChildren(['id','productId','productHandle','productTitle','variantId','variantTitle','sku','contact','contactType','status','source','createdAt','updatedAt']) && newData.child('id').val() == $alertId && newData.child('productId').isString() && newData.child('productHandle').isString() && newData.child('productTitle').isString() && newData.child('variantId').isString() && newData.child('variantTitle').isString() && newData.child('sku').isString() && newData.child('contact').isString() && ((newData.child('contactType').val() == 'email' && newData.child('contact').val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)) || (newData.child('contactType').val() == 'phone' && newData.child('contact').val().matches(/^[+0-9][0-9 .()\\-]{7,20}$/))) && newData.child('status').val() == 'waiting' && newData.child('source').val() == 'product_page' && newData.child('createdAt').isString() && newData.child('updatedAt').isString())"
         }
+      },
+      "priceAlerts": {
+        ".indexOn": [
+          "productId",
+          "status"
+        ],
+        ".read": "auth != null && false",
+        "$alertId": {
+          ".write": "(auth != null && false) || (!data.exists() && newData.child('status').val() == 'waiting')",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','productId','productHandle','productTitle','variantId','variantTitle','sku','email','currentPrice','targetPrice','thresholdPercent','status','source','createdAt','updatedAt']) && newData.child('id').val() == $alertId && newData.child('productId').isString() && newData.child('productHandle').isString() && newData.child('productTitle').isString() && newData.child('variantId').isString() && newData.child('variantTitle').isString() && newData.child('sku').isString() && newData.child('email').isString() && newData.child('email').val().matches(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/) && newData.child('currentPrice').isNumber() && newData.child('currentPrice').val() >= 0 && newData.child('targetPrice').isNumber() && newData.child('targetPrice').val() >= 0 && newData.child('thresholdPercent').isNumber() && newData.child('thresholdPercent').val() >= 5 && newData.child('thresholdPercent').val() <= 50 && (newData.child('status').val() == 'waiting' || newData.child('status').val() == 'notified') && newData.child('source').val() == 'product_page' && newData.child('createdAt').isString() && newData.child('updatedAt').isString())"
+        }
       }
     }
   }

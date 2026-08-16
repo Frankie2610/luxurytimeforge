@@ -2864,6 +2864,8 @@ export function SettingsPage() {
   const profileDraft = (value: StoreProfile): StoreProfileDraft => ({
     storeName: value.storeName,
     storeDescription: value.storeDescription,
+    seoTitle: value.seoTitle,
+    seoDescription: value.seoDescription,
     storePhone: value.storePhone,
     storeEmail: value.storeEmail,
     storeAddress: value.storeAddress,
@@ -3209,6 +3211,35 @@ export function SettingsPage() {
                   placeholder="Giới thiệu ngắn về cửa hàng"
                 />
               </Field>
+            </div>
+          </section>
+
+          <section className="tf65-settings-seo">
+            <div className="tf509-settings-section-title">
+              <Globe2 />
+              <span>
+                <b>SEO Google</b>
+                <small>Tiêu đề và mô tả chính của trang chủ. Sản phẩm vẫn dùng SEO riêng từng mẫu.</small>
+              </span>
+            </div>
+            <div className="tf509-settings-fields">
+              <Field label={`Tiêu đề Google · ${profile.seoTitle.length}/60`}>
+                <Input
+                  value={profile.seoTitle}
+                  maxLength={68}
+                  onChange={(event) => patchProfile("seoTitle", event.target.value)}
+                  placeholder={`${resolveStoreName(profile.storeName)} | Đồng hồ chính hãng`}
+                />
+              </Field>
+              <Field label={`Mô tả Google · ${profile.seoDescription.length}/155`}>
+                <Textarea
+                  value={profile.seoDescription}
+                  maxLength={170}
+                  onChange={(event) => patchProfile("seoDescription", event.target.value)}
+                  placeholder="Mô tả ngắn, rõ sản phẩm, lợi thế và nội dung chính của cửa hàng."
+                />
+              </Field>
+              <p className="tf65-settings-seo-note">Google có thể viết lại tiêu đề hoặc đoạn mô tả tùy truy vấn. Nên ưu tiên nội dung tự nhiên, khác biệt và đúng với trang.</p>
             </div>
           </section>
 

@@ -1,0 +1,28 @@
+import fs from'node:fs';import path from'node:path';import{createRequire}from'node:module';const require=createRequire(import.meta.url);const postcss=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/postcss');
+const read=p=>fs.readFileSync(p,'utf8');let passed=0,failed=0;const ok=(name,value)=>{if(value){console.log('✓',name);passed++}else{console.error('✗',name);failed++}};
+const sf=read('src/storefront-v10.tsx'),theme=read('src/theme-section-v27.tsx'),news=read('src/newsletter-signup-v65.tsx'),newsApi=read('api/newsletter/subscribe.js'),polish=read('src/v650-storefront-polish.css'),assist=read('src/v630-purchase-assist.css'),tools=read('src/product-decision-tools-v65.tsx'),admin=read('src/v650-admin-polish.css'),adminTsx=read('src/admin.tsx'),profile=read('src/store-profile.ts'),seo=read('src/seo-head-v60.tsx'),rules=read('firebase.rules.json');
+ok('legacy storefront pills removed',!sf.includes('tf582-storefront-pills'));
+ok('shared functional newsletter is used',sf.includes('NewsletterSignupV65')&&theme.includes('NewsletterSignupV65')&&!theme.includes("event => event.preventDefault()"));
+ok('newsletter has inline success/error feedback',news.includes('tf65-newsletter-status')&&news.includes("setStatus('success')")&&news.includes("setStatus('error')"));
+ok('newsletter server writes Firebase',newsApi.includes('timeforge/newsletterSubscribers')&&newsApi.includes("method:'PUT'"));
+ok('newsletter can send Resend confirmation',newsApi.includes('RESEND_API_KEY')&&newsApi.includes('api.resend.com/emails'));
+ok('newsletter input foreground is explicit',polish.includes('-webkit-text-fill-color:#1c2921')&&polish.includes('caret-color:#173f2a'));
+ok('section actions have V65 premium owner',polish.includes('.tf-section-action-v4912')&&polish.includes('border-left:1px solid rgba(255,255,255,.24)'));
+ok('editorial facts use deep solid colors',polish.includes('#1f5538')&&polish.includes('#702732')&&polish.includes('#80601f'));
+ok('installment UI uses flat premium controls',assist.includes('border-radius:5px')&&assist.includes('.tf63-installment-result .primary{background:#173f2a'));
+ok('warranty title reduced',polish.includes('font-size:clamp(34px,4vw,48px)!important'));
+ok('two customer decision tools added',tools.includes('Tư vấn kích thước cổ tay')&&tools.includes('Báo khi giá giảm'));
+ok('price alerts protected by Firebase rules',rules.includes('"priceAlerts"')&&rules.includes("newData.child('source').val() == 'product_page'"));
+ok('price alerts have automatic notification processor',fs.existsSync('api/price-alerts/process.js')&&read('src/context.tsx').includes('/api/price-alerts/process')&&read('api/price-alerts/process.js').includes("status:'notified'"));
+ok('admin brighter final owner exists',admin.includes('background:linear-gradient(180deg,#fbfdfb,#eef4ef)')&&admin.includes('--tf65-admin-green'));
+ok('dynamic sitemap API exists',fs.existsSync('api/sitemap.js')&&read('vercel.json').includes('/sitemap.xml'));
+ok('SEO JSON-LD has Product and BreadcrumbList',seo.includes("'@type':'Product'")&&seo.includes("'@type':'BreadcrumbList'"));
+ok('Google verification hook exists',seo.includes('VITE_GOOGLE_SITE_VERIFICATION')&&read('vite.config.ts').includes('googleVerificationMeta'));
+ok('Admin can edit homepage Google SEO',adminTsx.includes('SEO Google')&&adminTsx.includes('seoTitle')&&adminTsx.includes('seoDescription')&&profile.includes('seoTitle'));
+ok('newsletter uses narrow actions context',news.includes('useNewsletterActions')&&!news.includes('useCommerce'));
+const cssFiles=fs.readdirSync('src').filter(x=>x.endsWith('.css'));let cssBytes=0,important=0;for(const f of cssFiles){const text=read(path.join('src',f));cssBytes+=Buffer.byteLength(text);postcss.parse(text).walkDecls(d=>{if(d.important)important++})}
+ok('CSS source below 900 KB after dead-file cleanup',cssBytes<900000);
+ok('important count below 2500',important<2500);
+const dead=JSON.parse(read('docs/CSS_DEAD_FILES_V65.json'));ok('dead CSS manifest records >400KB removed',dead.totalBytes>400000&&dead.files.length>=20);
+const codeFiles=fs.readdirSync('src').filter(x=>/\.(tsx?|jsx?)$/.test(x));const imports=[];for(const f of codeFiles){const t=read(path.join('src',f));for(const m of t.matchAll(/import\s*['\"]([^'\"]+\.css)['\"]/g)){if(m[1].startsWith('./'))imports.push(path.join('src',m[1].slice(2)))}}ok('all CSS imports resolve',imports.every(f=>fs.existsSync(f)));
+console.log(`\nV0.65 checks: ${passed} passed, ${failed} failed`);if(failed)process.exit(1);

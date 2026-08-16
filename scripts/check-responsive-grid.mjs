@@ -1,21 +1,14 @@
-import{readFileSync}from'node:fs';
-
-const read=(path)=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
-const legacy=read('src/sprint14.css');
-const storefront=read('src/storefront-v10.tsx');
-const grid=read('src/v4936-mobile-product-grid.css');
-const allCss=[legacy,read('src/v4912-storefront.css'),read('src/v4933-collection.css'),grid].join('\n');
-const removedSelector='.tf-storefront-v4912 :where(.lux-home>.lux-section,.lux-content-page,.lux-collection-page)';
-
+import{existsSync,readFileSync}from'node:fs';
+const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),'utf8');
+const storefront=read('src/storefront-v10.tsx'),grid=read('src/v4936-mobile-product-grid.css'),polish=read('src/v650-storefront-polish.css');
+const imports=[...storefront.matchAll(/import\s*['\"]\.\/(.+?\.css)['\"]/g)].map(m=>m[1]);
 const checks=[
- ['selector padding global đã được xóa',!allCss.includes(removedSelector)],
- ['legacy dưới 420 px không còn ép một cột',!/@media\s*\(max-width:420px\)[\s\S]*?\.lux-product-grid\s*\{\s*grid-template-columns\s*:\s*1fr/.test(legacy)],
+ ['mọi stylesheet storefront import đều tồn tại',imports.every(name=>existsSync(new URL(`../src/${name}`,import.meta.url)))],
  ['breakpoint 366–520 px tồn tại',/@media\s*\(min-width:366px\)\s*and\s*\(max-width:520px\)/.test(grid)],
- ['breakpoint 366–520 px ép hai cột',/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/.test(grid)],
+ ['366–520 px giữ hai cột',/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/.test(grid)],
  ['365 px trở xuống mới về một cột',/@media\s*\(max-width:365px\)/.test(grid)&&/grid-template-columns:minmax\(0,1fr\)!important/.test(grid)],
- ['stylesheet responsive nằm sau toàn bộ CSS storefront cũ',storefront.lastIndexOf("import './v4936-mobile-product-grid.css'")>storefront.lastIndexOf("import './v573-storefront-core.css'")],
+ ['owner grid responsive nằm sau core cũ',storefront.indexOf("import './v4936-mobile-product-grid.css';")>storefront.indexOf("import './v573-storefront-core.css';")],
+ ['V0.65 giảm khoảng cách section mobile',/@media \(max-width:680px\)[\s\S]*padding-block:28px!important/.test(polish)],
+ ['storefront pills cũ đã bỏ khỏi markup',!storefront.includes('tf582-storefront-pills')],
 ];
-
-const failed=checks.filter(([,ok])=>!ok);
-for(const[label,ok]of checks)console.log(`${ok?'OK':'FAIL'} - ${label}`);
-if(failed.length)process.exitCode=1;
+const failed=checks.filter(([,ok])=>!ok);for(const[label,ok]of checks)console.log(`${ok?'OK':'FAIL'} - ${label}`);if(failed.length)process.exitCode=1;

@@ -1,0 +1,31 @@
+{
+  "version": "0.65.0",
+  "baseline": {
+    "version": "0.64.0",
+    "cssFiles": 142,
+    "cssBytes": 1278930,
+    "importantDeclarations": 2695
+  },
+  "result": {
+    "cssFiles": 117,
+    "cssBytes": 862226,
+    "importantDeclarations": 2445
+  },
+  "reduction": {
+    "cssBytes": 416704,
+    "cssBytesPercent": 32.58,
+    "importantDeclarations": 250,
+    "importantPercent": 9.28
+  },
+  "deadCssRemoved": {
+    "files": 26,
+    "bytes": 425070,
+    "manifest": "docs/CSS_DEAD_FILES_V65.json"
+  },
+  "safety": [
+    "Removed only stylesheets proven unreachable from the runtime import graph.",
+    "Admin route CSS was not pruned using cross-route cascade assumptions.",
+    "Responsive product-grid owner was restored and regression-tested at 366-520px and <=365px.",
+    "All remaining runtime CSS imports resolve and every remaining CSS file parses successfully."
+  ]
+}

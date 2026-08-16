@@ -1,4 +1,3 @@
-import './legacy.css';
 import {useEffect,useLayoutEffect,useMemo,useState,type ComponentType} from 'react';
 import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
@@ -13,7 +12,6 @@ import{hasPermission,routePermission,roleLabels}from'./permissions';
 import {useReturns} from './returns-v13';
 import {AdminCommandPalette} from './admin-v9';
 import {AdminRouteBoundary} from './admin-route-boundary';
-import './admin-v4938.css';
 import './v50-admin-polish.css';
 import './v504-admin-final.css';
 import './v508-admin-final.css';
@@ -33,6 +31,7 @@ import './v566-admin-polish.css';
 import './v580-admin-polish.css';
 import './v582-admin-ui-polish.css';
 import './v620-admin-polish.css';
+import './v650-admin-polish.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,

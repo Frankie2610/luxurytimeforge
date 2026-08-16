@@ -1,4 +1,3 @@
-import './legacy.css';
 import {
   ArrowLeft,
   ArrowRight,
@@ -54,6 +53,7 @@ import {ThemePreviewBridgeV26} from './theme-preview-bridge-v26';
 import {isThemePreviewV26, readThemePreviewExtrasV26, THEME_PREVIEW_UPDATED_V26} from './theme-preview-v26';
 import {sectionLabels, blockLabels} from './theme';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
+import {NewsletterSignupV65} from './newsletter-signup-v65';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreLogo, resolveStoreName} from './store-profile';
@@ -120,12 +120,14 @@ import './v581-storefront-polish.css';
 import './v582-storefront-ui-polish.css';
 import './v601-storefront-fixes.css';
 import './v620-storefront-performance.css';
+import './v650-storefront-polish.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
 const LazyBlogCardsV18 = lazy(() => import('./blog-home-cards-v18').then((module) => ({default: module.BlogCardsV18})));
 const LazyQuickViewV62 = lazy(() => import('./quick-view-v62').then((module) => ({default: module.QuickViewV62})));
 const LazyPurchaseAssistV63 = lazy(() => import('./purchase-assist-v63').then((module) => ({default: module.PurchaseAssistV63})));
+const LazyProductDecisionToolsV65 = lazy(() => import('./product-decision-tools-v65').then((module) => ({default: module.ProductDecisionToolsV65})));
 const prefetchQuickViewV62 = () => {void import('./quick-view-v62');};
 const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
 const MAX_RECENT_SEARCHES = 6;
@@ -340,13 +342,6 @@ function LuxuryHeader({openCart}: {openCart: () => void}) {
           </nav>
         </div>
       </section>
-      <div className="tf582-storefront-pills" aria-label="Điểm nổi bật khi mua sắm">
-        <span><ShieldCheck/>Chính hãng</span>
-        <span><Check/>Thanh toán an toàn</span>
-        <Link to="/track-order"><PackageCheck/>Theo dõi đơn hàng</Link>
-        <span><Clock3/>Hỗ trợ sau bán</span>
-      </div>
-
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
         <DialogContent className="lux-search-dialog-v29" overlayClassName="lux-search-overlay-v29" description="Tìm đồng hồ theo thương hiệu, tên sản phẩm hoặc mã SKU.">
           <form className="lux-search-panel v29-search-panel" onSubmit={submitSearch}>
@@ -489,28 +484,6 @@ function LuxuryCartDrawer({open, close}: {open: boolean; close: () => void}) {
   );
 }
 
-function NewsletterSignupForm({source, onSuccess, className = ''}: {source: string; onSuccess?: () => void; className?: string}) {
-  const {subscribeNewsletter} = useCommerce();
-  const [email, setEmail] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
-    const result = subscribeNewsletter(email, source);
-    setSubmitting(false);
-    if (result === 'invalid') {toast.error('Email chưa đúng định dạng'); return;}
-    if (result === 'exists') {toast.info('Email này đã có trong danh sách nhận tin'); onSuccess?.(); return;}
-    toast.success(result === 'reactivated' ? 'Đã kích hoạt lại đăng ký nhận tin' : 'Đăng ký nhận tin thành công');
-    setEmail('');
-    onSuccess?.();
-  };
-  return <form className={className} onSubmit={submit} noValidate>
-    <label className="tf-newsletter-field-v4910"><span className="sr-only">Địa chỉ email</span><input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Địa chỉ email" autoComplete="email" /></label>
-    <button type="submit" disabled={submitting || !email.trim()}><span>{submitting ? 'Đang lưu...' : 'Đăng ký'}</span><ArrowRight /></button>
-  </form>;
-}
-
 function StorefrontUtilityDock() {
   const [visible,setVisible]=useState(false);
   useEffect(()=>{
@@ -564,7 +537,7 @@ function LuxuryFooter() {
       </section>
       <div className="tf-footer-newsletter-v4910">
         <div className="tf-footer-newsletter-copy-v4910"><small>CẬP NHẬT TỪ TIMEFORGE</small><h2>Đăng ký nhận bản tin</h2><p>Nhận thông tin về bộ sưu tập mới, ưu đãi và cảm hứng phong cách.</p></div>
-        <NewsletterSignupForm source="footer" className="tf-footer-signup-v4910" />
+        <NewsletterSignupV65 source="footer" className="tf-footer-signup-v4910" />
       </div>
       <div className="tf-footer-grid-v4910">
         <section className="tf-footer-brand-v4910"><LuxuryLogo name={storeName} logoImage={identity.logoImage} showName={false}/><strong className="tf564-footer-store-name">{storeName}</strong><div className="tf-footer-brand-copy-v4910">{showStoreDescription&&<p>{storeDescription}</p>}{contactItems.length>0&&<div className="tf509-footer-contact">{contactItems}</div>}<div className="tf-footer-proof-v4910"><ShieldCheck /><span>Bảo mật thanh toán · Hỗ trợ sau bán hàng</span></div></div></section>
@@ -666,7 +639,7 @@ export function StoreLayoutV10() {
       {!isCheckoutRoute && <StorefrontUtilityDock />}
       {!isCheckoutRoute && <CompareDockV57 />}
       {extras.cartDrawer && !isCheckoutRoute && <LuxuryCartDrawer open={cartOpen} close={() => setCartOpen(false)} />}
-      {extras.newsletterPopup && !newsletterDismissed && !isCheckoutRoute && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupForm source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
+      {extras.newsletterPopup && !newsletterDismissed && !isCheckoutRoute && <div className="v28-newsletter-modal-backdrop" onClick={() => setNewsletterDismissed(true)}><aside className="v23-newsletter-popup" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Đăng ký nhận tin"><button onClick={() => setNewsletterDismissed(true)} aria-label="Đóng"><X/></button><small>TẠP CHÍ TIMEFORGE</small><h2>Nhận tin tuyển chọn mới</h2><p>Cập nhật sản phẩm, bài viết và dịch vụ mới.</p><NewsletterSignupV65 source="popup" onSuccess={() => setNewsletterDismissed(true)} className="v34-popup-signup" /></aside></div>}
       {extras.privacyBanner && !privacyDismissed && !isCheckoutRoute && <aside className="v23-privacy-banner"><div><ShieldCheck/><span><b>Quyền riêng tư</b><small>Dữ liệu được sử dụng để vận hành cửa hàng và xử lý đơn hàng.</small></span></div><button onClick={() => setPrivacyDismissed(true)}>Đồng ý</button></aside>}
     </div>
   );
@@ -830,7 +803,7 @@ export function HomeV10() {
     }
     if (section.type === 'newsletter') {
       const heading = getBlock(section, 'heading'); const text = getBlock(section, 'text');
-      return <section key={section.id} {...boundary(section)} className={`lux-newsletter v26-newsletter ${section.settings.background === 'dark' ? 'dark' : ''}`}><div><small>{String(heading?.settings.eyebrow || 'TIMEFORGE JOURNAL')}</small><h2>{String(heading?.settings.text || 'Nhận tin tuyển chọn mới')}</h2><p>{String(text?.settings.text || '')}</p></div><NewsletterSignupForm source="homepage" className="v34-home-signup" /></section>;
+      return <section key={section.id} {...boundary(section)} className={`lux-newsletter v26-newsletter ${section.settings.background === 'dark' ? 'dark' : ''}`}><div><small>{String(heading?.settings.eyebrow || 'TIMEFORGE JOURNAL')}</small><h2>{String(heading?.settings.text || 'Nhận tin tuyển chọn mới')}</h2><p>{String(text?.settings.text || '')}</p></div><NewsletterSignupV65 source="homepage" className="v34-home-signup" /></section>;
     }
     if (section.type === 'blogPosts') return <section key={section.id} {...boundary(section)} className="lux-section v18-journal-home tf-journal-v4912"><LuxurySectionHeading eyebrow={String(section.settings.eyebrow || 'TIMEFORGE JOURNAL')} title={String(section.settings.title || 'Câu chuyện về thời gian và phong cách')} description={String(section.settings.description || 'Kiến thức tuyển chọn về đồng hồ, chăm sóc và trải nghiệm sở hữu.')} link="/blogs" /><DeferredBlogCardsV574 limit={Number(section.settings.limit || 3)}/></section>;
     if (section.type === 'multicolumn') {
@@ -1589,6 +1562,7 @@ export function ProductPageV10() {
             </div>}
 
             <Suspense fallback={null}><LazyPurchaseAssistV63 product={product} variantId={variant?.id||variantId} variantTitle={variant?.title} sku={variant?.sku||product.sku} price={price} inventory={inventory}/></Suspense>
+            <Suspense fallback={null}><LazyProductDecisionToolsV65 product={product} variantId={variant?.id||variantId} variantTitle={variant?.title} sku={variant?.sku||product.sku} price={price}/></Suspense>
 
             <ProductDeliveryEstimate />
 
