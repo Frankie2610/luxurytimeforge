@@ -1,6 +1,6 @@
 import {useEffect,useMemo} from 'react';
 import {useLocation} from 'react-router-dom';
-import {useStorefrontData} from './context';
+import {useStorefrontData,useStoreReviews} from './context';
 import {resolveStoreName} from './store-profile';
 
 const FALLBACK_SITE='https://luxurytimeforge.vercel.app';
@@ -9,6 +9,7 @@ const clean=(value:string)=>value.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').tr
 const clamp=(value:string,max:number)=>value.length<=max?value:`${value.slice(0,Math.max(0,max-1)).trim()}…`;
 const setMeta=(selector:string,attrs:Record<string,string>)=>{let node=document.head.querySelector<HTMLMetaElement>(selector);if(!node){node=document.createElement('meta');document.head.appendChild(node)}Object.entries(attrs).forEach(([key,value])=>node!.setAttribute(key,value))};
 const setLink=(rel:string,href:string)=>{let node=document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);if(!node){node=document.createElement('link');node.rel=rel;document.head.appendChild(node)}node.href=href};
+const gtinField=(barcode:string)=>{const digits=String(barcode||'').replace(/\D/g,'');return[8,12,13,14].includes(digits.length)?{[`gtin${digits.length}`]:digits}:{}};
 const pageSeo:Record<string,{title:string;description:string}>={
   '/pages/about':{title:'Giới thiệu Luxury Timeforge',description:'Tìm hiểu câu chuyện, tiêu chuẩn tuyển chọn sản phẩm và trải nghiệm mua đồng hồ tại Luxury Timeforge.'},
   '/pages/warranty':{title:'Chính sách bảo hành đồng hồ',description:'Chính sách bảo hành đồng hồ tại Luxury Timeforge: thời hạn, thay pin, dây đeo, quy trình tiếp nhận và các trường hợp ngoài bảo hành.'},
@@ -18,7 +19,8 @@ const pageSeo:Record<string,{title:string;description:string}>={
 
 export function SeoHeadV60(){
   const location=useLocation();
-  const{products,collections,storeProfile}=useStorefrontData();
+  const{products,collections,productGroups,storeProfile}=useStorefrontData();
+  const reviews=useStoreReviews();
   const seo=useMemo(()=>{
     const site=(String(import.meta.env.VITE_PUBLIC_SITE_URL||'').trim()||FALLBACK_SITE).replace(/\/$/,'');
     const storeName=resolveStoreName(storeProfile.storeName),path=location.pathname;
@@ -55,8 +57,11 @@ export function SeoHeadV60(){
     const website={'@type':'WebSite','@id':`${seo.site}/#website`,url:seo.site,name:seo.storeName,alternateName:'TimeForge',inLanguage:'vi-VN',publisher:{'@id':`${seo.site}/#organization`}};
     const crumbs=[{name:'Trang chủ',url:seo.site}];if(seo.path!=='/'){if(seo.product)crumbs.push({name:'Đồng hồ',url:`${seo.site}/collections`});crumbs.push({name:seo.product?.title||seo.collection?.title||pageSeo[seo.path]?.title||seo.title,url:seo.canonical})}
     const breadcrumb={'@type':'BreadcrumbList','@id':`${seo.canonical}#breadcrumb`,itemListElement:crumbs.map((item,index)=>({'@type':'ListItem',position:index+1,name:item.name,item:item.url}))};
-    const pageEntity=seo.product?{'@type':'Product','@id':`${seo.canonical}#product`,name:seo.product.title,url:seo.canonical,image:seo.product.images.filter(Boolean),description:seo.description,sku:seo.product.sku,brand:{'@type':'Brand',name:seo.product.vendor||seo.storeName},offers:{'@type':'Offer',url:seo.canonical,priceCurrency:'VND',price:seo.product.price,availability:seo.product.inventory>0?'https://schema.org/InStock':'https://schema.org/OutOfStock',itemCondition:'https://schema.org/NewCondition',seller:{'@id':`${seo.site}/#organization`}}}:seo.collection?{'@type':'CollectionPage','@id':`${seo.canonical}#webpage`,url:seo.canonical,name:seo.title,description:seo.description,isPartOf:{'@id':`${seo.site}/#website`}}:{'@type':'WebPage','@id':`${seo.canonical}#webpage`,url:seo.canonical,name:seo.title,description:seo.description,inLanguage:'vi-VN',isPartOf:{'@id':`${seo.site}/#website`},breadcrumb:{'@id':`${seo.canonical}#breadcrumb`}};
+    const productReviews=seo.product?reviews.filter(item=>item.status==='published'&&item.reviewType==='product'&&item.productId===seo.product?.id&&item.customerName.trim()):[];
+    const productGroup=seo.product?productGroups.find(group=>group.status==='active'&&(group.items||[]).some(item=>item.productId===seo.product?.id||String(item.sku||'').toUpperCase()===String(seo.product?.sku||'').toUpperCase())):undefined;
+    const averageRating=productReviews.length?productReviews.reduce((sum,item)=>sum+Math.min(5,Math.max(1,Number(item.rating)||5)),0)/productReviews.length:0;
+    const pageEntity=seo.product?{'@type':'Product','@id':`${seo.canonical}#product`,name:seo.product.title,url:seo.canonical,image:seo.product.images.filter(Boolean),description:seo.description,sku:seo.product.sku,mpn:seo.product.sku||undefined,category:seo.product.category||seo.product.productType||undefined,inProductGroupWithID:productGroup?.id||productGroup?.skuPrefix||undefined,...gtinField(seo.product.barcode),brand:{'@type':'Brand',name:seo.product.vendor||seo.storeName},aggregateRating:productReviews.length?{'@type':'AggregateRating',ratingValue:Number(averageRating.toFixed(2)),reviewCount:productReviews.length,bestRating:5,worstRating:1}:undefined,review:productReviews.length?productReviews.slice(0,6).map(item=>({'@type':'Review',name:item.title||undefined,reviewBody:item.text||undefined,datePublished:item.createdAt?.slice(0,10)||undefined,reviewRating:{'@type':'Rating',ratingValue:item.rating,bestRating:5,worstRating:1},author:{'@type':'Person',name:item.customerName}})):undefined,offers:{'@type':'Offer',url:seo.canonical,priceCurrency:'VND',price:seo.product.price,availability:seo.product.inventory>0?'https://schema.org/InStock':'https://schema.org/OutOfStock',itemCondition:'https://schema.org/NewCondition',seller:{'@id':`${seo.site}/#organization`}}}:seo.collection?{'@type':'CollectionPage','@id':`${seo.canonical}#webpage`,url:seo.canonical,name:seo.title,description:seo.description,isPartOf:{'@id':`${seo.site}/#website`}}:{'@type':'WebPage','@id':`${seo.canonical}#webpage`,url:seo.canonical,name:seo.title,description:seo.description,inLanguage:'vi-VN',isPartOf:{'@id':`${seo.site}/#website`},breadcrumb:{'@id':`${seo.canonical}#breadcrumb`}};
     script.textContent=JSON.stringify({'@context':'https://schema.org','@graph':[organization,website,breadcrumb,pageEntity]});
-  },[seo,storeProfile.facebookUrl,storeProfile.instagramUrl,storeProfile.logoImage,storeProfile.storeAddress,storeProfile.storeEmail,storeProfile.storePhone,storeProfile.tiktokUrl]);
+  },[productGroups,reviews,seo,storeProfile.facebookUrl,storeProfile.instagramUrl,storeProfile.logoImage,storeProfile.storeAddress,storeProfile.storeEmail,storeProfile.storePhone,storeProfile.tiktokUrl]);
   return null;
 }

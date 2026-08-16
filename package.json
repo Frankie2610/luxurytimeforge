@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.65.4",
+  "version": "0.65.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -65,7 +65,8 @@
     "v652:check": "node scripts/check-v652-vercel-hobby.mjs",
     "v653:check": "node scripts/check-v653-layout-baseline.mjs",
     "css:budget": "node scripts/check-css-budget-v654.mjs",
-    "v654:check": "node scripts/check-v654-css-seo.mjs"
+    "v654:check": "node scripts/check-v654-css-seo.mjs",
+    "v655:check": "node scripts/check-v655-seo-conversion.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -108,7 +109,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.65.4: V0.65.3 visual baseline preserved, CSS graph/budget guards, pagination canonical fixes, dynamic robots and blog sitemap SEO.",
+  "description": "Luxury TimeForge V0.65.5: high-contrast storefront actions, Merchant Center feed, product-specific reviews and richer Google product SEO.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

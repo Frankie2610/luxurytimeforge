@@ -15,7 +15,8 @@ export interface Customer{id:string;name:string;email:string;phone:string;orders
 export type NewsletterSubscriberStatus='active'|'unsubscribed';
 export interface NewsletterSubscriber{id:string;email:string;source:string;status:NewsletterSubscriberStatus;createdAt:string;updatedAt:string}
 export type StoreReviewStatus='published'|'draft';
-export interface StoreReview{id:string;customerName:string;title:string;text:string;image:string;rating:number;source:string;status:StoreReviewStatus;featured:boolean;sortOrder:number;createdAt:string;updatedAt:string}
+export type StoreReviewType='store'|'product';
+export interface StoreReview{id:string;customerName:string;title:string;text:string;image:string;rating:number;source:string;status:StoreReviewStatus;featured:boolean;sortOrder:number;reviewType?:StoreReviewType;productId?:string;createdAt:string;updatedAt:string}
 export interface CartLine{productId:string;variantId:string;quantity:number}
 
 export type OrderStatus='open'|'confirmed'|'completed'|'cancelled';

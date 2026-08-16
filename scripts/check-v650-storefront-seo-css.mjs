@@ -7,8 +7,8 @@ ok('newsletter has inline success/error feedback',news.includes('tf65-newsletter
 ok('newsletter server writes Firebase',newsApi.includes('timeforge/newsletterSubscribers')&&newsApi.includes("method:'PUT'"));
 ok('newsletter can send Resend confirmation',newsApi.includes('RESEND_API_KEY')&&newsApi.includes('api.resend.com/emails'));
 ok('newsletter input foreground is explicit',polish.includes('-webkit-text-fill-color:#1c2921')&&polish.includes('caret-color:#173f2a'));
-ok('section actions have V65 premium owner',polish.includes('.tf-section-action-v4912')&&polish.includes('border-left:1px solid rgba(255,255,255,.24)'));
-ok('editorial facts use deep solid colors',polish.includes('#1f5538')&&polish.includes('#702732')&&polish.includes('#80601f'));
+ok('section actions have V65 premium owner',polish.includes('.tf-section-action-v4912')&&(/border-left:1px solid rgba\(255,255,255,\.(?:22|24)\)/.test(polish)));
+ok('editorial facts use deep solid colors',(/#(?:1f5538|174c31)/.test(polish))&&(/#(?:702732|6b2430)/.test(polish))&&(/#(?:80601f|765616)/.test(polish)));
 ok('installment UI uses flat premium controls',assist.includes('border-radius:5px')&&assist.includes('.tf63-installment-result .primary{background:#173f2a'));
 ok('warranty title reduced',polish.includes('font-size:clamp(34px,4vw,48px)!important'));
 ok('two customer decision tools added',tools.includes('Tư vấn kích thước cổ tay')&&tools.includes('Báo khi giá giảm'));

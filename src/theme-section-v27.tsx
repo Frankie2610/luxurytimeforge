@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useState, type CSSProperties} from 'react';
 import {ArrowRight, Clock3, Quote, ShieldCheck, Truck} from 'lucide-react';
 import {Link} from 'react-router-dom';
-import {useCommerce} from './context';
+import {useProductCatalog,useStoreReviews} from './context';
 import {NewsletterSignupV65} from './newsletter-signup-v65';
 import {optimizedImage} from './image-utils';
 import {sectionLabels, blockLabels} from './theme';
@@ -35,7 +35,8 @@ function Countdown({endDate}: {endDate: string}) {
 }
 
 export function ThemeSectionV27({section}: {section: Section}) {
-  const {products,reviews} = useCommerce();
+  const {products}=useProductCatalog();
+  const reviews=useStoreReviews();
   if (!section.visible) return null;
   const heading = first(section, 'heading');
   const text = first(section, 'text');
@@ -65,7 +66,7 @@ export function ThemeSectionV27({section}: {section: Section}) {
   }
   if (section.type === 'testimonials') {
     const fallbackItems = all(section, 'iconText');
-    const managedReviews = reviews.filter(item => item.status === 'published').sort((a,b)=>Number(b.featured)-Number(a.featured)||a.sortOrder-b.sortOrder||new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0, Math.min(12, Math.max(3, Number(section.settings.limit || 6))));
+    const managedReviews = reviews.filter(item => item.status === 'published' && item.reviewType !== 'product').sort((a,b)=>Number(b.featured)-Number(a.featured)||a.sortOrder-b.sortOrder||new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0, Math.min(12, Math.max(3, Number(section.settings.limit || 6))));
     return <section {...sectionProps(section)} className={`lux-section v27-testimonials tf60-testimonials ${surfaceClass}`}><div className="lux-section-heading"><div><small>{String(section.settings.eyebrow || 'CLIENT STORIES')}</small><h2>{String(section.settings.title || 'Trải nghiệm từ khách hàng')}</h2><p>Những chia sẻ thật từ khách hàng đã mua sắm và được TimeForge hỗ trợ.</p></div>{managedReviews.length>0&&<span className="tf60-review-proof"><b>{managedReviews.length}</b> review được chọn</span>}</div>{managedReviews.length?<div className="tf60-testimonial-grid">{managedReviews.map((item,index)=><article key={item.id} className={item.image?'has-image':''}>{item.image&&<figure><img src={optimizedImage(item.image,900,700)} alt={`Review của ${item.customerName}`} loading="lazy" decoding="async"/></figure>}<div className="tf60-testimonial-copy"><div className="tf60-testimonial-rating" aria-label={`${item.rating}/5 sao`}>{Array.from({length:5},(_,star)=><span key={star} className={star<item.rating?'is-on':''}>★</span>)}</div>{item.title&&<h3>{item.title}</h3>}{item.text&&<p>“{item.text}”</p>}<footer><span>{String(index+1).padStart(2,'0')}</span><div><b>{item.customerName}</b><small>{item.source||'Khách hàng TimeForge'}</small></div></footer></div></article>)}</div>:<div className="v27-testimonial-grid" style={{'--v27-columns': Number(section.settings.columns || 3)} as CSSProperties}>{fallbackItems.map((item, index) => <blockquote key={item.id} {...blockProps(item)}><Quote/><p>“{String(item.settings.text || '')}”</p><footer><span>{String(index + 1).padStart(2, '0')}</span><b>{String(item.settings.title || 'Khách hàng TimeForge')}</b></footer></blockquote>)}</div>}</section>;
   }
   if (section.type === 'faq') {

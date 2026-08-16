@@ -1,6 +1,7 @@
 const DEFAULT_COVER='/social-cover.jpg';
 const clean=value=>String(value||'').trim();
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
+const text=value=>clean(value).replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
 const baseSite=()=>String(process.env.PUBLIC_SITE_URL||process.env.VITE_PUBLIC_SITE_URL||'https://luxurytimeforge.vercel.app').replace(/\/$/,'');
 const publicDatabaseUrl=()=>clean(process.env.FIREBASE_DATABASE_URL||process.env.VITE_FIREBASE_DATABASE_URL).replace(/\/$/,'');
 const requestOrigin=req=>{
@@ -37,6 +38,19 @@ async function readPublicStoreProfile(){
   return response.json();
 }
 
+async function readPublic(path){
+  const base=publicDatabaseUrl();
+  if(!base)return null;
+  const response=await fetch(`${base}/${path}.json`,{headers:{Accept:'application/json','Cache-Control':'no-cache'}});
+  if(!response.ok)throw new Error(`Firebase public read failed (${response.status})`);
+  return response.json();
+}
+
+async function readCatalog(path){
+  try{const privateValue=await readPrivate(path);if(privateValue!=null)return privateValue}catch{}
+  return readPublic(path);
+}
+
 async function fetchImage(url){
   const response=await fetch(url,{redirect:'follow',headers:{Accept:'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'}});
   if(!response.ok)throw new Error(`Social image fetch failed (${response.status})`);
@@ -46,6 +60,34 @@ async function fetchImage(url){
   if(!buffer.length)throw new Error('Social image is empty');
   if(buffer.length>12*1024*1024)throw new Error('Social image exceeds 12 MB');
   return{buffer,contentType};
+}
+
+async function sendMerchantFeed(req,res){
+  if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');
+  const site=baseSite();let products=[],productGroups=[];
+  try{[products,productGroups]=await Promise.all([readCatalog('timeforge/products').then(list),readCatalog('timeforge/productGroups').then(list)])}catch(error){console.error('[TimeForge] Merchant feed catalog read failed:',error instanceof Error?error.message:error)}
+  const active=products.filter(product=>{
+    const images=Array.isArray(product?.images)?product.images.filter(Boolean):[];
+    return product?.handle&&product?.published!==false&&product?.status==='active'&&Number(product?.price)>0&&images.length>0;
+  });
+  const groupFor=product=>productGroups.find(group=>group?.status==='active'&&list(group.items).some(item=>item?.productId===product.id||clean(item?.sku).toUpperCase()===clean(product.sku).toUpperCase()));
+  const money=value=>{const amount=Number(value);return Number.isFinite(amount)&&amount>=0?`${Math.round(amount)} VND`:'0 VND'};
+  const digits=value=>String(value||'').replace(/\D/g,'');
+  const absoluteProductImage=value=>absolute(value,site);
+  const items=active.map(product=>{
+    const current=Math.max(0,Number(product.price)||0),compare=Math.max(0,Number(product.compareAtPrice)||0),onSale=compare>current&&current>0;
+    const gtin=digits(product.barcode),validGtin=[8,12,13,14].includes(gtin.length)?gtin:'';
+    const images=(Array.isArray(product.images)?product.images:[]).map(absoluteProductImage).filter(Boolean);
+    const description=text(product.descriptionText||product.descriptionHtml||`${product.title} tại Luxury Timeforge`).slice(0,5000);
+    const group=groupFor(product);
+    return `<item><g:id>${esc(product.sku||product.id)}</g:id><title>${esc(product.title)}</title><description>${esc(description)}</description><link>${esc(`${site}/products/${encodeURIComponent(product.handle)}`)}</link>${images[0]?`<g:image_link>${esc(images[0])}</g:image_link>`:''}${images.slice(1,10).map(image=>`<g:additional_image_link>${esc(image)}</g:additional_image_link>`).join('')}<g:availability>${Number(product.inventory)>0?'in_stock':'out_of_stock'}</g:availability><g:condition>new</g:condition><g:price>${esc(money(onSale?compare:current))}</g:price>${onSale?`<g:sale_price>${esc(money(current))}</g:sale_price>`:''}${clean(product.vendor)?`<g:brand>${esc(product.vendor)}</g:brand>`:''}${validGtin?`<g:gtin>${esc(validGtin)}</g:gtin>`:''}${clean(product.sku)?`<g:mpn>${esc(product.sku)}</g:mpn>`:''}${clean(product.category||product.productType)?`<g:product_type>${esc(product.category||product.productType)}</g:product_type>`:''}${group?`<g:item_group_id>${esc(group.id||group.skuPrefix||group.name)}</g:item_group_id>`:''}<g:identifier_exists>${validGtin||clean(product.sku)?'yes':'no'}</g:identifier_exists></item>`;
+  }).join('\n');
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0"><channel><title>Luxury Timeforge</title><link>${esc(site)}</link><description>Google Merchant Center product feed</description>${items}</channel></rss>`;
+  res.setHeader('Content-Type','application/xml; charset=utf-8');
+  res.setHeader('Cache-Control','public, s-maxage=900, stale-while-revalidate=3600');
+  res.setHeader('X-TimeForge-Feed-Items',String(active.length));
+  return res.status(200).send(xml);
 }
 
 async function sendSitemap(_req,res){
@@ -110,6 +152,7 @@ export default async function handler(req,res){
     return sendSitemap(req,res);
   }
   if(resource==='robots'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendRobots(req,res)}
+  if(resource==='merchant-feed')return sendMerchantFeed(req,res);
   if(resource==='social-image')return sendSocialImage(req,res);
   return res.status(404).json({error:'Unknown metadata resource'});
 }

@@ -1,15 +1,15 @@
 {
   "version": "0.65.4",
-  "generatedAt": "2026-08-16T11:56:40.576Z",
+  "generatedAt": "2026-08-16T12:36:42.174Z",
   "policy": "Reachability traverses TS/TSX/JS imports AND nested CSS @import. Visual CSS is not auto-deleted from selector repetition alone.",
   "files": {
-    "all": 145,
-    "reachable": 145,
+    "all": 146,
+    "reachable": 146,
     "unreachable": 0
   },
   "bytes": {
-    "all": 1292644,
-    "reachable": 1292644,
+    "all": 1296368,
+    "reachable": 1296368,
     "unreachable": 0
   },
   "entryCss": [
@@ -130,12 +130,13 @@
     "v630-purchase-assist.css",
     "v650-admin-polish.css",
     "v650-product-tools.css",
-    "v650-storefront-polish.css"
+    "v650-storefront-polish.css",
+    "v655-product-reviews.css"
   ],
   "unreachable": [],
-  "ruleCount": 12986,
-  "importantDeclarations": 2731,
-  "duplicatedSelectors": 3290,
+  "ruleCount": 13018,
+  "importantDeclarations": 2715,
+  "duplicatedSelectors": 3300,
   "exactDuplicateRules": 138,
   "topRepeatedSelectors": [
     {
@@ -750,18 +751,6 @@
       ]
     },
     {
-      "selector": ".tf-storefront-v4912 .tf-section-action-v4912",
-      "count": 13,
-      "files": [
-        "v4912-storefront.css",
-        "v50-storefront-polish.css",
-        "v576-storefront-readability.css",
-        "v582-storefront-ui-polish.css",
-        "v601-storefront-fixes.css",
-        "v650-storefront-polish.css"
-      ]
-    },
-    {
       "selector": ".lux-product-grid",
       "count": 12,
       "files": [
@@ -842,6 +831,15 @@
         "v50-storefront-polish.css",
         "v504-storefront-final.css",
         "v582-storefront-ui-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .tf4933-collection-filter",
+      "count": 12,
+      "files": [
+        "v4933-collection.css",
+        "v503-storefront-filter.css",
+        "v581-storefront-polish.css"
       ]
     }
   ]

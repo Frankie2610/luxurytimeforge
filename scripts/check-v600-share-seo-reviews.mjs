@@ -20,7 +20,8 @@ expect(index.includes('/api/social-image')||index.includes('og:image:width'),'Op
 expect(index.includes('twitter:card')&&index.includes('summary_large_image'),'Large social card metadata is present');
 expect(fs.existsSync(path.join(root,'public/social-cover.jpg')),'Social share image file exists');
 expect(fs.statSync(path.join(root,'public/social-cover.jpg')).size<250_000,'Social share image is lightweight (<250 KB)');
-expect(fs.existsSync(path.join(root,'public/robots.txt'))&&fs.existsSync(path.join(root,'public/sitemap.xml')),'robots.txt and sitemap.xml exist');
+const metaApi=read('api/meta.js');const vercel=read('vercel.json');
+expect((fs.existsSync(path.join(root,'public/robots.txt'))&&fs.existsSync(path.join(root,'public/sitemap.xml')))||(metaApi.includes("resource==='robots'")&&metaApi.includes("resource==='sitemap'")&&vercel.includes('/robots.txt')&&vercel.includes('/sitemap.xml')),'robots.txt and sitemap.xml exist or are served dynamically');
 
 const seo=read('src/seo-head-v60.tsx');
 expect(seo.includes("'@type':'Product'")&&seo.includes("'@type':'Organization'"),'Structured data covers Product and Organization');

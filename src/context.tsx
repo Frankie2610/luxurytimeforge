@@ -83,6 +83,8 @@ type StorefrontDataContextValue={products:Product[];collections:Collection[];pro
 const StorefrontDataC=createContext<StorefrontDataContextValue|null>(null);
 type ProductSalesContextValue=ReadonlyMap<string,number>;
 const ProductSalesC=createContext<ProductSalesContextValue|null>(null);
+type StoreReviewsContextValue=StoreReview[];
+const StoreReviewsC=createContext<StoreReviewsContextValue|null>(null);
 type CartActions={addToCart:(pid:string,vid:string,q?:number)=>void;updateCart:(pid:string,vid:string,q:number)=>void;clearCart:()=>void};
 const CartStateC=createContext<CartLine[]|null>(null);
 const CartActionsC=createContext<CartActions|null>(null);
@@ -391,12 +393,13 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const storefrontData=useMemo<StorefrontDataContextValue>(()=>({products,collections,productGroups,theme:activeTheme,storeProfile,isLoading,dataError,collectionProducts}),[products,collections,productGroups,activeTheme,storeProfile,isLoading,dataError,collectionProducts]);
  const productSales=useMemo<ProductSalesContextValue>(()=>{const counts=new Map<string,number>();orders.forEach(order=>{if(order.status==='cancelled')return;order.lines.forEach(line=>counts.set(line.productId,(counts.get(line.productId)||0)+line.quantity))});return counts},[orders]);
  const newsletterActions=useMemo<NewsletterActions>(()=>({subscribeNewsletter}),[newsletterSubscribers,customers]);
- return <C.Provider value={value}><StorefrontDataC.Provider value={storefrontData}><ProductCatalogC.Provider value={productCatalog}><ProductSalesC.Provider value={productSales}><NewsletterActionsC.Provider value={newsletterActions}><CartActionsC.Provider value={cartActions}><CartStateC.Provider value={cart}>{children}</CartStateC.Provider></CartActionsC.Provider></NewsletterActionsC.Provider></ProductSalesC.Provider></ProductCatalogC.Provider></StorefrontDataC.Provider></C.Provider>
+ return <C.Provider value={value}><StorefrontDataC.Provider value={storefrontData}><ProductCatalogC.Provider value={productCatalog}><ProductSalesC.Provider value={productSales}><StoreReviewsC.Provider value={reviews}><NewsletterActionsC.Provider value={newsletterActions}><CartActionsC.Provider value={cartActions}><CartStateC.Provider value={cart}>{children}</CartStateC.Provider></CartActionsC.Provider></NewsletterActionsC.Provider></StoreReviewsC.Provider></ProductSalesC.Provider></ProductCatalogC.Provider></StorefrontDataC.Provider></C.Provider>
 }
 export const useCommerce=()=>{const c=useContext(C);if(!c)throw new Error('CommerceProvider missing');return c};
 export const useStorefrontData=()=>{const c=useContext(StorefrontDataC);if(!c)throw new Error('StorefrontDataProvider missing');return c};
 export const useProductCatalog=()=>{const c=useContext(ProductCatalogC);if(!c)throw new Error('ProductCatalogProvider missing');return c};
 export const useProductSales=()=>{const c=useContext(ProductSalesC);if(!c)throw new Error('ProductSalesProvider missing');return c};
+export const useStoreReviews=()=>{const c=useContext(StoreReviewsC);if(!c)throw new Error('StoreReviewsProvider missing');return c};
 export const useCartState=()=>{const cart=useContext(CartStateC);if(!cart)throw new Error('CartStateProvider missing');return cart};
 export const useCartActions=()=>{const actions=useContext(CartActionsC);if(!actions)throw new Error('CartActionsProvider missing');return actions};
 export const useNewsletterActions=()=>{const actions=useContext(NewsletterActionsC);if(!actions)throw new Error('NewsletterActionsProvider missing');return actions};

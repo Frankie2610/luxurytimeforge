@@ -42,7 +42,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import {useCartActions, useCartState, useCommerce, useProductCatalog, useProductSales, useStorefrontData} from './context';
+import {useCartActions, useCartState, useCommerce, useProductCatalog, useProductSales, useStorefrontData, useStoreReviews} from './context';
 import type {Collection, Product, ProductGroup, ProductGroupItem, Section, ThemeBlock} from './types';
 import {discount, money} from './utils';
 import {optimizedImage, optimizedImageSrcSet, productImage, SmartImage} from './image-utils';
@@ -122,6 +122,7 @@ import './v582-storefront-ui-polish.css';
 import './v601-storefront-fixes.css';
 import './v620-storefront-performance.css';
 import './v650-storefront-polish.css';
+import './v655-product-reviews.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -1431,6 +1432,7 @@ function ProductFamilySelector({group,products,current}:{group:ProductGroup;prod
 export function ProductPageV10() {
   const {handle} = useParams();
   const {products, productGroups, theme, storeProfile, isLoading} = useStorefrontData();
+  const reviews=useStoreReviews();
   const {addToCart} = useCartActions();
   const {openCart} = useOutletContext<{openCart: () => void}>();
   const product = findProductByRoute(products, handle);
@@ -1460,6 +1462,8 @@ export function ProductPageV10() {
   const inventory = variant?.inventory ?? product.inventory;
   const productGroup=productGroups.find((group)=>group.status==='active'&&(group.items.some((item)=>item.productId===product.id||item.sku.toUpperCase()===product.sku.toUpperCase())||(group.skuPrefix&&product.sku.toUpperCase().startsWith(group.skuPrefix.toUpperCase()))));
   const warrantyYears=extendedWarranty(product.vendor)?4:2;
+  const productReviews=reviews.filter(item=>item.status==='published'&&item.reviewType==='product'&&item.productId===product.id).sort((a,b)=>Number(b.featured)-Number(a.featured)||new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+  const productRating=productReviews.length?productReviews.reduce((sum,item)=>sum+Math.min(5,Math.max(1,Number(item.rating)||5)),0)/productReviews.length:0;
   const productTemplate = theme.templates.product;
   const productMain = productTemplate.sections.find((section) => section.type === 'productMain');
   const trustSection = productTemplate.sections.find((section) => section.type === 'trust');
@@ -1587,6 +1591,10 @@ export function ProductPageV10() {
             <article><PackageCheck/><span><small>02</small><h3>Giao hàng bảo hiểm</h3><p>Đóng gói cẩn thận, theo dõi đơn hàng và hỗ trợ giao trên toàn quốc.</p></span></article>
             <article><Clock3/><span><small>03</small><h3>Hỗ trợ hậu mãi</h3><p>Tiếp nhận bảo hành, đổi trả và hướng dẫn trong quá trình sử dụng.</p></span></article>
           </div>
+        </section>}
+        {!!productReviews.length&&<section className="tf655-product-reviews" aria-label={`Đánh giá về ${product.title}`}>
+          <header><div><small>ĐÁNH GIÁ SẢN PHẨM</small><h2>Khách hàng nói gì về mẫu này?</h2><p>Review đã xuất bản và được gắn trực tiếp với đúng sản phẩm này trong hệ thống TimeForge.</p></div><div className="tf655-rating-summary"><b>{productRating.toFixed(1)}</b><span aria-label={`${productRating.toFixed(1)} trên 5 sao`}>{Array.from({length:5},(_,index)=><i key={index} className={index<Math.round(productRating)?'is-on':''}>★</i>)}</span><small>{productReviews.length} đánh giá</small></div></header>
+          <div className="tf655-review-grid">{productReviews.slice(0,6).map(item=><article key={item.id}>{item.image&&<figure><img src={optimizedImage(item.image,720,540)} alt={`Ảnh review ${product.title} từ ${item.customerName}`} loading="lazy" decoding="async"/></figure>}<div><span className="tf655-review-stars" aria-label={`${item.rating}/5 sao`}>{Array.from({length:5},(_,index)=><i key={index} className={index<item.rating?'is-on':''}>★</i>)}</span>{item.title&&<h3>{item.title}</h3>}{item.text&&<p>“{item.text}”</p>}<footer><b>{item.customerName}</b><small>{item.source||'Khách hàng TimeForge'}</small></footer></div></article>)}</div>
         </section>}
       </> : <section className="v23-template-hidden"><h1>Trang sản phẩm đang được ẩn trong Cửa hàng online</h1><p>Mở trình chỉnh sửa theme để bật lại section Thông tin sản phẩm.</p></section>}
 

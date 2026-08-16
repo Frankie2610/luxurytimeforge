@@ -3240,6 +3240,14 @@ export function SettingsPage() {
                 />
               </Field>
               <p className="tf65-settings-seo-note">Google có thể viết lại tiêu đề hoặc đoạn mô tả tùy truy vấn. Nên ưu tiên nội dung tự nhiên, khác biệt và đúng với trang.</p>
+              <div className="tf655-seo-resources" aria-label="Tài nguyên SEO Google">
+                <a href="/sitemap.xml" target="_blank" rel="noreferrer">
+                  <span><b>Sitemap Google</b><small>/sitemap.xml · gửi trong Search Console</small></span><ArrowUpRight />
+                </a>
+                <a href="/google-products.xml" target="_blank" rel="noreferrer">
+                  <span><b>Merchant Center feed</b><small>/google-products.xml · đồng bộ catalog Google</small></span><ArrowUpRight />
+                </a>
+              </div>
             </div>
           </section>
 

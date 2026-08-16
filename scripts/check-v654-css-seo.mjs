@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 let pass=0,fail=0;const ok=(name,v)=>{if(v){console.log('✓',name);pass++}else{console.error('✗',name);fail++}};
 const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));const seo=fs.readFileSync('src/seo-head-v60.tsx','utf8');const meta=fs.readFileSync('api/meta.js','utf8');const vercel=fs.readFileSync('vercel.json','utf8');
-ok('version is 0.65.4',pkg.version==='0.65.4');
+ok('version is >= 0.65.4',/^0\.65\.(?:[4-9]|[1-9]\d+)$/.test(pkg.version));
 ok('build enforces CSS budget',pkg.scripts.build.includes('check-css-budget-v654.mjs'));
 ok('CSS graph audit traverses nested @import',fs.readFileSync('scripts/css-graph-audit-v654.mjs','utf8').includes('nested CSS @import'));
 ok('pagination canonical keeps page query',seo.includes("searchParams.get('page')"));
