@@ -41,6 +41,14 @@
         ".read": true,
         ".write": "__PRODUCTS_MANAGE_CONDITION__"
       },
+      "reviews": {
+        ".read": "__CONTENT_MANAGE_CONDITION__ || (query.orderByChild == 'status' && query.equalTo == 'published')",
+        ".indexOn": ["status"],
+        "$reviewId": {
+          ".write": "__CONTENT_MANAGE_CONDITION__",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','customerName','title','text','image','rating','source','status','featured','sortOrder','createdAt','updatedAt']) && newData.child('id').val() == $reviewId && newData.child('customerName').isString() && newData.child('title').isString() && newData.child('text').isString() && newData.child('image').isString() && newData.child('rating').isNumber() && newData.child('rating').val() >= 1 && newData.child('rating').val() <= 5 && newData.child('source').isString() && (newData.child('status').val() == 'published' || newData.child('status').val() == 'draft') && newData.child('featured').isBoolean() && newData.child('sortOrder').isNumber() && newData.child('createdAt').isString() && newData.child('updatedAt').isString())"
+        }
+      },
       "themes": {
         "published": {
           ".read": true,

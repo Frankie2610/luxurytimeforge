@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.59.0",
+  "version": "0.60.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -55,7 +55,8 @@
     "v575:check": "node scripts/check-v575-storefront-reliability.mjs",
     "v576:check": "node scripts/check-v576-storefront-polish.mjs",
     "v580:check": "node scripts/check-v580-polish-features.mjs",
-    "v590:check": "node scripts/check-v590-meta-performance.mjs"
+    "v590:check": "node scripts/check-v590-meta-performance.mjs",
+    "v600:check": "node scripts/check-v600-share-seo-reviews.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -98,7 +99,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.59.0: faster analytics and tracking, shareable carts, campaign offer continuity, and Meta Pixel readiness tools.",
+  "description": "Luxury TimeForge V0.60.0: shareable catalog filters, SEO/social previews, managed testimonials, and storefront rendering polish.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

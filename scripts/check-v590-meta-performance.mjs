@@ -18,7 +18,7 @@ const metaCss=read('src/v573-meta-admin.css');
 const vite=read('vite.config.ts');
 
 const checks=[
-  ['package version is 0.59.0',pkg.version==='0.59.0'],
+  ['package version is 0.59.0 or newer',Number(pkg.version.split('.')[1]||0)>=59],
   ['campaign offer is captured with a 24-hour session lifetime',offer.includes('CAMPAIGN_OFFER_MAX_AGE_V59')&&offer.includes("params.get('discount')")],
   ['storefront exposes the retained campaign offer pill',storefront.includes('tf59-campaign-offer')&&storefront.includes('captureCampaignOfferV59')],
   ['cart supports share links and safe restore',commerce.includes("url.searchParams.append('item'")&&commerce.includes('restoreSharedCart')&&commerce.includes('tf59-shared-cart')],
@@ -38,4 +38,4 @@ const checks=[
 let failed=0;
 for(const[label,pass]of checks){console.log(`${pass?'✓':'✗'} ${label}`);if(!pass)failed+=1}
 if(failed){console.error(`\n${failed} V0.59.0 check(s) failed.`);process.exit(1)}
-console.log(`\nV0.59.0 Meta/performance checks passed (${checks.length}/${checks.length}).`);
+console.log(`\nV0.59+ Meta/performance checks passed (${checks.length}/${checks.length}).`);

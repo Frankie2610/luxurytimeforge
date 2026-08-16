@@ -4,7 +4,7 @@ import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
   Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,History,Link2,
   BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Megaphone,Menu,PackageSearch,Plus,
-  PanelLeftClose,PanelLeftOpen,RotateCcw,Rows3,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,
+  PanelLeftClose,PanelLeftOpen,RotateCcw,Rows3,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,MessageSquareQuote,
 } from 'lucide-react';
 import {toast as sonnerToast} from 'sonner';
 import {useCommerce} from './context';
@@ -64,6 +64,7 @@ const adminRoutePrefetchers:Record<string,()=>Promise<unknown>>={
   discounts:()=>import('./admin-operations-v10'),
   returns:()=>import('./returns-v13'),
   blogs:()=>import('./blog-v18'),
+  reviews:()=>import('./reviews-admin-v60'),
   pages:()=>import('./content-pages-admin-v23'),
   'online-store':()=>import('./online-store-v19'),
   settings:()=>Promise.all([import('./admin'),import('./integrations-v13'),import('./team-v20')]),
@@ -94,6 +95,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/marketing/meta':{title:'Meta Ads',eyebrow:'Marketing',description:'Quản lý Pixel, UTM, feed sản phẩm và chất lượng tín hiệu quảng cáo.'},
   '/admin/discounts':{title:'Mã giảm giá',eyebrow:'Marketing',description:'Thiết lập ưu đãi, điều kiện và thời gian hiệu lực.'},
   '/admin/blogs':{title:'Bài viết',eyebrow:'Nội dung',description:'Tạo và quản lý nội dung cho TimeForge Journal.'},
+  '/admin/reviews':{title:'Review & testimonial',eyebrow:'Nội dung',description:'Quản lý review dạng chữ và hình ảnh hiển thị trên storefront.'},
   '/admin/pages':{title:'Trang nội dung',eyebrow:'Nội dung',description:'Biên tập trang Giới thiệu, Bảo hành, Giao hàng và Đổi trả trên website khách.'},
   '/admin/activity':{title:'Nhật ký hoạt động',eyebrow:'Hệ thống',description:'Theo dõi những thay đổi quan trọng trong Admin.'},
   '/admin/import-export':{title:'Nhập / xuất dữ liệu',eyebrow:'Dữ liệu',description:'Đồng bộ catalog bằng Shopify CSV và xuất bản sao dữ liệu.'},
@@ -152,6 +154,7 @@ export function AdminLayoutV16(){
       {to:'/admin/discounts',label:'Mã giảm giá',icon:BadgePercent},
       {to:'/admin/marketing/meta',label:'Meta Ads',icon:Megaphone},
       {to:'/admin/blogs',label:'Bài viết',icon:BookOpen},
+      {to:'/admin/reviews',label:'Review & testimonial',icon:MessageSquareQuote},
       {to:'/admin/pages',label:'Trang nội dung',icon:FileText},
       {to:'/admin/analytics',label:'Phân tích',icon:BarChart3},
     ]},

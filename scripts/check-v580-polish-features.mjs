@@ -16,7 +16,7 @@ const contrast=read('src/v502-storefront-contrast.css');
 const pkg=JSON.parse(read('package.json'));
 
 const checks=[
-  ['package keeps the v0.58 polish baseline',/^0\.(?:58|59)\./.test(pkg.version)],
+  ['package keeps the v0.58 polish baseline',/^0\.(?:58|59|60)\./.test(pkg.version)],
   ['storefront final stylesheet loads after v576',storefront.indexOf("./v580-storefront-polish.css")>storefront.indexOf("./v576-storefront-readability.css")],
   ['commerce final stylesheet loads after v576',commerce.indexOf("./v580-commerce-polish.css")>commerce.indexOf("./v576-commerce-polish.css")],
   ['journal final stylesheet loads after v576',journal.indexOf("./v580-journal-polish.css")>journal.indexOf("./v576-journal-readability.css")],

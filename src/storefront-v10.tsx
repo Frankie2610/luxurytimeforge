@@ -619,9 +619,6 @@ export function StoreLayoutV10() {
     window.addEventListener('storage', sync);
     return () => {window.removeEventListener(THEME_EXTRAS_EVENT, sync); window.removeEventListener(THEME_PREVIEW_UPDATED_V26, sync); window.removeEventListener('storage', sync);};
   }, [previewMode]);
-  useEffect(() => {
-    document.title = resolveStoreName(storeProfile.storeName);
-  }, [storeProfile.storeName]);
   if(isLoading && products.length === 0)return <StoreCatalogLoading storeName={storeProfile.storeName} logoImage={storeProfile.logoImage}/>;
   if(dataError && products.length === 0)return <StoreCatalogLoading error={dataError} storeName={storeProfile.storeName} logoImage={storeProfile.logoImage}/>;
   const settings = theme.settings;
@@ -887,6 +884,40 @@ const emptyCollectionFilterState = (): CollectionFilterState => ({
   stockOnly: false,
 });
 
+const normalizeCollectionFacetValue = (value: unknown) => String(value ?? '')
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/[\u0000-\u001f\u007f]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim()
+  .slice(0, 80);
+
+const COLLECTION_QUERY_FILTER_KEYS = ['brand','price','stock',...PRODUCT_FILTER_DEFINITIONS.map(definition=>definition.id)];
+const readCollectionQuery = (params: URLSearchParams) => {
+  const unique = (key: string) => [...new Set(params.getAll(key).map(value=>normalizeCollectionFacetValue(value)).filter(Boolean))].slice(0,20);
+  const priceBands = unique('price').filter(value=>COLLECTION_PRICE_BANDS.some(band=>band.value===value));
+  const selectedFilters = Object.fromEntries(PRODUCT_FILTER_DEFINITIONS.map(definition=>[definition.id,unique(definition.id)])) as Record<ProductFilterKey,string[]>;
+  const requestedSort=String(params.get('sort')||'featured');
+  const sort=COLLECTION_SORT_LABELS[requestedSort]?requestedSort:'featured';
+  const requestedPage=Number.parseInt(String(params.get('page')||'1'),10);
+  return {
+    filters:{selectedVendors:unique('brand'),priceBands,selectedFilters,stockOnly:params.get('stock')==='1'} as CollectionFilterState,
+    sort,
+    page:Number.isFinite(requestedPage)?Math.max(1,requestedPage):1,
+  };
+};
+const writeCollectionQuery = (current: URLSearchParams, filters: CollectionFilterState, sort: string, page: number) => {
+  const next=new URLSearchParams(current);
+  COLLECTION_QUERY_FILTER_KEYS.forEach(key=>next.delete(key));
+  next.delete('sort');next.delete('page');
+  filters.selectedVendors.forEach(value=>next.append('brand',value));
+  filters.priceBands.forEach(value=>next.append('price',value));
+  PRODUCT_FILTER_DEFINITIONS.forEach(definition=>(filters.selectedFilters[definition.id]||[]).forEach(value=>next.append(definition.id,value)));
+  if(filters.stockOnly)next.set('stock','1');
+  if(sort!=='featured')next.set('sort',sort);
+  if(page>1)next.set('page',String(page));
+  return next;
+};
+
 type CollectionFilterData = {
   index: CollectionFilterIndex;
   facetOptions: Record<ProductFilterKey, ProductFilterOption[]>;
@@ -894,12 +925,6 @@ type CollectionFilterData = {
 
 const MAX_VALUES_PER_PRODUCT_FACET = 12;
 const MAX_VISIBLE_FILTER_OPTIONS = 80;
-const normalizeCollectionFacetValue = (value: unknown) => String(value ?? '')
-  .replace(/<[^>]*>/g, ' ')
-  .replace(/[\u0000-\u001f\u007f]/g, ' ')
-  .replace(/\s+/g, ' ')
-  .trim()
-  .slice(0, 80);
 
 const buildCollectionFilterData = (products: Product[]): CollectionFilterData => {
   const index: CollectionFilterIndex = new Map();
@@ -1171,13 +1196,16 @@ export function CollectionPageV10() {
   const gridSection = collectionTemplate.sections.find((section) => section.type === 'collectionGrid');
   const configuredPageSize = Number(gridSection?.settings.pageSize ?? 50);
   const pageSize = Number.isFinite(configuredPageSize) ? Math.max(50, Math.min(100, configuredPageSize)) : 50;
-  const [selectedVendors, setSelectedVendors] = useState<string[]>([]);
-  const [stockOnly, setStockOnly] = useState(false);
-  const [priceBands, setPriceBands] = useState<string[]>([]);
-  const [selectedFilters, setSelectedFilters] = useState<Record<ProductFilterKey, string[]>>(emptyProductFilterSelection);
-  const [sort, setSort] = useState('featured');
-  const [page, setPage] = useState(1);
+  const [searchParams,setSearchParams] = useSearchParams();
+  const initialQuery=useMemo(()=>readCollectionQuery(searchParams),[]);
+  const [selectedVendors, setSelectedVendors] = useState<string[]>(()=>initialQuery.filters.selectedVendors);
+  const [stockOnly, setStockOnly] = useState(()=>initialQuery.filters.stockOnly);
+  const [priceBands, setPriceBands] = useState<string[]>(()=>initialQuery.filters.priceBands);
+  const [selectedFilters, setSelectedFilters] = useState<Record<ProductFilterKey, string[]>>(()=>initialQuery.filters.selectedFilters);
+  const [sort, setSort] = useState(()=>initialQuery.sort);
+  const [page, setPage] = useState(()=>initialQuery.page);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const queryString=searchParams.toString();
   const filterData = useMemo(() => buildCollectionFilterData(source), [source]);
   const filterIndex = filterData.index;
   const appliedFilters = useMemo<CollectionFilterState>(() => ({
@@ -1202,29 +1230,22 @@ export function CollectionPageV10() {
     });
     return COLLECTION_PRICE_BANDS.map((band) => ({value: band.label, count: counts.get(band.value) || 0}));
   }, [source]);
-  const toggleVendor = (value: string) => setSelectedVendors((current) => current.includes(value)
-    ? current.filter((item) => item !== value)
-    : [...current, value]);
-  const togglePriceBand = (value: string) => setPriceBands((current) => current.includes(value)
-    ? current.filter((item) => item !== value)
-    : [...current, value]);
-  const toggleProductFilter = (key: ProductFilterKey, value: string) => setSelectedFilters((current) => ({
-    ...current,
-    [key]: current[key].includes(value) ? current[key].filter((item) => item !== value) : [...current[key], value],
-  }));
-  const clearFilters = () => {
-    setSelectedVendors([]);
-    setPriceBands([]);
-    setSelectedFilters(emptyProductFilterSelection());
-    setStockOnly(false);
-  };
-  const applyFilters = (next: CollectionFilterState) => {
-    setSelectedVendors([...next.selectedVendors]);
-    setPriceBands([...next.priceBands]);
-    setSelectedFilters(cloneCollectionFilterState(next).selectedFilters);
-    setStockOnly(next.stockOnly);
+  const commitFilters = (next: CollectionFilterState, replace=true) => {
+    const cleanState=cloneCollectionFilterState(next);
+    setSelectedVendors(cleanState.selectedVendors);
+    setPriceBands(cleanState.priceBands);
+    setSelectedFilters(cleanState.selectedFilters);
+    setStockOnly(cleanState.stockOnly);
     setPage(1);
+    setSearchParams(writeCollectionQuery(searchParams,cleanState,sort,1),{replace});
   };
+  const toggleVendor = (value: string) => commitFilters({...appliedFilters,selectedVendors:selectedVendors.includes(value)?selectedVendors.filter(item=>item!==value):[...selectedVendors,value]});
+  const togglePriceBand = (value: string) => commitFilters({...appliedFilters,priceBands:priceBands.includes(value)?priceBands.filter(item=>item!==value):[...priceBands,value]});
+  const toggleProductFilter = (key: ProductFilterKey, value: string) => commitFilters({...appliedFilters,selectedFilters:{...selectedFilters,[key]:selectedFilters[key].includes(value)?selectedFilters[key].filter(item=>item!==value):[...selectedFilters[key],value]}});
+  const clearFilters = () => commitFilters(emptyCollectionFilterState());
+  const applyFilters = (next: CollectionFilterState) => commitFilters(next);
+  const changeSort=(nextSort:string)=>{setSort(nextSort);setPage(1);setSearchParams(writeCollectionQuery(searchParams,appliedFilters,nextSort,1),{replace:true})};
+  const copyFilteredLink=async()=>{try{await navigator.clipboard.writeText(window.location.href);toast.success('Đã sao chép link bộ lọc để gửi khách.')}catch{toast.info('URL trên thanh địa chỉ đã chứa đầy đủ bộ lọc; hãy sao chép trực tiếp nếu trình duyệt chặn clipboard.')}};
   const filtered = useMemo(() => {
     let result = filterCollectionProducts(source, appliedFilters, filterIndex);
     if (sort === 'low') result = [...result].sort((a, b) => a.price - b.price);
@@ -1244,10 +1265,20 @@ export function CollectionPageV10() {
     + priceBands.length
     + Object.values(selectedFilters).reduce((sum, items) => sum + items.length, 0)
     + Number(stockOnly);
-  useEffect(()=>setPage(1),[handle,selectedVendors,stockOnly,priceBands,selectedFilters,sort,pageSize]);
-  useEffect(()=>setPage(current=>Math.min(current,pageCount)),[pageCount]);
+  useEffect(()=>{
+    const next=readCollectionQuery(new URLSearchParams(queryString));
+    setSelectedVendors(next.filters.selectedVendors);setPriceBands(next.filters.priceBands);setSelectedFilters(next.filters.selectedFilters);setStockOnly(next.filters.stockOnly);setSort(next.sort);setPage(next.page);
+  },[queryString,handle]);
+  useEffect(()=>{
+    if(page<=pageCount)return;
+    const resolved=pageCount;
+    setPage(resolved);
+    setSearchParams(writeCollectionQuery(searchParams,appliedFilters,sort,resolved),{replace:true});
+  },[appliedFilters,page,pageCount,searchParams,setSearchParams,sort]);
   const goToPage=(next:number)=>{
-    setPage(Math.min(pageCount,Math.max(1,next)));
+    const resolved=Math.min(pageCount,Math.max(1,next));
+    setPage(resolved);
+    setSearchParams(writeCollectionQuery(searchParams,appliedFilters,sort,resolved),{replace:true});
     requestAnimationFrame(()=>document.querySelector('.lux-collection-results')?.scrollIntoView({behavior:'smooth',block:'start'}));
   };
 
@@ -1268,14 +1299,14 @@ export function CollectionPageV10() {
         <div className="tf4933-collection-toolbar-main">
           {gridSection?.settings.showFilter !== false && <button className="tf4933-collection-filter" onClick={() => setFiltersOpen(true)}><Filter/><span><small>Tùy chỉnh kết quả</small><b>Bộ lọc{activeFilterCount > 0 && <em>{activeFilterCount}</em>}</b></span></button>}
           {gridSection?.settings.showCount !== false && <div className="tf4933-collection-count" aria-live="polite"><strong>{filtered.length}</strong><span><b>Sản phẩm</b><small>Đang hiển thị {pageStart}–{pageEnd}</small></span></div>}
-          {gridSection?.settings.showSort !== false && <label className="tf4933-collection-sort"><span><small>Sắp xếp</small><b>{COLLECTION_SORT_LABELS[sort]}</b></span><select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sắp xếp sản phẩm"><option value="featured">Nổi bật</option><option value="relevant">Phù hợp nhất</option><option value="best">Bán chạy nhất</option><option value="name">Tên A–Z</option><option value="nameDesc">Tên Z–A</option><option value="low">Giá thấp đến cao</option><option value="high">Giá cao đến thấp</option><option value="old">Ngày cũ đến mới</option><option value="new">Ngày mới đến cũ</option></select><ChevronDown/></label>}
+          {gridSection?.settings.showSort !== false && <label className="tf4933-collection-sort"><span><small>Sắp xếp</small><b>{COLLECTION_SORT_LABELS[sort]}</b></span><select value={sort} onChange={(event) => changeSort(event.target.value)} aria-label="Sắp xếp sản phẩm"><option value="featured">Nổi bật</option><option value="relevant">Phù hợp nhất</option><option value="best">Bán chạy nhất</option><option value="name">Tên A–Z</option><option value="nameDesc">Tên Z–A</option><option value="low">Giá thấp đến cao</option><option value="high">Giá cao đến thấp</option><option value="old">Ngày cũ đến mới</option><option value="new">Ngày mới đến cũ</option></select><ChevronDown/></label>}
         </div>
         {activeFilterCount > 0 && <div className="tf4933-active-filters">
           {selectedVendors.map((value) => <span key={`vendor-${value}`}>Thương hiệu: {value}<button onClick={() => toggleVendor(value)} aria-label={`Xóa bộ lọc ${value}`}><X /></button></span>)}
           {priceBands.map((value) => {const label = COLLECTION_PRICE_BANDS.find((band) => band.value === value)?.label || value; return <span key={`price-${value}`}>Giá: {label}<button onClick={() => togglePriceBand(value)} aria-label={`Xóa bộ lọc giá ${label}`}><X /></button></span>;})}
           {PRODUCT_FILTER_DEFINITIONS.flatMap((definition) => selectedFilters[definition.id].map((value) => <span key={`${definition.id}-${value}`}>{definition.label}: {value}<button onClick={() => toggleProductFilter(definition.id, value)} aria-label={`Xóa bộ lọc ${value}`}><X /></button></span>))}
-          {stockOnly && <span>Còn hàng<button onClick={() => setStockOnly(false)} aria-label="Xóa bộ lọc còn hàng"><X /></button></span>}
-          <button className="tf4933-clear-filters" onClick={clearFilters}>Xóa tất cả</button>
+          {stockOnly && <span>Còn hàng<button onClick={() => commitFilters({...appliedFilters,stockOnly:false})} aria-label="Xóa bộ lọc còn hàng"><X /></button></span>}
+          <button className="tf60-copy-filter-link" onClick={()=>void copyFilteredLink()}><Share2/>Sao chép link</button><button className="tf4933-clear-filters" onClick={clearFilters}>Xóa tất cả</button>
         </div>}
       </section>
       <section className="lux-section lux-collection-results">

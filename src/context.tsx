@@ -1,5 +1,5 @@
 import{createContext,useCallback,useContext,useEffect,useMemo,useRef,useState,type ReactNode}from'react';
-import type{Activity,CartLine,CheckoutPayload,Collection,Customer,Discount,DiscountEvaluation,InventoryAdjustment,NewsletterSubscriber,Order,OrderLine,OrderStatus,Product,ProductGroup,ShippingAddress,StoreProfile,Theme,ThemeState,ThemeVersion}from'./types';
+import type{Activity,CartLine,CheckoutPayload,Collection,Customer,Discount,DiscountEvaluation,InventoryAdjustment,NewsletterSubscriber,Order,OrderLine,OrderStatus,Product,ProductGroup,ShippingAddress,StoreProfile,StoreReview,Theme,ThemeState,ThemeVersion}from'./types';
 import{seedCollections,seedCustomers}from'./seed-lite';
 import{seedActivities,seedAdjustments,seedDiscounts,seedOrders}from'./operations-seed';
 import{firebaseClient}from'./firebase';
@@ -14,7 +14,7 @@ import{normalizeCollectionRecord,normalizeCollections,resolvesCollectionProducts
 import{applyStoreProfileToTheme,DEFAULT_STORE_PROFILE,normalizeStoreProfile,storeProfileFromTheme}from'./store-profile';
 import{asList}from'./data-normalize';
 
-const K={p:'tf.react.products',c:'tf.react.collections',groups:'tf.react.product-groups',u:'tf.react.customers',cart:'tf.react.cart',theme:'tf.react.theme.v2',themeLegacy:'tf.react.theme',profile:'tf.react.store-profile',headers:'tf.react.headers',orders:'tf.react.orders',discounts:'tf.react.discounts',adjustments:'tf.react.inventory-adjustments',activities:'tf.react.activities',newsletter:'tf.react.newsletter-subscribers'};
+const K={p:'tf.react.products',c:'tf.react.collections',groups:'tf.react.product-groups',u:'tf.react.customers',cart:'tf.react.cart',theme:'tf.react.theme.v2',themeLegacy:'tf.react.theme',profile:'tf.react.store-profile',headers:'tf.react.headers',orders:'tf.react.orders',discounts:'tf.react.discounts',adjustments:'tf.react.inventory-adjustments',activities:'tf.react.activities',newsletter:'tf.react.newsletter-subscribers',reviews:'tf.react.store-reviews'};
 const load=<T,>(k:string,f:T)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r) as T:f}catch{return f}};
 const firebaseList=<T,>(value:T[]|Record<string,T>|null)=>asList<T>(value);
 const safeNumber=(value:unknown,fallback=0)=>{const parsed=Number(value);return Number.isFinite(parsed)?parsed:fallback};
@@ -65,11 +65,11 @@ const useIdleLocalStorage=<T,>(key:string,value:T,enabled=true)=>useEffect(()=>{
 
 export type CommerceDataSource='loading'|'firebase'|'local'|'seed'|'error';
 type V={
- products:Product[];collections:Collection[];productGroups:ProductGroup[];customers:Customer[];newsletterSubscribers:NewsletterSubscriber[];orders:Order[];discounts:Discount[];adjustments:InventoryAdjustment[];activities:Activity[];
+ products:Product[];collections:Collection[];productGroups:ProductGroup[];customers:Customer[];newsletterSubscribers:NewsletterSubscriber[];reviews:StoreReview[];orders:Order[];discounts:Discount[];adjustments:InventoryAdjustment[];activities:Activity[];
  theme:Theme;draftTheme:Theme;themeState:ThemeState;storeProfile:StoreProfile;headers:string[];firebaseEnabled:boolean;isLoading:boolean;dataSource:CommerceDataSource;dataError:string;
  setHeaders:(h:string[])=>void;saveProduct:(p:Product)=>void;deleteProducts:(ids:string[])=>void;replaceProducts:(p:Product[])=>Promise<void>;mergeProducts:(p:Product[])=>Promise<void>;
  saveCollection:(c:Collection)=>void;deleteCollection:(id:string)=>void;saveProductGroup:(group:ProductGroup)=>void;replaceProductGroups:(groups:ProductGroup[])=>void;deleteProductGroup:(id:string)=>void;saveCustomer:(u:Customer)=>void;
- subscribeNewsletter:(email:string,source?:string)=>'created'|'exists'|'reactivated'|'invalid';updateNewsletterSubscriber:(id:string,patch:Partial<NewsletterSubscriber>)=>void;deleteNewsletterSubscriber:(id:string)=>void;
+ subscribeNewsletter:(email:string,source?:string)=>'created'|'exists'|'reactivated'|'invalid';updateNewsletterSubscriber:(id:string,patch:Partial<NewsletterSubscriber>)=>void;deleteNewsletterSubscriber:(id:string)=>void;saveReview:(review:StoreReview)=>void;deleteReview:(id:string)=>void;
  saveThemeDraft:(t:Theme)=>void;publishTheme:(t?:Theme,note?:string)=>void;restoreThemeVersion:(id:string)=>void;saveStoreProfile:(profile:Omit<StoreProfile,'updatedAt'>)=>Promise<void>;
  evaluateDiscount:(code:string,subtotal:number,shipping?:number)=>DiscountEvaluation;saveDiscount:(d:Discount)=>void;deleteDiscount:(id:string)=>void;
  createOrder:(payload:CheckoutPayload)=>Order|null;submitStorefrontOrder:(payload:CheckoutPayload)=>Promise<Order>;createAdminOrder:(order:Order)=>Order|null;updateOrder:(id:string,patch:Partial<Order>)=>void;cancelOrder:(id:string)=>void;
@@ -88,6 +88,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const[productGroups,setProductGroups]=useState<ProductGroup[]>(()=>asList<ProductGroup>(load(K.groups,[])));
  const[customers,setCustomers]=useState(()=>asList<Customer>(load(K.u,seedCustomers)));
  const[newsletterSubscribers,setNewsletterSubscribers]=useState<NewsletterSubscriber[]>(()=>asList<NewsletterSubscriber>(load(K.newsletter,[])));
+ const[reviews,setReviews]=useState<StoreReview[]>(()=>asList<StoreReview>(load(K.reviews,[])));
  const[cart,setCart]=useState<CartLine[]>(()=>asList<CartLine>(load(K.cart,[])));
  const cartRef=useRef(cart);
  cartRef.current=cart;
@@ -108,6 +109,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
  useIdleLocalStorage(K.groups,productGroups);
  useIdleLocalStorage(K.u,customers);
  useIdleLocalStorage(K.newsletter,newsletterSubscribers);
+ useIdleLocalStorage(K.reviews,reviews);
  useIdleLocalStorage(K.cart,cart);
  useIdleLocalStorage(K.orders,orders);
  useIdleLocalStorage(K.discounts,discounts);
@@ -161,13 +163,15 @@ export function CommerceProvider({children}:{children:ReactNode}){
     firebaseClient.read<Collection[]|Record<string,Collection>>('timeforge/collections'),
     firebaseClient.read<ProductGroup[]|Record<string,ProductGroup>>('timeforge/productGroups'),
     firebaseClient.read<Discount[]|Record<string,Discount>>('timeforge/discounts'),
+    firebaseClient.queryByChild<StoreReview[]|Record<string,StoreReview>>('timeforge/reviews','status','published'),
     firebaseClient.read<Theme>('timeforge/themes/published'),
     profileRequest
-   ]).then(([collectionResult,groupResult,discountResult,publishedResult,profileResult])=>{
+   ]).then(([collectionResult,groupResult,discountResult,reviewsResult,publishedResult,profileResult])=>{
     if(!active)return;
     if(collectionResult.status==='fulfilled')setCollections(normalizeCollections(collectionResult.value));
     if(groupResult.status==='fulfilled')setProductGroups(firebaseList(groupResult.value));
     if(discountResult.status==='fulfilled')setDiscounts(firebaseList(discountResult.value));
+    if(reviewsResult.status==='fulfilled')setReviews(firebaseList(reviewsResult.value));
     const published=publishedResult.status==='fulfilled'&&publishedResult.value?normalizeTheme(publishedResult.value):null;
     const firebaseIdentityFallback=published?storeProfileFromTheme(published):DEFAULT_STORE_PROFILE;
     const remoteProfile=profileResult.status==='fulfilled'&&profileResult.value
@@ -204,9 +208,10 @@ export function CommerceProvider({children}:{children:ReactNode}){
    firebaseClient.read<Order[]|Record<string,Order>>('timeforge/orders'),
    firebaseClient.read<InventoryAdjustment[]|Record<string,InventoryAdjustment>>('timeforge/inventoryAdjustments'),
    firebaseClient.read<Activity[]|Record<string,Activity>>('timeforge/activities'),
+   firebaseClient.read<StoreReview[]|Record<string,StoreReview>>('timeforge/reviews'),
    firebaseClient.read<Theme>('timeforge/themes/draft'),
    firebaseClient.read<ThemeVersion[]|Record<string,ThemeVersion>>('timeforge/themes/versions')
-  ]).then(([customerResult,subscriberResult,orderResult,adjustmentResult,activityResult,draftResult,versionResult])=>{
+  ]).then(([customerResult,subscriberResult,orderResult,adjustmentResult,activityResult,reviewsResult,draftResult,versionResult])=>{
    if(!active)return;
    if(customerResult.status==='fulfilled')setCustomers(firebaseList(customerResult.value));
    if(subscriberResult.status==='fulfilled')setNewsletterSubscribers(firebaseList(subscriberResult.value));
@@ -219,6 +224,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
    }
    if(adjustmentResult.status==='fulfilled')setAdjustments(firebaseList(adjustmentResult.value));
    if(activityResult.status==='fulfilled')setActivities(firebaseList(activityResult.value));
+   if(reviewsResult.status==='fulfilled')setReviews(firebaseList(reviewsResult.value));
    if(draftResult.status==='fulfilled'||versionResult.status==='fulfilled')setThemeState(cur=>({...cur,draft:draftResult.status==='fulfilled'&&draftResult.value?normalizeTheme(draftResult.value):cur.draft,versions:versionResult.status==='fulfilled'?normalizeThemeVersions(versionResult.value):cur.versions}));
   });
   return()=>{active=false};
@@ -250,6 +256,8 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const subscribeNewsletter=(rawEmail:string,source='footer')=>{const email=rawEmail.trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return'invalid' as const;const existing=newsletterSubscribers.find(item=>item.email===email);const now=new Date().toISOString();if(existing?.status==='active')return'exists' as const;const created:NewsletterSubscriber={id:existing?.id||newsletterKey(email),email,source,status:'active',createdAt:existing?.createdAt||now,updatedAt:now};const next:NewsletterSubscriber[]=existing?newsletterSubscribers.map(item=>item.id===existing.id?created:item):[created,...newsletterSubscribers];setNewsletterSubscribers(next);if(firebaseClient.enabled)void firebaseClient.write(`timeforge/newsletterSubscribers/${created.id}`,created).catch(()=>{});const matching=customers.find(item=>item.email.toLowerCase()===email);if(matching&&!matching.acceptsMarketing){const nextCustomers=customers.map(item=>item.id===matching.id?{...item,acceptsMarketing:true}:item);setCustomers(nextCustomers);sync('timeforge/customers',nextCustomers)}log('customer',existing?.id||email,existing?'Kích hoạt lại email marketing':'Đăng ký email marketing',email);return existing?'reactivated' as const:'created' as const};
  const updateNewsletterSubscriber=(id:string,patch:Partial<NewsletterSubscriber>)=>setNewsletterSubscribers(cur=>{const now=new Date().toISOString();const updated=cur.find(item=>item.id===id);const next=cur.map(item=>item.id===id?{...item,...patch,updatedAt:now}:item);const value=updated?{...updated,...patch,updatedAt:now}:null;if(value&&firebaseClient.enabled)void firebaseClient.write(`timeforge/newsletterSubscribers/${id}`,value).catch(()=>{});return next});
  const deleteNewsletterSubscriber=(id:string)=>setNewsletterSubscribers(cur=>{const found=cur.find(item=>item.id===id);const next=cur.filter(item=>item.id!==id);if(firebaseClient.enabled)void firebaseClient.remove(`timeforge/newsletterSubscribers/${id}`).catch(()=>{});if(found)log('customer',id,'Xóa email marketing',found.email);return next});
+ const saveReview=(review:StoreReview)=>setReviews(cur=>{const exists=cur.some(item=>item.id===review.id);const next=exists?cur.map(item=>item.id===review.id?review:item):[review,...cur];if(firebaseClient.enabled)void firebaseClient.write(`timeforge/reviews/${review.id}`,review).catch(reportFirebaseError);log('customer',review.id,exists?'Cập nhật testimonial':'Tạo testimonial',review.customerName);return next});
+ const deleteReview=(id:string)=>setReviews(cur=>{const found=cur.find(item=>item.id===id);const next=cur.filter(item=>item.id!==id);if(firebaseClient.enabled)void firebaseClient.remove(`timeforge/reviews/${id}`).catch(reportFirebaseError);if(found)log('customer',id,'Xóa testimonial',found.customerName);return next});
  const saveThemeDraft=(theme:Theme)=>setThemeState(cur=>{const n={...cur,draft:normalizeTheme(theme)};sync('timeforge/themes/draft',n.draft);return n});
  const publishTheme=(theme?:Theme,note='Xuất bản từ Theme Editor')=>setThemeState(cur=>{const next=normalizeTheme(theme||cur.draft);const version:ThemeVersion={id:uid('theme'),createdAt:new Date().toISOString(),note,theme:normalizeTheme(cur.published)};const n={draft:structuredClone(next),published:next,publishedAt:new Date().toISOString(),versions:[version,...(cur.versions||[])].slice(0,15)};sync('timeforge/themes/draft',n.draft);sync('timeforge/themes/published',n.published);sync('timeforge/themes/versions',n.versions);log('theme',String(next.version),'Xuất bản theme',next.name);return n});
  const restoreThemeVersion=(id:string)=>setThemeState(cur=>{const v=(cur.versions||[]).find(x=>x.id===id);if(!v)return cur;const n={...cur,draft:normalizeTheme(v.theme)};sync('timeforge/themes/draft',n.draft);log('theme',id,'Khôi phục theme thành draft',v.note);return n});
@@ -358,10 +366,10 @@ export function CommerceProvider({children}:{children:ReactNode}){
  };
  const adjustInventory=(productId:string,variantId:string,delta:number,note:string)=>{const p=products.find(x=>x.id===productId);if(!p||!delta)return;const v=p.variants.find(x=>x.id===variantId)||p.variants[0],before=v?.inventory??p.inventory,after=Math.max(0,before+delta);const nextProducts=products.map(x=>x.id!==productId?x:{...x,inventory:Math.max(0,x.inventory+delta),variants:x.variants.map(y=>y.id===(v?.id||variantId)?{...y,inventory:after}:y),updatedAt:new Date().toISOString()});const adjustment:InventoryAdjustment={id:uid('adjustment'),productId,variantId:v?.id||variantId,sku:v?.sku||p.sku,productTitle:p.title,delta,before,after,reason:'manual',note:note||'Điều chỉnh thủ công',createdAt:new Date().toISOString(),referenceId:''};const nextAdjustments=[adjustment,...adjustments];setProducts(nextProducts);setAdjustments(nextAdjustments);syncProducts(nextProducts);sync('timeforge/inventoryAdjustments',nextAdjustments);log('inventory',productId,'Điều chỉnh tồn kho',`${p.title}: ${delta>0?'+':''}${delta}`)};
 
- const reset=()=>{Object.values(K).forEach(k=>localStorage.removeItem(k));const freshTheme=createThemeState();setProducts([]);setCollections(seedCollections);setProductGroups([]);setCustomers(seedCustomers);setNewsletterSubscribers([]);setCart([]);setOrders(seedOrders);setDiscounts(seedDiscounts);setAdjustments(seedAdjustments);setActivities(seedActivities);setThemeState(freshTheme);setStoreProfile(storeProfileFromTheme(freshTheme.published));setHeaders([]);void import('./seed').then(({seed})=>setProducts(seed.products))};
+ const reset=()=>{Object.values(K).forEach(k=>localStorage.removeItem(k));const freshTheme=createThemeState();setProducts([]);setCollections(seedCollections);setProductGroups([]);setCustomers(seedCustomers);setNewsletterSubscribers([]);setReviews([]);setCart([]);setOrders(seedOrders);setDiscounts(seedDiscounts);setAdjustments(seedAdjustments);setActivities(seedActivities);setThemeState(freshTheme);setStoreProfile(storeProfileFromTheme(freshTheme.published));setHeaders([]);void import('./seed').then(({seed})=>setProducts(seed.products))};
  const activeTheme=useMemo(()=>previewTheme||applyStoreProfileToTheme(themeState.published,storeProfile),[previewTheme,themeState.published,storeProfile]);
  const draftTheme=useMemo(()=>applyStoreProfileToTheme(themeState.draft,storeProfile),[themeState.draft,storeProfile]);
- const value=useMemo(()=>({products,collections,productGroups,customers,newsletterSubscribers,orders,discounts,adjustments,activities,theme:activeTheme,draftTheme,themeState,storeProfile,headers,firebaseEnabled:firebaseClient.enabled,isLoading,dataSource,dataError,setHeaders,saveProduct,deleteProducts,replaceProducts,mergeProducts,saveCollection,deleteCollection,saveProductGroup,replaceProductGroups,deleteProductGroup,saveCustomer,subscribeNewsletter,updateNewsletterSubscriber,deleteNewsletterSubscriber,saveThemeDraft,publishTheme,restoreThemeVersion,saveStoreProfile,evaluateDiscount,saveDiscount,deleteDiscount,createOrder,submitStorefrontOrder,createAdminOrder,updateOrder,cancelOrder,adjustInventory,reset,collectionProducts}),[products,collections,productGroups,customers,newsletterSubscribers,orders,discounts,adjustments,activities,activeTheme,draftTheme,themeState,storeProfile,headers,isLoading,dataSource,dataError,collectionProducts]);
+ const value=useMemo(()=>({products,collections,productGroups,customers,newsletterSubscribers,reviews,orders,discounts,adjustments,activities,theme:activeTheme,draftTheme,themeState,storeProfile,headers,firebaseEnabled:firebaseClient.enabled,isLoading,dataSource,dataError,setHeaders,saveProduct,deleteProducts,replaceProducts,mergeProducts,saveCollection,deleteCollection,saveProductGroup,replaceProductGroups,deleteProductGroup,saveCustomer,subscribeNewsletter,updateNewsletterSubscriber,deleteNewsletterSubscriber,saveReview,deleteReview,saveThemeDraft,publishTheme,restoreThemeVersion,saveStoreProfile,evaluateDiscount,saveDiscount,deleteDiscount,createOrder,submitStorefrontOrder,createAdminOrder,updateOrder,cancelOrder,adjustInventory,reset,collectionProducts}),[products,collections,productGroups,customers,newsletterSubscribers,reviews,orders,discounts,adjustments,activities,activeTheme,draftTheme,themeState,storeProfile,headers,isLoading,dataSource,dataError,collectionProducts]);
  const cartActions=useMemo<CartActions>(()=>({addToCart,updateCart,clearCart}),[addToCart,updateCart,clearCart]);
  return <C.Provider value={value}><CartActionsC.Provider value={cartActions}><CartStateC.Provider value={cart}>{children}</CartStateC.Provider></CartActionsC.Provider></C.Provider>
 }
