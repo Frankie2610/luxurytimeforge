@@ -16,6 +16,14 @@ const absolute=(value,origin)=>{
   return `${origin}${raw.startsWith('/')?'':'/'}${raw}`;
 };
 const list=value=>Array.isArray(value)?value.filter(Boolean):Object.values(value||{}).filter(Boolean);
+const normalized=value=>clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase();
+const productGender=product=>list(product?.metafields).filter(field=>normalized(field?.namespace)==='custom'&&normalized(field?.key)==='gender').flatMap(field=>clean(field?.value).split(/[,;|/]/)).map(normalized);
+const SEO_LANDING_ROUTES=[
+  {loc:'/dong-ho-nam',match:p=>productGender(p).some(value=>value==='nam'||value==='male')},
+  {loc:'/dong-ho-nu',match:p=>productGender(p).some(value=>value==='nu'||value==='female')},
+  {loc:'/dong-ho-duoi-5-trieu',match:p=>Number(p?.price)>0&&Number(p?.price)<=5000000},
+  {loc:'/dong-ho-sale',match:p=>Number(p?.compareAtPrice)>Number(p?.price)&&Number(p?.price)>0},
+];
 
 function resourceFromRequest(req){
   const direct=clean(req.query?.resource);
@@ -92,12 +100,15 @@ async function sendMerchantFeed(req,res){
 
 async function sendSitemap(_req,res){
   const site=baseSite(),today=new Date().toISOString().slice(0,10);let products=[],collections=[],posts=[];
-  try{[products,collections,posts]=await Promise.all([readPrivate('timeforge/products').then(list),readPrivate('timeforge/collections').then(list),readPrivate('timeforge/blogPosts').then(list)])}catch{}
+  try{[products,collections,posts]=await Promise.all([readCatalog('timeforge/products').then(list),readCatalog('timeforge/collections').then(list),readCatalog('timeforge/blogPosts').then(list)])}catch{}
+  const activeProducts=products.filter(p=>p?.handle&&p?.published!==false&&p?.status==='active');
+  const landingUrls=SEO_LANDING_ROUTES.filter(route=>activeProducts.some(route.match)).map(route=>({loc:route.loc,priority:'0.78',freq:'weekly'}));
   const urls=[
     {loc:'/',priority:'1.0',freq:'daily'},{loc:'/collections',priority:'0.9',freq:'daily'},{loc:'/watch-finder',priority:'0.7',freq:'monthly'},{loc:'/blogs',priority:'0.7',freq:'weekly'},
     {loc:'/pages/about',priority:'0.6',freq:'monthly'},{loc:'/pages/warranty',priority:'0.7',freq:'monthly'},{loc:'/pages/shipping',priority:'0.6',freq:'monthly'},{loc:'/pages/returns',priority:'0.6',freq:'monthly'},
+    ...landingUrls,
     ...collections.filter(c=>c?.handle&&c?.status!=='draft').map(c=>({loc:`/collections/${encodeURIComponent(c.handle)}`,priority:'0.8',freq:'weekly',lastmod:String(c.updatedAt||today).slice(0,10)})),
-    ...products.filter(p=>p?.handle&&p?.published!==false&&p?.status==='active').map(p=>({loc:`/products/${encodeURIComponent(p.handle)}`,priority:'0.8',freq:'weekly',lastmod:String(p.updatedAt||today).slice(0,10)})),
+    ...activeProducts.map(p=>({loc:`/products/${encodeURIComponent(p.handle)}`,priority:'0.8',freq:'weekly',lastmod:String(p.updatedAt||today).slice(0,10)})),
     ...posts.filter(post=>post?.handle&&post?.status==='published').map(post=>({loc:`/blogs/${encodeURIComponent(post.handle)}`,priority:'0.65',freq:'monthly',lastmod:String(post.updatedAt||post.publishedAt||today).slice(0,10)})),
   ];
   const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u=>`  <url><loc>${esc(site+u.loc)}</loc>${u.lastmod?`<lastmod>${esc(u.lastmod)}</lastmod>`:''}<changefreq>${u.freq}</changefreq><priority>${u.priority}</priority></url>`).join('\n')}\n</urlset>`;
@@ -106,10 +117,27 @@ async function sendSitemap(_req,res){
   return res.status(200).send(xml);
 }
 
+async function sendImageSitemap(_req,res){
+  const site=baseSite();let products=[];
+  try{products=await readCatalog('timeforge/products').then(list)}catch{}
+  const entries=products.filter(product=>product?.handle&&product?.published!==false&&product?.status==='active'&&list(product?.images).length).map(product=>{
+    const images=list(product.images).map(value=>absolute(value,site)).filter(Boolean).slice(0,10);
+    return `  <url><loc>${esc(`${site}/products/${encodeURIComponent(product.handle)}`)}</loc>${images.map(image=>`<image:image><image:loc>${esc(image)}</image:loc></image:image>`).join('')}</url>`;
+  });
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${entries.join('\n')}
+</urlset>`;
+  res.setHeader('Content-Type','application/xml; charset=utf-8');
+  res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
+  res.setHeader('X-TimeForge-Image-Pages',String(entries.length));
+  return res.status(200).send(xml);
+}
+
 function sendRobots(_req,res){
   const site=baseSite();
   const body=[
-    'User-agent: *','Allow: /','Disallow: /admin/','Disallow: /checkout','Disallow: /account/','Disallow: /order-confirmation/','Disallow: /payment/','Disallow: /search',`Sitemap: ${site}/sitemap.xml`,'',
+    'User-agent: *','Allow: /','Disallow: /admin/','Disallow: /checkout','Disallow: /account/','Disallow: /order-confirmation/','Disallow: /payment/','Disallow: /search',`Sitemap: ${site}/sitemap.xml`,`Sitemap: ${site}/image-sitemap.xml`,'',
   ].join('\n');
   res.setHeader('Content-Type','text/plain; charset=utf-8');
   res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
@@ -152,6 +180,7 @@ export default async function handler(req,res){
     return sendSitemap(req,res);
   }
   if(resource==='robots'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendRobots(req,res)}
+  if(resource==='image-sitemap'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendImageSitemap(req,res)}
   if(resource==='merchant-feed')return sendMerchantFeed(req,res);
   if(resource==='social-image')return sendSocialImage(req,res);
   return res.status(404).json({error:'Unknown metadata resource'});

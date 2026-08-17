@@ -43,7 +43,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import {useCartActions, useCartState, useCommerce, useProductCatalog, useProductSales, useStorefrontData, useStoreReviews} from './context';
-import type {Collection, Product, ProductGroup, ProductGroupItem, Section, ThemeBlock} from './types';
+import type {Collection, Product, ProductGroup, ProductGroupItem, Section, StoreReview, ThemeBlock} from './types';
 import {discount, money} from './utils';
 import {optimizedImage, optimizedImageSrcSet, productImage, SmartImage} from './image-utils';
 import {StorefrontButton as Button, StorefrontDialog as Dialog, StorefrontDialogContent as DialogContent} from './storefront-ui-v575';
@@ -55,6 +55,7 @@ import {isThemePreviewV26, readThemePreviewExtrasV26, THEME_PREVIEW_UPDATED_V26}
 import {sectionLabels, blockLabels} from './theme';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {NewsletterSignupV65} from './newsletter-signup-v65';
+import {SEO_LANDING_PAGES} from './seo-discovery-v657';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreLogo, resolveStoreName} from './store-profile';
@@ -160,6 +161,28 @@ function DeferredBlogCardsV574({limit}: {limit: number}) {
       ? <Suspense fallback={<BlogCardsFallbackV574 />}><LazyBlogCardsV18 limit={limit} /></Suspense>
       : <BlogCardsFallbackV574 />}
   </div>;
+}
+
+function useDeferredViewportV657(rootMargin='320px 0px'){
+  const hostRef=useRef<HTMLDivElement>(null);
+  const[shouldLoad,setShouldLoad]=useState(false);
+  useEffect(()=>{
+    const host=hostRef.current;
+    if(!host||typeof IntersectionObserver==='undefined'){setShouldLoad(true);return}
+    const observer=new IntersectionObserver(([entry])=>{if(!entry?.isIntersecting)return;setShouldLoad(true);observer.disconnect()},{rootMargin});
+    observer.observe(host);return()=>observer.disconnect();
+  },[rootMargin]);
+  return{hostRef,shouldLoad};
+}
+
+function DeferredProductDecisionToolsV657(props:{product:Product;variantId:string;variantTitle?:string;sku?:string;price:number}){
+  const{hostRef,shouldLoad}=useDeferredViewportV657('360px 0px');
+  return <div ref={hostRef} className="tf657-deferred-product-tools" aria-busy={!shouldLoad}>{shouldLoad?<Suspense fallback={null}><LazyProductDecisionToolsV65 {...props}/></Suspense>:null}</div>;
+}
+
+function DeferredProductReviewsV657({product,reviews,rating}:{product:Product;reviews:StoreReview[];rating:number}){
+  const{hostRef,shouldLoad}=useDeferredViewportV657('640px 0px');
+  return <div ref={hostRef} className="tf657-deferred-product-reviews" aria-busy={!shouldLoad}>{shouldLoad?<Suspense fallback={null}><LazyProductReviewsV656 product={product} reviews={reviews} rating={rating}/></Suspense>:null}</div>;
 }
 
 function readRecentSearches() {
@@ -1297,6 +1320,7 @@ export function CollectionPageV10() {
         {visible.length ? <div className={`lux-product-grid v23-columns-${Number(gridSection?.settings.columns || 4)}`}>{visible.map((product) => <LuxuryProductCard key={product.id} product={product} />)}</div> : <div className="lux-no-results"><Search /><h2>Chưa tìm thấy sản phẩm phù hợp</h2><p>Thử xóa bớt bộ lọc để xem thêm lựa chọn.</p><button onClick={clearFilters}>Xóa tất cả bộ lọc</button></div>}
         {filtered.length>pageSize&&<nav className="tf4933-pagination" aria-label="Phân trang sản phẩm"><button className="tf4933-page-nav" type="button" disabled={page===1} onClick={()=>goToPage(page-1)}><ChevronLeft/><span>Trang trước</span></button><div className="tf4933-page-numbers">{pageItems.map((item,index)=>item==='gap'?<span className="tf4933-page-gap" key={`gap-${index}`} aria-hidden="true">…</span>:<button type="button" key={item} className={item===page?'is-active':''} aria-current={item===page?'page':undefined} aria-label={`Trang ${item}`} onClick={()=>goToPage(item)}>{item}</button>)}</div><button className="tf4933-page-nav" type="button" disabled={page===pageCount} onClick={()=>goToPage(page+1)}><span>Trang sau</span><ChevronRight/></button></nav>}
       </section>
+      <nav className="tf657-discovery-links" aria-label="Khám phá đồng hồ theo nhu cầu"><span>Mua theo nhu cầu</span><div>{SEO_LANDING_PAGES.map(item=><Link key={item.path} to={item.path}>{item.title}<ArrowRight/></Link>)}</div></nav>
       {gridSection?.settings.showFilter !== false && <CollectionFilters
         open={filtersOpen}
         close={() => setFiltersOpen(false)}
@@ -1568,7 +1592,7 @@ export function ProductPageV10() {
             </div>}
 
             <Suspense fallback={null}><LazyPurchaseAssistV63 product={product} variantId={variant?.id||variantId} variantTitle={variant?.title} sku={variant?.sku||product.sku} price={price} inventory={inventory}/></Suspense>
-            <Suspense fallback={null}><LazyProductDecisionToolsV65 product={product} variantId={variant?.id||variantId} variantTitle={variant?.title} sku={variant?.sku||product.sku} price={price}/></Suspense>
+            <DeferredProductDecisionToolsV657 product={product} variantId={variant?.id||variantId} variantTitle={variant?.title} sku={variant?.sku||product.sku} price={price}/>
 
             <ProductDeliveryEstimate />
 
@@ -1593,7 +1617,7 @@ export function ProductPageV10() {
             <article><Clock3/><span><small>03</small><h3>Hỗ trợ hậu mãi</h3><p>Tiếp nhận bảo hành, đổi trả và hướng dẫn trong quá trình sử dụng.</p></span></article>
           </div>
         </section>}
-        {!!productReviews.length&&<Suspense fallback={null}><LazyProductReviewsV656 product={product} reviews={productReviews} rating={productRating}/></Suspense>}
+        {!!productReviews.length&&<DeferredProductReviewsV657 product={product} reviews={productReviews} rating={productRating}/>}
 
       </> : <section className="v23-template-hidden"><h1>Trang sản phẩm đang được ẩn trong Cửa hàng online</h1><p>Mở trình chỉnh sửa theme để bật lại section Thông tin sản phẩm.</p></section>}
 

@@ -1,0 +1,27 @@
+{
+  "version": "0.65.7",
+  "baseline": "0.65.6",
+  "baseline_src_css_bytes": 1295330,
+  "current_src_css_bytes": 1298790,
+  "css_safety_budget_bytes": 1300000,
+  "changed_css": [
+    {
+      "file": "v650-product-tools.css",
+      "change": "modified",
+      "bytes_before": 7104,
+      "bytes_after": 6443
+    },
+    {
+      "file": "v650-storefront-polish.css",
+      "change": "modified",
+      "bytes_before": 10635,
+      "bytes_after": 11927
+    },
+    {
+      "file": "v657-seo-landing.css",
+      "change": "new",
+      "bytes": 2829
+    }
+  ],
+  "policy": "No broad dead-CSS deletion. CSS-to-CSS @import graph remains authoritative; only scoped V0.65.7 owners were changed."
+}

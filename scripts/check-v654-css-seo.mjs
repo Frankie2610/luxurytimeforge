@@ -6,7 +6,7 @@ ok('build enforces CSS budget',pkg.scripts.build.includes('check-css-budget-v654
 ok('CSS graph audit traverses nested @import',fs.readFileSync('scripts/css-graph-audit-v654.mjs','utf8').includes('nested CSS @import'));
 ok('pagination canonical keeps page query',seo.includes("searchParams.get('page')"));
 ok('filter params are not copied into canonical',seo.includes('canonicalSearch'));
-ok('sitemap includes published blog posts',meta.includes("readPrivate('timeforge/blogPosts')")&&meta.includes('/blogs/'));
+ok('sitemap includes published blog posts',(meta.includes("readPrivate('timeforge/blogPosts')")||meta.includes("readCatalog('timeforge/blogPosts')"))&&meta.includes('/blogs/'));
 ok('dynamic robots endpoint exists',meta.includes("resource==='robots'")&&vercel.includes('resource=robots'));
 ok('Organization exposes sameAs social profiles',seo.includes('sameAs'));
 console.log(`\nV0.65.4 checks: ${pass} passed, ${fail} failed`);if(fail)process.exit(1);

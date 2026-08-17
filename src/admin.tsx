@@ -3247,6 +3247,9 @@ export function SettingsPage() {
                 <a href="/google-products.xml" target="_blank" rel="noreferrer">
                   <span><b>Merchant Center feed</b><small>/google-products.xml · đồng bộ catalog Google</small></span><ArrowUpRight />
                 </a>
+                <a href="/image-sitemap.xml" target="_blank" rel="noreferrer">
+                  <span><b>Image Sitemap</b><small>/image-sitemap.xml · hỗ trợ Google khám phá ảnh sản phẩm</small></span><ArrowUpRight />
+                </a>
               </div>
             </div>
           </section>
