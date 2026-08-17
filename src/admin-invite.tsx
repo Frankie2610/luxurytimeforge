@@ -6,7 +6,7 @@ import {adminInvitationPath,adminMemberPath,inviteExpired,normalizeEmail,type Ad
 import {useAuth} from './auth';
 import {firebaseClient,getFirebaseAuth} from './firebase';
 import {roleLabels} from './permissions';
-import {useCommerce} from './context';
+import {useStorefrontData} from './context';
 import {resolveStoreLogo,resolveStoreName} from './store-profile';
 import {optimizedImage} from './image-utils';
 
@@ -18,7 +18,7 @@ export function AcceptAdminInviteV4917(){
   const[params]=useSearchParams();
   const navigate=useNavigate();
   const{refreshAccess}=useAuth();
-  const{storeProfile}=useCommerce();
+  const{storeProfile}=useStorefrontData();
   const storeName=resolveStoreName(storeProfile.storeName);
   const inviteId=params.get('invite')||'';
   const[email,setEmail]=useState(()=>sessionStorage.getItem(emailKey)||'');

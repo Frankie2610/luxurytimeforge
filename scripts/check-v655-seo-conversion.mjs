@@ -7,6 +7,7 @@ const v601=read('src/v601-storefront-fixes.css');
 const types=read('src/types.ts');
 const reviews=read('src/reviews-admin-v60.tsx');
 const storefront=read('src/storefront-v10.tsx');
+const productReviews=fs.existsSync('src/product-reviews-v656.tsx')?read('src/product-reviews-v656.tsx'):storefront;
 const seo=read('src/seo-head-v60.tsx');
 const meta=read('api/meta.js');
 const vercel=read('vercel.json');
@@ -21,7 +22,7 @@ assert(/tf-editorial-facts-v39>span:nth-child\(3\)\{background:#765616/.test(v65
 assert(!/tf-editorial-facts-v39[^}]*color:[^;}]+!important/.test(v582),'V582 không còn đè màu benefit cards');
 assert(types.includes("export type StoreReviewType='store'|'product'"),'review model hỗ trợ review sản phẩm');
 assert(reviews.includes('Review sản phẩm')&&reviews.includes('Chọn sản phẩm...'),'Admin có loại review + selector sản phẩm');
-assert(storefront.includes('tf655-product-reviews')&&storefront.includes('Khách hàng nói gì về mẫu này?'),'Trang sản phẩm hiển thị review đã gắn SKU');
+assert((storefront.includes('LazyProductReviewsV656')||storefront.includes('tf655-product-reviews'))&&productReviews.includes('tf655-product-reviews'),'Trang sản phẩm hiển thị review đã gắn SKU');
 assert(seo.includes('aggregateRating:productReviews.length')&&seo.includes("'@type':'Review'"),'Product schema dùng aggregateRating/review thật');
 assert(seo.includes('gtinField(seo.product.barcode)')&&seo.includes('mpn:seo.product.sku'),'Product schema bổ sung GTIN/MPN khi có dữ liệu');
 assert(meta.includes('async function sendMerchantFeed')&&meta.includes('xmlns:g="http://base.google.com/ns/1.0"'),'API có Google Merchant XML feed');

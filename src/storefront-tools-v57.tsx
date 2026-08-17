@@ -2,7 +2,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {ArrowLeft,ArrowRight,Check,ChevronRight,Compass,ListFilter,Plus,RotateCcw,Scale,Share2,ShoppingBag,Sparkles,Trash2} from 'lucide-react';
 import {Link,useSearchParams} from 'react-router-dom';
 import {toast} from 'sonner';
-import {useCartActions,useCommerce} from './context';
+import {useCartActions,useProductCatalog} from './context';
 import {useCompareV57} from './compare-v57';
 import {productImage,SmartImage} from './image-utils';
 import {trackCommerceEvent} from './commerce-events';
@@ -41,7 +41,7 @@ const compareRows:CompareRow[]=[
 
 export function ComparePageV57(){
   const{ids,remove,clear,replace}=useCompareV57();
-  const{products}=useCommerce();
+  const{products}=useProductCatalog();
   const{addToCart}=useCartActions();
   const[searchParams]=useSearchParams();
   const[differencesOnly,setDifferencesOnly]=useState(false);
@@ -134,7 +134,7 @@ const finderReasons=(item:FinderIndexed,answers:FinderAnswers)=>{
 };
 
 export function WatchFinderPageV57(){
-  const{products}=useCommerce();
+  const{products}=useProductCatalog();
   const[step,setStep]=useState(0);
   const[answers,setAnswers]=useState<Partial<FinderAnswers>>({});
   const indexedProducts=useMemo<FinderIndexed[]>(()=>products.map(product=>({product,text:productSearchTextV571(product).toLocaleLowerCase('vi'),specs:extractProductSpecsV571(product)})),[products]);

@@ -1,0 +1,846 @@
+{
+  "version": "0.65.6",
+  "generatedAt": "2026-08-16T18:49:38.381Z",
+  "policy": "Reachability traverses TS/TSX/JS imports and nested CSS @import. V0.65.6 removes only proven superseded component rules; no cross-route cascade deletion.",
+  "files": {
+    "all": 146,
+    "reachable": 146,
+    "unreachable": 0
+  },
+  "bytes": {
+    "all": 1300098,
+    "reachable": 1300098,
+    "unreachable": 0
+  },
+  "entryCss": [
+    "admin-v4938.css",
+    "app.css",
+    "auth.css",
+    "legacy.css",
+    "v4912-commerce.css",
+    "v4912-storefront.css",
+    "v4913-storefront-compat.css",
+    "v4915-commerce-fixes.css",
+    "v4917-admin-invite.css",
+    "v4918-flat-product-cards.css",
+    "v4920-commerce-mobile.css",
+    "v4920-storefront-mobile.css",
+    "v4922-journal.css",
+    "v4923-storefront.css",
+    "v4924-storefront.css",
+    "v4925-commerce.css",
+    "v4925-storefront.css",
+    "v4926-admin.css",
+    "v4927-commerce.css",
+    "v4933-collection.css",
+    "v4936-mobile-product-grid.css",
+    "v50-admin-polish.css",
+    "v50-journal-polish.css",
+    "v50-storefront-polish.css",
+    "v50-theme-editor.css",
+    "v502-commerce-polish.css",
+    "v502-storefront-contrast.css",
+    "v503-admin-metafields.css",
+    "v503-commerce-polish.css",
+    "v503-storefront-filter.css",
+    "v504-admin-final.css",
+    "v504-commerce.css",
+    "v504-product-groups-admin.css",
+    "v504-storefront-final.css",
+    "v508-admin-final.css",
+    "v508-storefront-final.css",
+    "v509-admin-final.css",
+    "v509-commerce-final.css",
+    "v509-storefront-final.css",
+    "v510-storefront-stability.css",
+    "v512-admin-contrast.css",
+    "v512-storefront-corrections.css",
+    "v513-store-profile.css",
+    "v513-storefront-enhancements.css",
+    "v515-order-payment.css",
+    "v521-ui-polish.css",
+    "v522-ui-refinement.css",
+    "v523-product-admin-fix.css",
+    "v524-customer-account.css",
+    "v524-print-documents.css",
+    "v525-admin-orders.css",
+    "v525-customer-order-detail.css",
+    "v525-print-logo.css",
+    "v526-account-returns.css",
+    "v53-wishlist.css",
+    "v531-admin-dashboard.css",
+    "v531-storefront-additions.css",
+    "v540-admin-refinement.css",
+    "v540-storefront-refinement.css",
+    "v550-admin-polish.css",
+    "v550-storefront-polish.css",
+    "v560-admin-features.css",
+    "v560-wishlist-features.css",
+    "v561-wishlist-hotfix.css",
+    "v562-cart-performance.css",
+    "v562-storefront-interactions.css",
+    "v562-wishlist-refinement.css",
+    "v563-admin-scroll-polish.css",
+    "v563-storefront-menu.css",
+    "v563-wishlist-control.css",
+    "v564-admin-polish.css",
+    "v564-storefront-polish.css",
+    "v564-wishlist-control.css",
+    "v565-admin-performance.css",
+    "v565-storefront-performance.css",
+    "v566-admin-polish.css",
+    "v566-storefront-polish.css",
+    "v570-meta-ads.css",
+    "v570-storefront-controls.css",
+    "v570-storefront-features.css",
+    "v571-meta-admin.css",
+    "v571-storefront-core.css",
+    "v571-storefront-polish.css",
+    "v572-meta-admin.css",
+    "v572-storefront-core.css",
+    "v572-storefront-tools.css",
+    "v573-admin-journal.css",
+    "v573-commerce-polish.css",
+    "v573-compare-polish.css",
+    "v573-journal-polish.css",
+    "v573-meta-admin.css",
+    "v573-storefront-core.css",
+    "v574-storefront-polish.css",
+    "v575-commerce-polish.css",
+    "v575-journal-polish.css",
+    "v575-storefront-polish.css",
+    "v576-commerce-polish.css",
+    "v576-compare-polish.css",
+    "v576-journal-readability.css",
+    "v576-storefront-readability.css",
+    "v576-wishlist-readability.css",
+    "v580-admin-polish.css",
+    "v580-commerce-polish.css",
+    "v580-journal-polish.css",
+    "v580-storefront-polish.css",
+    "v581-storefront-polish.css",
+    "v582-admin-ui-polish.css",
+    "v582-customer-polish.css",
+    "v582-storefront-ui-polish.css",
+    "v600-reviews-admin.css",
+    "v601-storefront-fixes.css",
+    "v620-admin-polish.css",
+    "v620-storefront-performance.css",
+    "v620-storefront-quickview.css",
+    "v630-purchase-assist.css",
+    "v650-admin-polish.css",
+    "v650-product-tools.css",
+    "v650-storefront-polish.css",
+    "v655-product-reviews.css"
+  ],
+  "unreachable": [],
+  "ruleCount": 13035,
+  "importantDeclarations": 2723,
+  "duplicatedSelectors": 3311,
+  "exactDuplicateRules": 138,
+  "topRepeatedSelectors": [
+    {
+      "selector": "select",
+      "count": 82,
+      "files": [
+        "styles.css",
+        "sprint15.css",
+        "sprint16.css",
+        "sprint20.css",
+        "sprint21.css",
+        "v499-admin.css",
+        "v4915-product-editor.css",
+        "v499-theme-editor.css",
+        "v50-admin-polish.css",
+        "v504-admin-final.css",
+        "v550-admin-polish.css",
+        "v563-admin-scroll-polish.css",
+        "v580-admin-polish.css",
+        "v582-admin-ui-polish.css",
+        "v620-admin-polish.css",
+        "v580-commerce-polish.css",
+        "v582-customer-polish.css",
+        "base.css",
+        "v50-theme-editor.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css",
+        "v531-storefront-additions.css",
+        "v580-storefront-polish.css",
+        "v582-storefront-ui-polish.css"
+      ]
+    },
+    {
+      "selector": "textarea)",
+      "count": 43,
+      "files": [
+        "sprint15.css",
+        "v499-admin.css",
+        "v4915-product-editor.css",
+        "v499-theme-editor.css",
+        "v50-admin-polish.css",
+        "v504-admin-final.css",
+        "v550-admin-polish.css",
+        "v563-admin-scroll-polish.css",
+        "v580-admin-polish.css",
+        "v582-admin-ui-polish.css",
+        "v620-admin-polish.css",
+        "v4912-commerce.css",
+        "v502-commerce-polish.css",
+        "v580-commerce-polish.css",
+        "v582-customer-polish.css",
+        "v50-theme-editor.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v580-storefront-polish.css",
+        "v582-storefront-ui-polish.css"
+      ]
+    },
+    {
+      "selector": "to",
+      "count": 35,
+      "files": [
+        "v4917-admin-invite.css",
+        "styles.css",
+        "sprint11.css",
+        "sprint13.css",
+        "sprint22.css",
+        "v4917-team.css",
+        "v499-theme-editor.css",
+        "v580-admin-polish.css",
+        "v4920-commerce-mobile.css",
+        "v573-commerce-polish.css",
+        "auth.css",
+        "app.css",
+        "ui/ui.css",
+        "v570-meta-ads.css",
+        "v4912-storefront.css",
+        "v508-storefront-final.css",
+        "v562-storefront-interactions.css",
+        "v563-storefront-menu.css",
+        "v565-storefront-performance.css",
+        "v574-storefront-polish.css",
+        "v650-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912",
+      "count": 31,
+      "files": [
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v4923-storefront.css",
+        "v50-storefront-polish.css",
+        "v502-storefront-contrast.css",
+        "v504-storefront-final.css",
+        "v576-storefront-readability.css",
+        "v580-storefront-polish.css",
+        "v581-storefront-polish.css",
+        "v582-storefront-ui-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-product-grid",
+      "count": 31,
+      "files": [
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v508-storefront-final.css",
+        "v4936-mobile-product-grid.css",
+        "v574-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "input",
+      "count": 29,
+      "files": [
+        "styles.css",
+        "sprint15.css",
+        "sprint16.css",
+        "sprint20.css",
+        "v499-admin.css",
+        "v4915-product-editor.css",
+        "v499-theme-editor.css",
+        "v50-admin-polish.css",
+        "v504-admin-final.css",
+        "v620-admin-polish.css",
+        "v4912-commerce.css",
+        "v502-commerce-polish.css",
+        "base.css",
+        "v573-meta-admin.css",
+        "v50-theme-editor.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css",
+        "v531-storefront-additions.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-line",
+      "count": 27,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v562-cart-performance.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": "button)",
+      "count": 25,
+      "files": [
+        "v4922-journal.css",
+        "sprint21.css",
+        "v499-admin.css",
+        "v550-admin-polish.css",
+        "v575-journal-polish.css",
+        "v576-journal-readability.css",
+        "v4927-commerce.css",
+        "v575-commerce-polish.css",
+        "v4912-storefront.css",
+        "v4923-storefront.css",
+        "v50-storefront-polish.css",
+        "v566-storefront-polish.css",
+        "v575-storefront-polish.css",
+        "v576-storefront-readability.css",
+        "v580-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "button",
+      "count": 24,
+      "files": [
+        "styles.css",
+        "sprint20.css",
+        "v499-admin.css",
+        "v504-admin-final.css",
+        "v550-admin-polish.css",
+        "v580-admin-polish.css",
+        "v4912-commerce.css",
+        "v502-commerce-polish.css",
+        "base.css",
+        "v573-meta-admin.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css",
+        "v531-storefront-additions.css",
+        "v562-storefront-interactions.css",
+        "v563-storefront-menu.css"
+      ]
+    },
+    {
+      "selector": "a)",
+      "count": 23,
+      "files": [
+        "sprint21.css",
+        "v540-admin-refinement.css",
+        "v562-cart-performance.css",
+        "v620-storefront-quickview.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v508-storefront-final.css",
+        "v582-storefront-ui-polish.css",
+        "v576-wishlist-readability.css"
+      ]
+    },
+    {
+      "selector": ":where(.tf4912-cart-route",
+      "count": 20,
+      "files": [
+        "v4912-commerce.css",
+        "v502-commerce-polish.css",
+        "v573-commerce-polish.css",
+        "v575-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": "span",
+      "count": 19,
+      "files": [
+        "v4922-journal.css",
+        "v50-journal-polish.css",
+        "sprint16.css",
+        "sprint21.css",
+        "v580-admin-polish.css",
+        "v576-journal-readability.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "h3",
+      "count": 18,
+      "files": [
+        "v50-journal-polish.css",
+        "sprint16.css",
+        "sprint21.css",
+        "v4912-commerce.css",
+        "v24-tokens.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ":root",
+      "count": 18,
+      "files": [
+        "styles.css",
+        "sprint11.css",
+        "sprint12.css",
+        "sprint13.css",
+        "sprint15.css",
+        "sprint16.css",
+        "sprint20.css",
+        "sprint21.css",
+        "base.css",
+        "v24-tokens.css",
+        "v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": "a",
+      "count": 18,
+      "files": [
+        "styles.css",
+        "sprint16.css",
+        "sprint20.css",
+        "v499-theme-editor.css",
+        "v50-admin-polish.css",
+        "v580-admin-polish.css",
+        "v620-admin-polish.css",
+        "base.css",
+        "v573-meta-admin.css",
+        "v50-theme-editor.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v4923-storefront.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-checkout-layout",
+      "count": 18,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v504-commerce.css",
+        "v509-commerce-final.css",
+        "v573-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-order-note textarea",
+      "count": 18,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v504-commerce.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-header-inner",
+      "count": 18,
+      "files": [
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v502-storefront-contrast.css",
+        "v504-storefront-final.css"
+      ]
+    },
+    {
+      "selector": "h2",
+      "count": 17,
+      "files": [
+        "v50-journal-polish.css",
+        "sprint16.css",
+        "sprint21.css",
+        "v4912-commerce.css",
+        "v24-tokens.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css"
+      ]
+    },
+    {
+      "selector": "from",
+      "count": 17,
+      "files": [
+        "styles.css",
+        "sprint22.css",
+        "v4920-commerce-mobile.css",
+        "v573-commerce-polish.css",
+        "ui/ui.css",
+        "v4912-storefront.css",
+        "v562-storefront-interactions.css",
+        "v563-storefront-menu.css",
+        "v565-storefront-performance.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-line-image",
+      "count": 17,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v562-cart-performance.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-mobile-place-order",
+      "count": 17,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v504-commerce.css",
+        "v509-commerce-final.css",
+        "v573-commerce-polish.css",
+        "v575-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-admin-v499 .v16-page-header",
+      "count": 16,
+      "files": [
+        "v499-admin.css",
+        "v50-admin-polish.css",
+        "v504-admin-final.css",
+        "v523-product-admin-fix.css",
+        "v566-admin-polish.css",
+        "v580-admin-polish.css",
+        "v620-admin-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-fields input",
+      "count": 16,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v504-commerce.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-hero",
+      "count": 15,
+      "files": [
+        "v522-ui-refinement.css",
+        "v521-ui-polish.css",
+        "v4912-storefront.css",
+        "v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "textarea",
+      "count": 15,
+      "files": [
+        "styles.css",
+        "sprint16.css",
+        "sprint20.css",
+        "sprint21.css",
+        "v499-theme-editor.css",
+        "v550-admin-polish.css",
+        "v620-admin-polish.css",
+        "base.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css"
+      ]
+    },
+    {
+      "selector": ".lux-header-inner",
+      "count": 15,
+      "files": [
+        "sprint10.css",
+        "sprint14.css",
+        "sprint15.css",
+        "sprint21.css"
+      ]
+    },
+    {
+      "selector": "small",
+      "count": 15,
+      "files": [
+        "sprint16.css",
+        "sprint21.css",
+        "v4915-commerce-fixes.css",
+        "v573-meta-admin.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-header",
+      "count": 15,
+      "files": [
+        "v4912-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-announcement",
+      "count": 15,
+      "files": [
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v502-storefront-contrast.css",
+        "v504-storefront-final.css",
+        "v510-storefront-stability.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .tf-pdp-summary-v39",
+      "count": 15,
+      "files": [
+        "v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": ".v18-best-sellers",
+      "count": 14,
+      "files": [
+        "sprint18.css",
+        "v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": ".v18-journal-home",
+      "count": 14,
+      "files": [
+        "sprint18.css",
+        "v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": "b)",
+      "count": 14,
+      "files": [
+        "v499-theme-editor.css",
+        "v576-journal-readability.css",
+        "v4912-commerce.css",
+        "v502-commerce-polish.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v502-storefront-contrast.css"
+      ]
+    },
+    {
+      "selector": ".tf4927-order-summary",
+      "count": 14,
+      "files": [
+        "v4927-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v573-commerce-polish.css",
+        "v575-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-hero-copy h1",
+      "count": 14,
+      "files": [
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v502-storefront-contrast.css",
+        "v550-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "b",
+      "count": 13,
+      "files": [
+        "v4922-journal.css",
+        "v50-journal-polish.css",
+        "sprint21.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": "h4",
+      "count": 13,
+      "files": [
+        "v50-journal-polish.css",
+        "v24-tokens.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css",
+        "v502-storefront-contrast.css"
+      ]
+    },
+    {
+      "selector": ".btn",
+      "count": 13,
+      "files": [
+        "styles.css",
+        "sprint14.css",
+        "sprint15.css",
+        "sprint16.css",
+        "v499-admin.css",
+        "v580-admin-polish.css",
+        "v620-admin-polish.css"
+      ]
+    },
+    {
+      "selector": "p",
+      "count": 13,
+      "files": [
+        "sprint16.css",
+        "sprint21.css",
+        "v4912-commerce.css",
+        "v582-customer-polish.css",
+        "v4913-storefront-compat.css",
+        "v4912-storefront.css",
+        "v4918-flat-product-cards.css",
+        "v50-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-checkout-summary",
+      "count": 13,
+      "files": [
+        "v4912-commerce.css",
+        "v4920-commerce-mobile.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v573-commerce-polish.css",
+        "v575-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".lux-product-grid",
+      "count": 12,
+      "files": [
+        "sprint10.css",
+        "sprint14.css",
+        "v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": ".tf-admin-v499 .v16-admin-content :is(input",
+      "count": 12,
+      "files": [
+        "v550-admin-polish.css",
+        "v580-admin-polish.css",
+        "v582-admin-ui-polish.css",
+        "v620-admin-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-cart-route",
+      "count": 12,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v573-commerce-polish.css",
+        "v576-commerce-polish.css",
+        "v580-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-payment-options label",
+      "count": 12,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v573-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf4912-checkout-trust b",
+      "count": 12,
+      "files": [
+        "v4912-commerce.css",
+        "v4925-commerce.css",
+        "v502-commerce-polish.css",
+        "v503-commerce-polish.css",
+        "v504-commerce.css",
+        "v575-commerce-polish.css",
+        "v576-commerce-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-section-heading h2",
+      "count": 12,
+      "files": [
+        "v4912-storefront.css",
+        "v502-storefront-contrast.css",
+        "v508-storefront-final.css",
+        "v574-storefront-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 :is(.lux-featured-products",
+      "count": 12,
+      "files": [
+        "v4912-storefront.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .lux-assurance-strip",
+      "count": 12,
+      "files": [
+        "v4912-storefront.css",
+        "v50-storefront-polish.css",
+        "v504-storefront-final.css",
+        "v582-storefront-ui-polish.css"
+      ]
+    },
+    {
+      "selector": ".tf-storefront-v4912 .tf4933-collection-filter",
+      "count": 12,
+      "files": [
+        "v4933-collection.css",
+        "v503-storefront-filter.css",
+        "v581-storefront-polish.css"
+      ]
+    }
+  ]
+}

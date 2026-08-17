@@ -12,7 +12,7 @@ import {
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Link, useSearchParams} from 'react-router-dom';
 import {toast} from 'sonner';
-import {useCartActions, useCommerce} from './context';
+import {useCartActions, useProductCatalog} from './context';
 import {SmartImage, productImage} from './image-utils';
 import {discount, money} from './utils';
 import {useWishlist} from './wishlist';
@@ -62,7 +62,7 @@ async function copyText(value: string) {
 }
 
 export function WishlistPageV53() {
-  const {products} = useCommerce();
+  const {products} = useProductCatalog();
   const {addToCart} = useCartActions();
   const {ids, addMany, remove, clear} = useWishlist();
   const compare = useCompareV57();

@@ -122,7 +122,6 @@ import './v582-storefront-ui-polish.css';
 import './v601-storefront-fixes.css';
 import './v620-storefront-performance.css';
 import './v650-storefront-polish.css';
-import './v655-product-reviews.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -130,6 +129,7 @@ const LazyBlogCardsV18 = lazy(() => import('./blog-home-cards-v18').then((module
 const LazyQuickViewV62 = lazy(() => import('./quick-view-v62').then((module) => ({default: module.QuickViewV62})));
 const LazyPurchaseAssistV63 = lazy(() => import('./purchase-assist-v63').then((module) => ({default: module.PurchaseAssistV63})));
 const LazyProductDecisionToolsV65 = lazy(() => import('./product-decision-tools-v65').then((module) => ({default: module.ProductDecisionToolsV65})));
+const LazyProductReviewsV656 = lazy(() => import('./product-reviews-v656').then((module) => ({default: module.ProductReviewsV656})));
 const prefetchQuickViewV62 = () => {void import('./quick-view-v62');};
 const SEARCH_HISTORY_KEY = 'tf:search-history:v1';
 const MAX_RECENT_SEARCHES = 6;
@@ -1452,6 +1452,9 @@ export function ProductPageV10() {
   useEffect(() => { if (product?.id) trackCommerceEvent('product_view',{productId:product.id,value:product.price}); }, [product?.id]);
 
   const parsedContent = useMemo(() => product ? productContent(product, product.variants[0]?.sku || product.sku) : {paragraphs: [], specs: []}, [product]);
+  const productReviews=useMemo(()=>product?reviews.filter(item=>item.status==='published'&&item.reviewType==='product'&&item.productId===product.id).sort((a,b)=>Number(b.featured)-Number(a.featured)||new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()):[],[product?.id,reviews]);
+  const productRating=useMemo(()=>productReviews.length?productReviews.reduce((sum,item)=>sum+Math.min(5,Math.max(1,Number(item.rating)||5)),0)/productReviews.length:0,[productReviews]);
+  const activeProductGroup=useMemo(()=>product?productGroups.find((group)=>group.status==='active'&&(group.items.some((item)=>item.productId===product.id||item.sku.toUpperCase()===product.sku.toUpperCase())||(group.skuPrefix&&product.sku.toUpperCase().startsWith(group.skuPrefix.toUpperCase())))):undefined,[product?.id,product?.sku,productGroups]);
   if (!product && isLoading) return <div className="route-loading tf-product-route-loading" aria-label="Đang tải đầy đủ dữ liệu sản phẩm" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt="" aria-hidden="true"/><i/><b>Đang chuẩn bị sản phẩm</b></div></div>;
   if (!product) return <Navigate to="/404" replace />;
   if (product.status !== 'active' || !product.published) return <Navigate to="/404" replace />;
@@ -1460,10 +1463,8 @@ export function ProductPageV10() {
   const price = variant?.price ?? product.price;
   const compareAt = variant?.compareAtPrice ?? product.compareAtPrice;
   const inventory = variant?.inventory ?? product.inventory;
-  const productGroup=productGroups.find((group)=>group.status==='active'&&(group.items.some((item)=>item.productId===product.id||item.sku.toUpperCase()===product.sku.toUpperCase())||(group.skuPrefix&&product.sku.toUpperCase().startsWith(group.skuPrefix.toUpperCase()))));
+  const productGroup=activeProductGroup;
   const warrantyYears=extendedWarranty(product.vendor)?4:2;
-  const productReviews=reviews.filter(item=>item.status==='published'&&item.reviewType==='product'&&item.productId===product.id).sort((a,b)=>Number(b.featured)-Number(a.featured)||new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
-  const productRating=productReviews.length?productReviews.reduce((sum,item)=>sum+Math.min(5,Math.max(1,Number(item.rating)||5)),0)/productReviews.length:0;
   const productTemplate = theme.templates.product;
   const productMain = productTemplate.sections.find((section) => section.type === 'productMain');
   const trustSection = productTemplate.sections.find((section) => section.type === 'trust');
@@ -1592,10 +1593,8 @@ export function ProductPageV10() {
             <article><Clock3/><span><small>03</small><h3>Hỗ trợ hậu mãi</h3><p>Tiếp nhận bảo hành, đổi trả và hướng dẫn trong quá trình sử dụng.</p></span></article>
           </div>
         </section>}
-        {!!productReviews.length&&<section className="tf655-product-reviews" aria-label={`Đánh giá về ${product.title}`}>
-          <header><div><small>ĐÁNH GIÁ SẢN PHẨM</small><h2>Khách hàng nói gì về mẫu này?</h2><p>Review đã xuất bản và được gắn trực tiếp với đúng sản phẩm này trong hệ thống TimeForge.</p></div><div className="tf655-rating-summary"><b>{productRating.toFixed(1)}</b><span aria-label={`${productRating.toFixed(1)} trên 5 sao`}>{Array.from({length:5},(_,index)=><i key={index} className={index<Math.round(productRating)?'is-on':''}>★</i>)}</span><small>{productReviews.length} đánh giá</small></div></header>
-          <div className="tf655-review-grid">{productReviews.slice(0,6).map(item=><article key={item.id}>{item.image&&<figure><img src={optimizedImage(item.image,720,540)} alt={`Ảnh review ${product.title} từ ${item.customerName}`} loading="lazy" decoding="async"/></figure>}<div><span className="tf655-review-stars" aria-label={`${item.rating}/5 sao`}>{Array.from({length:5},(_,index)=><i key={index} className={index<item.rating?'is-on':''}>★</i>)}</span>{item.title&&<h3>{item.title}</h3>}{item.text&&<p>“{item.text}”</p>}<footer><b>{item.customerName}</b><small>{item.source||'Khách hàng TimeForge'}</small></footer></div></article>)}</div>
-        </section>}
+        {!!productReviews.length&&<Suspense fallback={null}><LazyProductReviewsV656 product={product} reviews={productReviews} rating={productRating}/></Suspense>}
+
       </> : <section className="v23-template-hidden"><h1>Trang sản phẩm đang được ẩn trong Cửa hàng online</h1><p>Mở trình chỉnh sửa theme để bật lại section Thông tin sản phẩm.</p></section>}
 
       {recommendationSection?.visible !== false && !!related.length && <section data-theme-section-id={recommendationSection?.id} data-theme-section-label={recommendationSection ? sectionLabels[recommendationSection.type] : 'Sản phẩm liên quan'} className="lux-section lux-related tf-related-v4916"><LuxurySectionHeading eyebrow="GỢI Ý PHÙ HỢP" title={String(recommendationSection?.settings.title || 'Sản phẩm liên quan')} /><div className={`lux-product-grid v23-columns-${Number(recommendationSection?.settings.columns || 4)}`}>{related.map((item) => <LuxuryProductCard key={item.id} product={item} />)}</div></section>}

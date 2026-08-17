@@ -9,7 +9,7 @@ import {ArrowLeft, ArrowRight, BookOpen, Clock3, ListTree, Sparkles} from 'lucid
 import {useEffect, useMemo, useRef} from 'react';
 import {Link, Navigate, useParams} from 'react-router-dom';
 import {optimizedImage,SmartImage} from './image-utils';
-import {useCommerce} from './context';
+import {useProductCatalog} from './context';
 
 import {formatBlogDateV18, useBlogPostsV18, type BlogPostV18} from './blog-data-v18';
 
@@ -38,7 +38,7 @@ function prepareArticleV573(value:string){
 
 export function BlogIndexV18(){
   const{posts}=useBlogPostsV18();
-  const{products}=useCommerce();
+  const{products}=useProductCatalog();
   const published=posts.filter(item=>item.status==='published').sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt));
   const fallback=products.find(item=>item.images[0])?.images[0]||'';
   const featured=published.find(item=>item.featured)||published[0];
@@ -59,7 +59,7 @@ export function BlogIndexV18(){
 }
 
 export function BlogPostPageV18(){
-  const{handle}=useParams();const{posts}=useBlogPostsV18();const{products}=useCommerce();
+  const{handle}=useParams();const{posts}=useBlogPostsV18();const{products}=useProductCatalog();
   const post=posts.find(item=>item.handle===handle&&item.status==='published');
   const article=useMemo(()=>prepareArticleV573(post?.contentHtml||''),[post?.contentHtml]);
   const articleRef=useRef<HTMLElement|null>(null);

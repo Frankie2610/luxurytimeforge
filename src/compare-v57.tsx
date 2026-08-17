@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,useSyncExternalStore} from 'react';
 import {ArrowRight,Scale,X} from 'lucide-react';
 import {Link,useLocation} from 'react-router-dom';
-import {useCommerce} from './context';
+import {useStorefrontData} from './context';
 import {optimizedImage,productImage} from './image-utils';
 
 const KEY='tf.v57.compare-products';
@@ -55,7 +55,7 @@ export const useCompareItemV57=(id:string)=>{
 
 export function CompareDockV57(){
   const{ids,remove,clear,replace}=useCompareV57();
-  const{products,isLoading}=useCommerce();
+  const{products,isLoading}=useStorefrontData();
   const location=useLocation();
   const[dismissedKey,setDismissedKey]=useState('');
   const selected=useMemo(()=>ids.map(id=>products.find(product=>product.id===id)).filter((product):product is NonNullable<typeof product>=>Boolean(product)),[ids,products]);
