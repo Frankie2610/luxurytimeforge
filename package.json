@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.66.2",
+  "version": "0.66.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -111,7 +111,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.66.2: faster storefront/Admin hydration, lighter Admin shell, cached image transforms, and reliable SKU-family thumbnails sourced from each product image URL.",
+  "description": "Luxury TimeForge V0.66.3: PDP hero and zoom use original catalog images while thumbnails and SKU-family previews remain bandwidth-optimized.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

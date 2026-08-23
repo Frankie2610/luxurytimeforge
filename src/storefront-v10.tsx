@@ -1631,7 +1631,7 @@ export function ProductPageV10() {
             <div className="tf-pdp491-gallery">
               <div className="tf-pdp491-thumbnails" aria-label="Ảnh sản phẩm">{images.map((image, index) => <button key={`${image}-${index}`} className={imageIndex === index ? 'is-active' : ''} onClick={() => setImageIndex(index)} aria-label={`Xem ảnh ${index + 1}`}><img src={optimizedImage(image, 220, 220)} alt={`${product.title} ${index + 1}`} width="220" height="220" loading="lazy" decoding="async" /></button>)}</div>
               <div className="tf-pdp491-photo">
-                <div key={images[imageIndex]} className="tf-pdp491-image-stage tf565-image-fade"><SmartImage className="tf-pdp491-smart-image" priority src={images[imageIndex]} alt={product.title} width={1400} height={1400} /></div>
+                <div key={images[imageIndex]} className="tf-pdp491-image-stage tf565-image-fade"><SmartImage className="tf-pdp491-smart-image" priority unoptimized src={images[imageIndex]} alt={product.title} width={1400} height={1400} /></div>
                 {images.length > 1 && <div className="tf-pdp491-photo-nav"><button onClick={() => changeImage(-1)} aria-label="Ảnh trước"><ChevronLeft /></button><span>{imageIndex + 1} / {images.length}</span><button onClick={() => changeImage(1)} aria-label="Ảnh tiếp theo"><ChevronRight /></button></div>}
                 <button className="tf-pdp491-zoom" onClick={() => setZoom(true)}><ZoomIn /><span>Phóng to</span></button>
               </div>
@@ -1718,7 +1718,7 @@ export function ProductPageV10() {
           {inventory > 0 && <Link className="buy" to="/checkout" onClick={buyNow}>Mua ngay</Link>}
         </div>
       </div>
-      <Dialog open={zoom} onOpenChange={setZoom}><DialogContent className="lux-zoom-dialog" description="Xem ảnh sản phẩm kích thước lớn"><div className="lux-zoom-canvas"><Button variant="icon" className="previous" onClick={() => changeImage(-1)} aria-label="Ảnh trước"><ArrowLeft /></Button><img src={optimizedImage(images[imageIndex], 2000, undefined, 'limit')} alt={product.title} decoding="async" /><Button variant="icon" className="next" onClick={() => changeImage(1)} aria-label="Ảnh tiếp theo"><ArrowRight /></Button><span>{imageIndex + 1} / {images.length}</span></div></DialogContent></Dialog>
+      <Dialog open={zoom} onOpenChange={setZoom}><DialogContent className="lux-zoom-dialog" description="Xem ảnh sản phẩm kích thước lớn"><div className="lux-zoom-canvas"><Button variant="icon" className="previous" onClick={() => changeImage(-1)} aria-label="Ảnh trước"><ArrowLeft /></Button><img src={images[imageIndex]} alt={product.title} decoding="async" /><Button variant="icon" className="next" onClick={() => changeImage(1)} aria-label="Ảnh tiếp theo"><ArrowRight /></Button><span>{imageIndex + 1} / {images.length}</span></div></DialogContent></Dialog>
     </div>
   );
 }

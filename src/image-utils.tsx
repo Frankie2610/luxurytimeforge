@@ -107,7 +107,7 @@ export function optimizedImageSrcSet(url: string, widths: number[], aspectRatio?
   return remember(srcSetCache, cacheKey, value);
 }
 
-export function SmartImage({src = '', alt = '', className = '', width, height, priority = false, ...props}: ImgHTMLAttributes<HTMLImageElement> & {priority?: boolean}) {
+export function SmartImage({src = '', alt = '', className = '', width, height, priority = false, unoptimized = false, ...props}: ImgHTMLAttributes<HTMLImageElement> & {priority?: boolean; unoptimized?: boolean}) {
   const normalizedSource = String(src || '').trim() || DEFAULT_PRODUCT_IMAGE;
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -117,10 +117,13 @@ export function SmartImage({src = '', alt = '', className = '', width, height, p
   const previousSourceRef = useRef(normalizedSource);
   const numericWidth = typeof width === 'number' ? width : 1000;
   const numericHeight = typeof height === 'number' ? height : undefined;
-  const finalSource = optimizedImage(displayedSource, numericWidth, numericHeight, numericHeight ? 'fit' : 'limit');
+  // Some high-detail surfaces (notably the PDP hero/zoom) intentionally need
+  // the exact catalog source so customers can inspect the original watch photo.
+  // Keep the default optimized behavior everywhere else to protect bandwidth.
+  const finalSource = unoptimized ? displayedSource : optimizedImage(displayedSource, numericWidth, numericHeight, numericHeight ? 'fit' : 'limit');
   const responsiveWidths = [240, 360, 480, 720, numericWidth, Math.round(numericWidth * 1.5), numericWidth * 2]
     .filter((value) => value <= 2400);
-  const automaticSrcSet = optimizedImageSrcSet(displayedSource, responsiveWidths, numericHeight && numericWidth ? numericWidth / numericHeight : undefined, numericHeight ? 'fit' : 'limit');
+  const automaticSrcSet = unoptimized ? undefined : optimizedImageSrcSet(displayedSource, responsiveWidths, numericHeight && numericWidth ? numericWidth / numericHeight : undefined, numericHeight ? 'fit' : 'limit');
 
   // Chỉ reset khi URL thật sự thay đổi. Không reset sau onLoad của ảnh cache,
   // tránh skeleton bị treo vĩnh viễn trên Chrome/Safari.
