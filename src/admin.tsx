@@ -3,6 +3,7 @@ import {
   useMemo,
   useState,
   type ButtonHTMLAttributes,
+  type CSSProperties,
   type InputHTMLAttributes,
   type ReactNode,
   type TextareaHTMLAttributes,
@@ -127,6 +128,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui";
 import {cloudinaryUploadConfigured, uploadCloudinaryImage} from "./cloudinary-upload";
 import "./v4926-admin.css";
 import "./v513-store-profile.css";
+import "./v658-admin-seo.css";
+import "./v659-admin-seo.css";
 const Btn = ({
   variant = "primary",
   className = "",
@@ -2859,6 +2862,7 @@ export function SettingsPage() {
     themeState,
     storeProfile,
     saveStoreProfile,
+    products,
   } = useCommerce();
   type StoreProfileDraft = Omit<StoreProfile, "updatedAt">;
   const profileDraft = (value: StoreProfile): StoreProfileDraft => ({
@@ -2998,6 +3002,63 @@ export function SettingsPage() {
       setSaving(false);
     }
   };
+
+  const resolvedProfileName = resolveStoreName(profile.storeName);
+  const suggestedSeoTitle = `${resolvedProfileName} | Đồng hồ chính hãng`;
+  const suggestedSeoDescription = `Mua đồng hồ chính hãng tại ${resolvedProfileName}. Giá minh bạch, bảo hành rõ ràng, giao hàng toàn quốc và hỗ trợ chọn mẫu theo nhu cầu.`;
+  const serpTitle = profile.seoTitle.trim() || suggestedSeoTitle;
+  const serpDescription = profile.seoDescription.trim() || profile.storeDescription.trim() || suggestedSeoDescription;
+  const seoChecks = [
+    {label: `Tiêu đề SEO ${profile.seoTitle.length}/60 ký tự`, ok: profile.seoTitle.trim().length >= 30 && profile.seoTitle.trim().length <= 60},
+    {label: `Mô tả SEO ${profile.seoDescription.length}/155 ký tự`, ok: profile.seoDescription.trim().length >= 90 && profile.seoDescription.trim().length <= 155},
+    {label: "Đã có logo nhận diện cửa hàng", ok: Boolean(logoFile || profile.logoImage)},
+    {label: "Đã có ảnh chia sẻ 1200 × 630 riêng", ok: Boolean(socialFile || profile.socialShareImage)},
+    {label: "Mô tả cửa hàng đủ nội dung ngữ nghĩa", ok: profile.storeDescription.trim().length >= 40},
+    {label: "Có ít nhất một thông tin liên hệ công khai", ok: Boolean(profile.storePhone.trim() || profile.storeEmail.trim() || profile.storeAddress.trim())},
+  ];
+  const seoScore = Math.round((seoChecks.filter((item) => item.ok).length / seoChecks.length) * 100);
+  const applySeoSuggestion = () => {
+    setProfile((current) => ({
+      ...current,
+      seoTitle: current.seoTitle.trim() || suggestedSeoTitle,
+      seoDescription: current.seoDescription.trim() || suggestedSeoDescription,
+    }));
+  };
+
+  const catalogSeoRows = useMemo(() => products
+    .filter((product) => product.status === "active" && product.published)
+    .map((product) => {
+      const seoTitleLength = product.seoTitle.trim().length;
+      const seoDescriptionLength = product.seoDescription.trim().length;
+      const contentLength = (product.descriptionText || strip(product.descriptionHtml || "")).trim().length;
+      const checks = [
+        seoTitleLength >= 28 && seoTitleLength <= 62,
+        seoDescriptionLength >= 80 && seoDescriptionLength <= 165,
+        contentLength >= 120,
+        product.images.some(Boolean),
+        Boolean(product.vendor.trim()),
+      ];
+      const issues: string[] = [];
+      if (!checks[0]) issues.push(seoTitleLength ? "SEO title chưa tối ưu" : "Thiếu SEO title");
+      if (!checks[1]) issues.push(seoDescriptionLength ? "Meta description chưa tối ưu" : "Thiếu meta description");
+      if (!checks[2]) issues.push("Mô tả sản phẩm còn ngắn");
+      if (!checks[3]) issues.push("Thiếu ảnh sản phẩm");
+      if (!checks[4]) issues.push("Thiếu thương hiệu");
+      return {
+        product,
+        issues,
+        score: Math.round((checks.filter(Boolean).length / checks.length) * 100),
+      };
+    })
+    .sort((a, b) => b.issues.length - a.issues.length || a.score - b.score || b.product.updatedAt.localeCompare(a.product.updatedAt)), [products]);
+  const catalogSeoScore = catalogSeoRows.length
+    ? Math.round(catalogSeoRows.reduce((sum, row) => sum + row.score, 0) / catalogSeoRows.length)
+    : 0;
+  const catalogSeoStrong = catalogSeoRows.filter((row) => row.score >= 80).length;
+  const catalogMissingTitle = catalogSeoRows.filter((row) => !row.product.seoTitle.trim()).length;
+  const catalogMissingDescription = catalogSeoRows.filter((row) => !row.product.seoDescription.trim()).length;
+  const catalogMissingImage = catalogSeoRows.filter((row) => !row.product.images.some(Boolean)).length;
+  const catalogFixQueue = catalogSeoRows.filter((row) => row.issues.length).slice(0, 6);
 
   const live = dataSource === "firebase",
     label =
@@ -3240,6 +3301,22 @@ export function SettingsPage() {
                 />
               </Field>
               <p className="tf65-settings-seo-note">Google có thể viết lại tiêu đề hoặc đoạn mô tả tùy truy vấn. Nên ưu tiên nội dung tự nhiên, khác biệt và đúng với trang.</p>
+              <div className="tf658-seo-dashboard">
+                <article className="tf658-serp-preview" aria-label="Xem trước kết quả Google">
+                  <div className="tf658-card-heading"><span><b>Preview kết quả Google</b><small>Xem nhanh cách trang chủ có thể xuất hiện trên kết quả tìm kiếm.</small></span><Search /></div>
+                  <div className="tf658-google-card">
+                    <div className="tf658-google-domain"><i>{resolvedProfileName.slice(0, 1).toUpperCase()}</i><span>luxurytimeforge.vercel.app</span></div>
+                    <span className="tf658-google-title">{serpTitle}</span>
+                    <p className="tf658-google-description">{serpDescription}</p>
+                  </div>
+                </article>
+                <article className="tf658-seo-health" aria-label="Điểm sức khỏe SEO">
+                  <div className="tf658-card-heading"><span><b>SEO Health</b><small>Checklist nhanh cho trang chủ và ảnh chia sẻ.</small></span><Globe2 /></div>
+                  <div className="tf658-health-top"><div className="tf658-health-score" style={{"--tf658-score": `${seoScore}%`} as CSSProperties}><b>{seoScore}</b></div><div className="tf658-health-copy"><b>{seoScore >= 84 ? "Tốt" : seoScore >= 50 ? "Cần hoàn thiện thêm" : "Thiếu dữ liệu SEO"}</b><small>{seoChecks.filter((item) => item.ok).length}/{seoChecks.length} tiêu chí đã đạt</small></div></div>
+                  <ul className="tf658-seo-checks">{seoChecks.map((item) => <li key={item.label} className={item.ok ? "is-ok" : ""}>{item.ok ? <CheckCircle2 /> : <AlertTriangle />}<span>{item.label}</span></li>)}</ul>
+                  {(!profile.seoTitle.trim() || !profile.seoDescription.trim()) && <button type="button" className="tf658-seo-suggest" onClick={applySeoSuggestion}><Sparkles />Điền gợi ý SEO còn thiếu</button>}
+                </article>
+              </div>
               <div className="tf655-seo-resources" aria-label="Tài nguyên SEO Google">
                 <a href="/sitemap.xml" target="_blank" rel="noreferrer">
                   <span><b>Sitemap Google</b><small>/sitemap.xml · gửi trong Search Console</small></span><ArrowUpRight />
@@ -3250,6 +3327,39 @@ export function SettingsPage() {
                 <a href="/image-sitemap.xml" target="_blank" rel="noreferrer">
                   <span><b>Image Sitemap</b><small>/image-sitemap.xml · hỗ trợ Google khám phá ảnh sản phẩm</small></span><ArrowUpRight />
                 </a>
+              </div>
+              <div className="tf659-catalog-seo" aria-label="SEO catalog sản phẩm">
+                <article className="tf659-coverage-card">
+                  <div className="tf659-seo-card-head">
+                    <span><b>SEO Coverage catalog</b><small>Đo độ hoàn thiện SEO của toàn bộ sản phẩm đang xuất bản.</small></span>
+                    <BarChart3 />
+                  </div>
+                  <div className="tf659-coverage-score">
+                    <div><strong>{catalogSeoScore}</strong><small>/100</small></div>
+                    <span><i style={{width: `${catalogSeoScore}%`}} /></span>
+                    <p>{catalogSeoRows.length ? `${catalogSeoStrong}/${catalogSeoRows.length} sản phẩm đạt từ 80 điểm` : "Chưa có sản phẩm đang xuất bản để kiểm tra."}</p>
+                  </div>
+                  <div className="tf659-coverage-metrics">
+                    <span><small>Thiếu SEO title</small><b>{catalogMissingTitle}</b></span>
+                    <span><small>Thiếu meta description</small><b>{catalogMissingDescription}</b></span>
+                    <span><small>Thiếu ảnh</small><b>{catalogMissingImage}</b></span>
+                    <span><small>Cần tối ưu</small><b>{catalogSeoRows.filter((row) => row.score < 80).length}</b></span>
+                  </div>
+                  <Link className="tf659-seo-catalog-link" to="/admin/products"><PackageSearch/>Mở catalog sản phẩm<ArrowUpRight/></Link>
+                </article>
+                <article className="tf659-fix-queue">
+                  <div className="tf659-seo-card-head">
+                    <span><b>SEO Fix Queue</b><small>Ưu tiên những sản phẩm còn thiếu dữ liệu quan trọng trước.</small></span>
+                    <AlertTriangle />
+                  </div>
+                  {catalogFixQueue.length ? <div className="tf659-fix-list">
+                    {catalogFixQueue.map(({product, issues, score}) => <div key={product.id} className="tf659-fix-row">
+                      <span className="tf659-fix-score">{score}</span>
+                      <span className="tf659-fix-copy"><b>{product.title}</b><small>{issues.slice(0, 2).join(" · ")}{issues.length > 2 ? ` · +${issues.length - 2}` : ""}</small></span>
+                      <span className="tf659-fix-actions"><Link to={`/admin/products/${product.id}`} title="Chỉnh sửa SEO sản phẩm"><FileText/></Link><a href={`/products/${encodeURIComponent(product.handle)}`} target="_blank" rel="noreferrer" title="Xem ngoài storefront"><Eye/></a></span>
+                    </div>)}
+                  </div> : <div className="tf659-fix-empty"><CheckCircle2/><span><b>Catalog đang ổn</b><small>Không có sản phẩm xuất bản nào nằm trong hàng chờ tối ưu.</small></span></div>}
+                </article>
               </div>
             </div>
           </section>

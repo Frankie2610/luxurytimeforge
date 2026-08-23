@@ -56,6 +56,7 @@ import {sectionLabels, blockLabels} from './theme';
 import {ThemeSectionV27, isSharedThemeSectionV27} from './theme-section-v27';
 import {NewsletterSignupV65} from './newsletter-signup-v65';
 import {SEO_LANDING_PAGES} from './seo-discovery-v657';
+import {HOME_SEO_FAQS} from './seo-home-v658';
 import {useManagedContentPages} from './content-pages-v23';
 import {findProductByRoute} from './product-data';
 import {DEFAULT_STORE_LOGO, resolveCustomStoreLogo, resolveStoreLogo, resolveStoreName} from './store-profile';
@@ -123,6 +124,8 @@ import './v582-storefront-ui-polish.css';
 import './v601-storefront-fixes.css';
 import './v620-storefront-performance.css';
 import './v650-storefront-polish.css';
+import './v658-seo-growth.css';
+import './v659-seo-growth.css';
 
 const prefetchWishlistRoute = () => {void import('./wishlist-page-v53');};
 const prefetchWatchFinderRoute = () => {void import('./storefront-tools-v57');};
@@ -758,6 +761,89 @@ function LuxurySectionHeading({eyebrow, title, description, link = '/collections
   );
 }
 
+function HomeSeoDiscoveryV658() {
+  return <section className="tf658-seo-discovery" aria-labelledby="tf658-discovery-title">
+    <div>
+      <small className="tf658-seo-kicker"><Search/>KHÁM PHÁ NHANH</small>
+      <h2 id="tf658-discovery-title">Tìm đồng hồ theo nhu cầu</h2>
+      <p>Các lối tắt giúp khách khoanh vùng nhanh theo giới tính, ngân sách và ưu đãi; đồng thời tạo liên kết nội bộ rõ ràng tới những trang mua sắm quan trọng.</p>
+    </div>
+    <nav className="tf658-seo-link-grid" aria-label="Danh mục đồng hồ được tìm nhiều">
+      {SEO_LANDING_PAGES.map((item)=><Link key={item.path} to={item.path}><span><b>{item.title}</b><small>{item.eyebrow.toLocaleLowerCase('vi-VN')}</small></span><ArrowRight/></Link>)}
+      <Link to="/watch-finder"><span><b>Tư vấn chọn đồng hồ</b><small>Chọn theo phong cách và nhu cầu</small></span><ArrowRight/></Link>
+      <Link to="/blogs"><span><b>Kiến thức đồng hồ</b><small>Hướng dẫn chọn và chăm sóc</small></span><ArrowRight/></Link>
+    </nav>
+  </section>;
+}
+
+function HomeFaqV658() {
+  return <section className="tf658-seo-faq" aria-labelledby="tf658-faq-title">
+    <header>
+      <small className="tf658-seo-kicker"><ShieldCheck/>THÔNG TIN MUA SẮM</small>
+      <h2 id="tf658-faq-title">Câu hỏi thường gặp</h2>
+      <p>Những thông tin quan trọng trước khi mua đồng hồ tại Luxury TimeForge, kèm đường dẫn tới chính sách chi tiết.</p>
+    </header>
+    <div className="tf658-faq-list">
+      {HOME_SEO_FAQS.map((item,index)=><details key={item.question} open={index===0}>
+        <summary><span>{item.question}</span><i><ChevronDown/></i></summary>
+        <div className="tf658-faq-answer"><p>{item.answer}</p><Link to={item.link}>{item.linkLabel}<ArrowRight/></Link></div>
+      </details>)}
+    </div>
+  </section>;
+}
+
+function HomeBrandExplorerV659({products}: {products: Product[]}) {
+  const brands = useMemo(() => {
+    const counts = new Map<string, {count: number; minPrice: number}>();
+    products.forEach((product) => {
+      const vendor = String(product.vendor || '').trim();
+      if (!vendor) return;
+      const current = counts.get(vendor) || {count: 0, minPrice: Number.POSITIVE_INFINITY};
+      current.count += 1;
+      current.minPrice = Math.min(current.minPrice, Number(product.price) || Number.POSITIVE_INFINITY);
+      counts.set(vendor, current);
+    });
+    return [...counts.entries()]
+      .map(([name, data]) => ({name, count: data.count, minPrice: Number.isFinite(data.minPrice) ? data.minPrice : 0}))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'vi'))
+      .slice(0, 10);
+  }, [products]);
+  if (!brands.length) return null;
+  return <section className="tf659-brand-explorer" aria-labelledby="tf659-brand-title">
+    <header>
+      <div><small><Sparkles/>THƯƠNG HIỆU TẠI TIMEFORGE</small><h2 id="tf659-brand-title">Khám phá theo thương hiệu</h2></div>
+      <p>Đi thẳng tới các thương hiệu đang có sản phẩm trên cửa hàng. Danh sách tự cập nhật theo catalog đang xuất bản.</p>
+    </header>
+    <nav className="tf659-brand-grid" aria-label="Danh sách thương hiệu đồng hồ">
+      {brands.map((brand) => <Link key={brand.name} to={`/collections?brand=${encodeURIComponent(brand.name)}`}>
+        <i aria-hidden="true">{brand.name.slice(0, 2).toUpperCase()}</i>
+        <span><b>{brand.name}</b><small>{brand.count} mẫu{brand.minPrice > 0 ? ` · từ ${money(brand.minPrice)}` : ''}</small></span>
+        <ArrowRight/>
+      </Link>)}
+    </nav>
+  </section>;
+}
+
+function HomeBuyingGuideHubV659() {
+  const guides = [
+    {eyebrow: '01', icon: <Scale/>, title: 'Chọn đồng hồ theo cổ tay', body: 'Khoanh vùng kích thước, phong cách và nhu cầu trước khi xem sản phẩm.', link: '/watch-finder', label: 'Mở Watch Finder'},
+    {eyebrow: '02', icon: <Sparkles/>, title: 'Kiến thức trước khi mua', body: 'Xem cẩm nang về thiết kế, chất liệu, cách dùng và chăm sóc đồng hồ.', link: '/blogs', label: 'Đọc Journal'},
+    {eyebrow: '03', icon: <ShieldCheck/>, title: 'Bảo hành & hậu mãi', body: 'Hiểu rõ thời hạn, phạm vi bảo hành và quy trình hỗ trợ sau mua.', link: '/pages/warranty', label: 'Xem chính sách'},
+  ];
+  return <section className="tf659-guide-hub" aria-labelledby="tf659-guide-title">
+    <header><small>CẨM NANG CHỌN ĐỒNG HỒ</small><h2 id="tf659-guide-title">Mua đúng mẫu, hiểu rõ chính sách</h2><p>Một số nội dung nên xem trước khi quyết định để chọn nhanh hơn và hạn chế mua sai nhu cầu.</p></header>
+    <div className="tf659-guide-grid">
+      {guides.map((guide) => <article key={guide.title}>
+        <div className="tf659-guide-icon">{guide.icon}</div>
+        <small>{guide.eyebrow}</small>
+        <h3>{guide.title}</h3>
+        <p>{guide.body}</p>
+        <Link to={guide.link}>{guide.label}<ArrowRight/></Link>
+      </article>)}
+    </div>
+  </section>;
+}
+
 export function HomeV10() {
   const {theme, products, collections} = useStorefrontData();
   const productSales = useProductSales();
@@ -842,7 +928,7 @@ export function HomeV10() {
     return null;
   };
 
-  return <div className="lux-home">{sections.map(renderSection)}</div>;
+  return <div className="lux-home">{sections.map(renderSection)}<HomeSeoDiscoveryV658/><HomeBrandExplorerV659 products={activeProducts}/><HomeBuyingGuideHubV659/><HomeFaqV658/></div>;
 }
 
 const COLLECTION_PRICE_BANDS = [
