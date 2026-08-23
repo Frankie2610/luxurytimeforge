@@ -38,7 +38,7 @@ const itemFromProduct = (product: Product, index: number, previous?: ProductGrou
   name: previous?.name || product.title,
   color: previous?.color || productColor(product),
   size: previous?.size || productSize(product),
-  image: previous?.image || product.images[0] || '',
+  image: product.images[0] || previous?.image || '',
   sortOrder: previous?.sortOrder ?? index,
 });
 

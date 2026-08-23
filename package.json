@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.65.9",
+  "version": "0.66.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -67,7 +67,8 @@
     "css:budget": "node scripts/check-css-budget-v654.mjs",
     "v654:check": "node scripts/check-v654-css-seo.mjs",
     "v655:check": "node scripts/check-v655-seo-conversion.mjs",
-    "v656:check": "node scripts/check-v656-product-seo-performance.mjs"
+    "v656:check": "node scripts/check-v656-product-seo-performance.mjs",
+    "v662:check": "node scripts/check-v662-performance-product-groups.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -110,7 +111,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.65.9: catalog-driven brand explorer and buying-guide SEO hub on storefront, plus catalog SEO coverage and prioritized fix queue in Admin.",
+  "description": "Luxury TimeForge V0.66.2: faster storefront/Admin hydration, lighter Admin shell, cached image transforms, and reliable SKU-family thumbnails sourced from each product image URL.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

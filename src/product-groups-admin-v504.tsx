@@ -5,6 +5,7 @@ import {toast} from 'sonner';
 import {useCommerce} from './context';
 import {readProductFilterValues} from './product-filter-data';
 import {buildAutomaticProductGroups} from './product-groups';
+import {optimizedImage, productImage} from './image-utils';
 import type {Product, ProductGroup, ProductGroupItem} from './types';
 import {slugify, uid} from './utils';
 import {Dialog, DialogContent} from './ui';
@@ -48,6 +49,12 @@ const itemFromRow=(row:ImportRow,product:Product|undefined,index:number):Product
   image:valueOf(row,rowFields.image)||product?.images[0]||'',
   sortOrder:index,
 });
+
+const matchedProductForItem=(item:ProductGroupItem,products:Product[])=>products.find((product)=>product.id===item.productId||product.sku.toUpperCase()===item.sku.toUpperCase());
+const previewImageForItem=(item:ProductGroupItem,products:Product[])=>{
+  const product=matchedProductForItem(item,products);
+  return product?productImage(product):item.image;
+};
 
 const buildGroups=(rows:ImportRow[],products:Product[],existing:ProductGroup[])=>{
   const buckets=new Map<string,{name:string;prefix:string;rows:ImportRow[]}>();
@@ -223,13 +230,13 @@ function GroupEditor({group,products,onChange,onCancel,onSave}:{group:ProductGro
       <label><span>Tiền tố SKU</span><input value={group.skuPrefix} onChange={(event)=>onChange({...group,skuPrefix:event.target.value.toUpperCase()})}/></label>
       <label><span>Trạng thái</span><select value={group.status} onChange={(event)=>onChange({...group,status:event.target.value as ProductGroup['status']})}><option value="active">Đang hiển thị</option><option value="draft">Bản nháp</option></select></label>
     </div>
-    <div className="tf504-group-editor-items">{group.items.map((item)=><article key={item.id}>
-      {item.image?<img src={item.image} alt=""/>:<span className="tf504-group-no-image"><ImageOff/></span>}
+    <div className="tf504-group-editor-items">{group.items.map((item)=>{const previewImage=previewImageForItem(item,products);return <article key={item.id}>
+      {previewImage?<img src={optimizedImage(previewImage,180,180,'fit')} alt={item.name||item.sku} loading="lazy" decoding="async" referrerPolicy="no-referrer"/>:<span className="tf504-group-no-image"><ImageOff/></span>}
       <div><b>{item.name}</b><small>{item.sku}</small></div>
       <label><span>Màu sắc</span><input value={item.color} onChange={(event)=>patchItem(item.id,{color:event.target.value})} placeholder="Ví dụ: Đen"/></label>
       <label><span>Kích thước</span><input value={item.size} onChange={(event)=>patchItem(item.id,{size:event.target.value})} placeholder="Ví dụ: 40 mm"/></label>
       <button type="button" onClick={()=>onChange({...group,items:group.items.filter((candidate)=>candidate.id!==item.id)})} aria-label={`Bỏ ${item.sku}`}><Trash2/></button>
-    </article>)}</div>
+    </article>})}</div>
     <div className="tf504-group-editor-add"><label><span>Thêm sản phẩm bằng SKU</span><input value={sku} onChange={(event)=>setSku(event.target.value.toUpperCase())} placeholder="Nhập SKU chính xác"/></label><button type="button" onClick={addSku}><Plus/>Thêm vào nhóm</button></div>
     <footer><button type="button" onClick={onCancel}>Hủy</button><button type="button" onClick={onSave}><Save/>Lưu chỉnh sửa</button></footer>
   </section>;
@@ -239,10 +246,10 @@ function GroupCard({group,products,onEdit,onDelete}:{group:ProductGroup;products
   const matched=group.items.filter((item)=>item.productId&&products.some((product)=>product.id===item.productId)).length;
   return <article className="tf504-group-card">
     <header><div><small>{group.source==='automatic'?'TỰ ĐỘNG':'THỦ CÔNG'} · SKU BẮT ĐẦU BẰNG <b>{group.skuPrefix}</b></small><h4>{group.name}</h4><span>{group.items.length} phiên bản · {matched} đã đối chiếu catalog{group.manualOverride?' · đã chỉnh':''}</span></div>{(onEdit||onDelete)&&<div className="tf504-group-card-actions">{onEdit&&<button type="button" className="is-edit" onClick={onEdit} aria-label={`Chỉnh sửa ${group.name}`}><Pencil/><span>Chỉnh sửa</span></button>}{onDelete&&<button type="button" className="danger" onClick={onDelete} aria-label={`Xóa ${group.name}`}><Trash2/></button>}</div>}</header>
-    <div className="tf504-group-items">{group.items.slice(0,8).map((item)=><div key={item.id}>
-      {item.image?<img src={item.image} alt=""/>:<span className="tf504-group-no-image"><ImageOff/></span>}
+    <div className="tf504-group-items">{group.items.slice(0,8).map((item)=>{const previewImage=previewImageForItem(item,products);return <div key={item.id}>
+      {previewImage?<img src={optimizedImage(previewImage,160,160,'fit')} alt={item.name||item.sku} loading="lazy" decoding="async" referrerPolicy="no-referrer"/>:<span className="tf504-group-no-image"><ImageOff/></span>}
       <span><b>{item.name}</b><small>{item.sku}</small><em>{[item.color,item.size].filter(Boolean).join(' · ')||'Chưa có màu / kích thước'}</em></span>
-    </div>)}</div>
+    </div>})}</div>
     {group.items.length>8&&<p>+ {group.items.length-8} phiên bản khác</p>}
   </article>;
 }

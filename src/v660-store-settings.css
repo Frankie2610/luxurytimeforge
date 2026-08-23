@@ -1,0 +1,97 @@
+/* V0.66.0 — store settings layout isolation and social share preview stability. */
+.tf-admin-v499 .tf660-store-settings-page{min-width:0;max-width:1480px;margin:0 auto;gap:18px}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-layout{min-width:0;grid-template-columns:minmax(0,1fr) 286px;gap:18px}
+.tf-admin-v499 .tf660-store-settings-page .tf509-profile-card{min-width:0;border:1px solid #dce4de;border-radius:18px;box-shadow:0 10px 34px rgba(31,61,43,.045)}
+.tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>header{padding:22px 24px;background:linear-gradient(135deg,#f7faf8 0%,#fff 72%)}
+.tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>section{min-width:0;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:22px 24px}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title{min-width:0;align-content:start}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title>span{min-width:0}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title small{max-width:190px}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields,.tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields>.field,.tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields .input,.tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields .textarea{min-width:0;max-width:100%}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields.is-two{column-gap:12px;row-gap:12px}
+.tf-admin-v499 .tf660-store-settings-page .tf513-logo-uploader{min-width:0;grid-template-columns:minmax(170px,220px) minmax(0,1fr);gap:16px;padding:14px;border-color:#dce5de;border-radius:13px;background:#f8faf8}
+.tf-admin-v499 .tf660-store-settings-page .tf513-logo-controls,.tf-admin-v499 .tf660-store-settings-page .tf513-logo-actions{min-width:0}
+.tf-admin-v499 .tf660-store-settings-page .tf513-logo-preview{min-width:0;border-color:#c8d4cb;background:#fff}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-side{min-width:0;gap:12px}
+.tf-admin-v499 .tf660-store-settings-page .tf509-settings-side>.card{min-width:0;border-radius:14px;box-shadow:0 7px 22px rgba(31,61,43,.035)}
+
+/* Social image uses its own component classes so legacy logo-uploader CSS cannot override it. */
+.tf-admin-v499 .tf660-social-uploader{min-width:0;width:100%;display:grid;grid-template-columns:minmax(250px,.88fr) minmax(300px,1.12fr);align-items:start;gap:18px;padding:15px;border:1px solid #dbe5de;border-radius:14px;background:linear-gradient(145deg,#fafcfb,#f5f8f6);overflow:hidden}
+.tf-admin-v499 .tf660-social-preview-column,.tf-admin-v499 .tf660-social-controls{min-width:0;max-width:100%}
+.tf-admin-v499 .tf660-social-preview-column{display:grid;gap:7px}
+.tf-admin-v499 .tf660-social-preview{position:relative;min-width:0;width:100%;aspect-ratio:1200/630;overflow:hidden;border:1px solid #cbd7ce;border-radius:11px;background:#edf3ef;isolation:isolate}
+.tf-admin-v499 .tf660-social-preview img{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;object-position:center;background:#edf3ef}
+.tf-admin-v499 .tf660-social-preview.is-fallback img{padding:clamp(14px,3vw,28px);object-fit:contain;background:linear-gradient(145deg,#f5f8f6,#eaf1ec)}
+.tf-admin-v499 .tf660-social-preview>span:not(.tf660-social-size){position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:7px;color:#69776e;text-align:center}
+.tf-admin-v499 .tf660-social-preview>span:not(.tf660-social-size) svg{width:28px;height:28px;stroke-width:1.6}
+.tf-admin-v499 .tf660-social-preview>span:not(.tf660-social-size) b{font-size:10px}
+.tf-admin-v499 .tf660-social-size{position:absolute;top:8px;right:8px;z-index:2;min-height:22px;display:inline-flex;align-items:center;padding:0 7px;border:1px solid rgba(255,255,255,.58);border-radius:999px;background:rgba(30,49,38,.76);color:#fff;font-size:8px;font-weight:850;letter-spacing:.04em;backdrop-filter:blur(7px)}
+.tf-admin-v499 .tf660-social-preview>em{position:absolute;left:8px;bottom:8px;z-index:2;min-height:23px;display:inline-flex;align-items:center;padding:0 8px;border-radius:999px;background:rgba(30,49,38,.82);color:#fff;font-size:8px;font-style:normal;font-weight:820;letter-spacing:.025em;backdrop-filter:blur(7px)}
+.tf-admin-v499 .tf660-social-preview-note{color:#768179;font-size:9px;line-height:1.45}
+.tf-admin-v499 .tf660-social-controls{display:grid;align-content:start;gap:11px}
+.tf-admin-v499 .tf660-social-copy{display:grid;gap:4px;padding-bottom:2px}
+.tf-admin-v499 .tf660-social-copy>b{color:#29372f;font-size:12.5px}
+.tf-admin-v499 .tf660-social-copy>small{color:#6d7a72;font-size:9.8px;line-height:1.5}
+.tf-admin-v499 .tf660-social-controls .field{min-width:0;max-width:100%;margin:0;padding:10px;border:1px solid #e1e8e3;border-radius:11px;background:#fff}
+.tf-admin-v499 .tf660-social-controls .field>span{max-width:100%;margin-bottom:5px}
+.tf-admin-v499 .tf660-social-controls .input{min-width:0;max-width:100%;width:100%;height:40px;overflow:hidden;border-color:#ccd7cf;background:#fff;color:#27342c;text-overflow:ellipsis;white-space:nowrap}
+.tf-admin-v499 .tf660-visually-hidden-file{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.tf-admin-v499 .tf660-social-actions{min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tf-admin-v499 .tf660-social-choose,.tf-admin-v499 .tf660-social-reset{min-width:0;min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 13px;border-radius:9px;font-size:10.5px;font-weight:820;line-height:1;transition:background-color .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}
+.tf-admin-v499 .tf660-social-choose{border:1px solid #315f42;background:#315f42;color:#fff;cursor:pointer;box-shadow:0 5px 14px rgba(37,83,54,.12)}
+.tf-admin-v499 .tf660-social-choose:hover{border-color:#244c34;background:#244c34;transform:translateY(-1px)}
+.tf-admin-v499 .tf660-social-choose.is-disabled{pointer-events:none;opacity:.58;transform:none}
+.tf-admin-v499 .tf660-social-reset{border:1px solid #d7c1bc;background:#fff9f8;color:#8c4038;cursor:pointer}
+.tf-admin-v499 .tf660-social-reset:hover{border-color:#c88980;background:#faefed;color:#74342e}
+.tf-admin-v499 .tf660-social-choose svg,.tf-admin-v499 .tf660-social-reset svg{width:14px;height:14px;flex:0 0 14px;stroke-width:2}
+.tf-admin-v499 .tf660-social-selected{min-width:0;overflow:hidden;color:#55635a;font-size:9.5px;text-overflow:ellipsis;white-space:nowrap}
+.tf-admin-v499 .tf660-social-selected b{color:#304137}
+.tf-admin-v499 .tf660-social-error{margin:0;padding:9px 10px;border:1px solid #e2bbb7;border-radius:8px;background:#fff1ef;color:#943c35;font-size:9.5px;line-height:1.45}
+
+/* Keep the dense SEO blocks from compressing the core store profile. */
+.tf-admin-v499 .tf660-store-settings-page .tf65-settings-seo .tf509-settings-fields{min-width:0}
+.tf-admin-v499 .tf660-store-settings-page :is(.tf658-seo-dashboard,.tf659-catalog-seo,.tf655-seo-resources){min-width:0;max-width:100%}
+
+@media (min-width:1451px){
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-side{position:sticky;top:76px}
+}
+@media (max-width:1450px){
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-layout{grid-template-columns:1fr}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-side{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:1120px){
+  .tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>section{grid-template-columns:1fr;gap:15px;padding:19px 20px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title small{max-width:680px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title{grid-template-columns:34px minmax(0,1fr)}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title>svg{width:34px;height:34px;padding:8px}
+}
+@media (max-width:820px){
+  .tf-admin-v499 .tf660-social-uploader{grid-template-columns:1fr;gap:14px}
+  .tf-admin-v499 .tf660-social-preview-column{width:min(100%,620px)}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-side{grid-template-columns:1fr}
+  .tf-admin-v499 .tf660-store-settings-page .tf513-logo-uploader{grid-template-columns:1fr}
+  .tf-admin-v499 .tf660-store-settings-page .tf513-logo-preview{max-width:420px}
+}
+@media (max-width:620px){
+  .tf-admin-v499 .tf660-store-settings-page{gap:12px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-profile-card{border-radius:14px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>header{grid-template-columns:38px minmax(0,1fr);gap:11px;padding:17px 15px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>header>span{width:38px;height:38px;border-radius:10px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>header h2{font-size:17px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-profile-card>section{gap:12px;padding:15px}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields.is-two{grid-template-columns:1fr}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-fields.is-two>.field:last-child:nth-child(odd){grid-column:auto}
+  .tf-admin-v499 .tf660-social-uploader{padding:11px;border-radius:12px}
+  .tf-admin-v499 .tf660-social-actions{display:grid;grid-template-columns:1fr 1fr}
+  .tf-admin-v499 .tf660-social-choose,.tf-admin-v499 .tf660-social-reset{width:100%;padding-inline:9px}
+  .tf-admin-v499 .tf660-social-size{top:6px;right:6px}
+  .tf-admin-v499 .tf660-social-preview>em{left:6px;bottom:6px}
+}
+@media (max-width:420px){
+  .tf-admin-v499 .tf660-social-actions{grid-template-columns:1fr}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title{grid-template-columns:30px minmax(0,1fr)}
+  .tf-admin-v499 .tf660-store-settings-page .tf509-settings-section-title>svg{width:30px;height:30px;padding:7px}
+}
+@media (prefers-reduced-motion:reduce){
+  .tf-admin-v499 .tf660-social-choose,.tf-admin-v499 .tf660-social-reset{transition:none}
+}

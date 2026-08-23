@@ -2,6 +2,18 @@ import {useEffect, useLayoutEffect, useRef, useState, type ImgHTMLAttributes} fr
 
 const DEFAULT_PRODUCT_IMAGE = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><rect width="600" height="600" fill="#f3f1eb"/><circle cx="300" cy="300" r="118" fill="none" stroke="#c9c4b9" stroke-width="18"/><rect x="265" y="82" width="70" height="116" rx="24" fill="#ded9cf"/><rect x="265" y="402" width="70" height="116" rx="24" fill="#ded9cf"/><circle cx="300" cy="300" r="78" fill="#faf9f5" stroke="#8e8a82" stroke-width="8"/><path d="M300 300V248M300 300l42 24" stroke="#4f514d" stroke-width="10" stroke-linecap="round"/><text x="300" y="560" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#555954">TIMEFORGE</text></svg>`)}`;
 
+const IMAGE_CACHE_LIMIT = 640;
+const transformedImageCache = new Map<string, string>();
+const srcSetCache = new Map<string, string | undefined>();
+const remember = <T,>(cache: Map<string, T>, key: string, value: T) => {
+  if (cache.size >= IMAGE_CACHE_LIMIT && !cache.has(key)) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
+  cache.set(key, value);
+  return value;
+};
+
 const proximityCallbacks = new WeakMap<Element, () => void>();
 let proximityObserver: IntersectionObserver | null = null;
 const observeNearViewport = (element: Element, callback: () => void) => {
@@ -40,13 +52,19 @@ export function optimizedImage(url: string, width = 900, height?: number, crop: 
   if (!source || source.startsWith('data:') || source.startsWith('blob:')) return source;
   const safeWidth = Math.max(80, Math.min(2400, Math.round(width || 900)));
   const safeHeight = height ? Math.max(80, Math.min(2400, Math.round(height))) : 0;
-  // Cloudinary originals can be several megabytes. Insert a deterministic,
-  // cacheable transformation while leaving every non-Cloudinary URL untouched.
+  const cacheKey = `${source}|${safeWidth}|${safeHeight}|${crop}`;
+  const cached = transformedImageCache.get(cacheKey);
+  if (cached) return cached;
+
+  // Width descriptors in srcSet already make the browser choose a DPR-aware
+  // candidate. Adding Cloudinary dpr_auto on top of that can effectively size
+  // the same image twice (for example 720w -> ~1440px on a 2x display), which
+  // wastes bandwidth. Keep pixel width deterministic and let srcSet do the DPR work.
   const marker = '/image/upload/';
   if (/^https?:\/\/res\.cloudinary\.com\//i.test(source) && source.includes(marker)) {
     const [prefix, suffix] = source.split(marker, 2);
     const resize = [`c_${crop}`, `w_${safeWidth}`, safeHeight ? `h_${safeHeight}` : '', crop === 'fill' ? 'g_auto' : ''].filter(Boolean).join(',');
-    return `${prefix}${marker}f_auto,q_auto:eco,dpr_auto,${resize}/${suffix}`;
+    return remember(transformedImageCache, cacheKey, `${prefix}${marker}f_auto,q_auto:eco,${resize}/${suffix}`);
   }
   // Catalog imports commonly keep Shopify CDN originals (often 3000–5000px).
   // Shopify accepts a width query and returns a cached derivative, which keeps
@@ -56,17 +74,21 @@ export function optimizedImage(url: string, width = 900, height?: number, crop: 
     const shopifyHost = parsed.hostname === 'cdn.shopify.com' || parsed.hostname.endsWith('.myshopify.com');
     if (shopifyHost && (/\/s\/files\//.test(parsed.pathname) || /\/cdn\/shop\//.test(parsed.pathname))) {
       parsed.searchParams.set('width', String(safeWidth));
-      return parsed.toString();
+      return remember(transformedImageCache, cacheKey, parsed.toString());
     }
   } catch {
     // Keep malformed or relative legacy URLs unchanged so the fallback image
     // path can handle them consistently.
   }
-  return source;
+  return remember(transformedImageCache, cacheKey, source);
 }
 
 export function optimizedImageSrcSet(url: string, widths: number[], aspectRatio?: number, crop: 'fill' | 'fit' | 'limit' = 'fill') {
   const source = String(url || '').trim();
+  if (!source) return undefined;
+  const normalizedWidths = [...new Set(widths.map((width) => Math.max(80, Math.min(2400, Math.round(width)))))].sort((a, b) => a - b);
+  const cacheKey = `${source}|${normalizedWidths.join(',')}|${aspectRatio || 0}|${crop}`;
+  if (srcSetCache.has(cacheKey)) return srcSetCache.get(cacheKey);
   let transformable = /^https?:\/\/res\.cloudinary\.com\//i.test(source) && source.includes('/image/upload/');
   if (!transformable) {
     try {
@@ -77,13 +99,12 @@ export function optimizedImageSrcSet(url: string, widths: number[], aspectRatio?
       transformable = false;
     }
   }
-  if (!transformable) return undefined;
-  const candidates = [...new Set(widths.map((width) => Math.max(80, Math.min(2400, Math.round(width)))))]
-    .sort((a, b) => a - b);
-  return candidates.map((width) => {
+  if (!transformable) return remember(srcSetCache, cacheKey, undefined);
+  const value = normalizedWidths.map((width) => {
     const height = aspectRatio ? Math.round(width / aspectRatio) : undefined;
     return `${optimizedImage(source, width, height, crop)} ${width}w`;
   }).join(', ');
+  return remember(srcSetCache, cacheKey, value);
 }
 
 export function SmartImage({src = '', alt = '', className = '', width, height, priority = false, ...props}: ImgHTMLAttributes<HTMLImageElement> & {priority?: boolean}) {

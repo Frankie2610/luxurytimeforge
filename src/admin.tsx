@@ -130,6 +130,7 @@ import "./v4926-admin.css";
 import "./v513-store-profile.css";
 import "./v658-admin-seo.css";
 import "./v659-admin-seo.css";
+import "./v660-store-settings.css";
 const Btn = ({
   variant = "primary",
   className = "",
@@ -3072,7 +3073,7 @@ export function SettingsPage() {
               ? "Dữ liệu mẫu"
               : "Local mode";
   return (
-    <div className="tf509-settings-page tf513-store-settings-page">
+    <div className="tf509-settings-page tf513-store-settings-page tf660-store-settings-page">
       <section className="tf509-settings-status">
         <article>
           <Wrench />
@@ -3184,7 +3185,7 @@ export function SettingsPage() {
             </div>
           </section>
 
-          <section className="tf601-social-share-section">
+          <section className="tf660-social-share-section">
             <div className="tf509-settings-section-title">
               <Share2 />
               <span>
@@ -3192,17 +3193,21 @@ export function SettingsPage() {
                 <small>Ảnh preview khi gửi link. Khuyến nghị 1200 × 630 px; nếu để trống hệ thống tự dùng logo shop trên Firebase.</small>
               </span>
             </div>
-            <div className="tf513-logo-uploader tf601-social-uploader">
-              <div className={`tf513-logo-preview tf601-social-preview ${socialPreview ? "has-image" : "is-empty"}`}>
-                {socialPreview ? (
-                  <img src={socialPreview} alt="Xem trước ảnh chia sẻ mạng xã hội" />
-                ) : (
-                  <span><ImagePlus /><b>Chưa có ảnh chia sẻ</b></span>
-                )}
-                {!profile.socialShareImage && !socialFile && <em>Đang dùng logo shop</em>}
+            <div className="tf660-social-uploader">
+              <div className="tf660-social-preview-column">
+                <div className={`tf660-social-preview ${socialPreview ? "has-image" : "is-empty"} ${!profile.socialShareImage && !socialFile ? "is-fallback" : ""}`}>
+                  {socialPreview ? (
+                    <img src={socialPreview} alt="Xem trước ảnh chia sẻ mạng xã hội" />
+                  ) : (
+                    <span><ImagePlus /><b>Chưa có ảnh chia sẻ</b></span>
+                  )}
+                  <span className="tf660-social-size">1200 × 630</span>
+                  {!profile.socialShareImage && !socialFile && <em>Đang dùng logo shop</em>}
+                </div>
+                <small className="tf660-social-preview-note">Khung xem trước luôn giữ tỷ lệ 1.91:1 để không làm vỡ layout trang Admin.</small>
               </div>
-              <div className="tf513-logo-controls">
-                <div>
+              <div className="tf660-social-controls">
+                <div className="tf660-social-copy">
                   <b>Cover khi chia sẻ link</b>
                   <small>Ưu tiên JPG/PNG/WebP tỷ lệ 1.91:1. Ảnh được tải lên Cloudinary rồi URL được lưu trong Firebase.</small>
                 </div>
@@ -3216,24 +3221,24 @@ export function SettingsPage() {
                   />
                 </Field>
                 <input
-                  id="tf601-social-share-file"
-                  className="tf513-logo-file-input"
+                  id="tf660-social-share-file"
+                  className="tf660-visually-hidden-file"
                   type="file"
                   accept="image/png,image/jpeg,image/webp,image/avif"
                   onChange={(event) => {chooseSocialImage(event.target.files?.[0]); event.currentTarget.value = "";}}
                 />
-                <div className="tf513-logo-actions">
-                  <label className={`tf513-logo-choose ${saving ? "is-disabled" : ""}`} htmlFor="tf601-social-share-file" aria-disabled={saving}>
+                <div className="tf660-social-actions">
+                  <label className={`tf660-social-choose ${saving ? "is-disabled" : ""}`} htmlFor="tf660-social-share-file" aria-disabled={saving}>
                     <UploadCloud />{socialFile || profile.socialShareImage ? "Thay ảnh" : "Chọn ảnh từ thiết bị"}
                   </label>
                   {(socialFile || profile.socialShareImage) && (
-                    <button className="tf513-logo-remove" type="button" onClick={removeSocialImage} disabled={saving}>
+                    <button className="tf660-social-reset" type="button" onClick={removeSocialImage} disabled={saving}>
                       <Trash2 />Dùng logo shop
                     </button>
                   )}
                 </div>
-                {socialFile && <small className="tf513-logo-selected">Đã chọn: <b>{socialFile.name}</b></small>}
-                {socialError && <p className="tf513-logo-error">{socialError}</p>}
+                {socialFile && <small className="tf660-social-selected">Đã chọn: <b>{socialFile.name}</b></small>}
+                {socialError && <p className="tf660-social-error">{socialError}</p>}
               </div>
             </div>
           </section>

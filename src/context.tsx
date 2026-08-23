@@ -1,4 +1,5 @@
 import{createContext,useCallback,useContext,useEffect,useMemo,useRef,useState,type ReactNode}from'react';
+import{useLocation}from'react-router-dom';
 import type{Activity,CartLine,CheckoutPayload,Collection,Customer,Discount,DiscountEvaluation,InventoryAdjustment,NewsletterSubscriber,Order,OrderLine,OrderStatus,Product,ProductGroup,ShippingAddress,StoreProfile,StoreReview,Theme,ThemeState,ThemeVersion}from'./types';
 import{seedCollections,seedCustomers}from'./seed-lite';
 import{seedActivities,seedAdjustments,seedDiscounts,seedOrders}from'./operations-seed';
@@ -62,6 +63,15 @@ const useIdleLocalStorage=<T,>(key:string,value:T,enabled=true)=>useEffect(()=>{
  const timer=window.setTimeout(persist,450);
  return()=>window.clearTimeout(timer);
 },[key,value,enabled]);
+const scheduleIdleTask=(task:()=>void,timeout=1400)=>{
+ const idleWindow=window as IdleWindow;
+ if(idleWindow.requestIdleCallback){
+  const handle=idleWindow.requestIdleCallback(()=>task(),{timeout});
+  return()=>idleWindow.cancelIdleCallback?.(handle);
+ }
+ const timer=window.setTimeout(task,Math.min(500,Math.max(120,Math.round(timeout/4))));
+ return()=>window.clearTimeout(timer);
+};
 
 export type CommerceDataSource='loading'|'firebase'|'local'|'seed'|'error';
 type V={
@@ -93,6 +103,11 @@ const NewsletterActionsC=createContext<NewsletterActions|null>(null);
 
 export function CommerceProvider({children}:{children:ReactNode}){
  const{user,loading:authLoading}=useAuth();
+ const location=useLocation();
+ const protectedLoadedRef=useRef(new Set<string>());
+ const protectedInFlightRef=useRef(new Set<string>());
+ const protectedSessionRef=useRef(user?.uid||'');
+ protectedSessionRef.current=user?.uid||'';
  const[products,setProducts]=useState<Product[]>(()=>productsFromFirebase(load<Product[]>(K.p,[])));
  const[collections,setCollections]=useState(()=>normalizeCollections(load(K.c,seedCollections)));
  const[productGroups,setProductGroups]=useState<ProductGroup[]>(()=>asList<ProductGroup>(load(K.groups,[])));
@@ -131,17 +146,18 @@ export function CommerceProvider({children}:{children:ReactNode}){
  useIdleLocalStorage(K.headers,headers);
 
  /* Public storefront uses stale-while-revalidate: a verified local catalog is
-    painted immediately. When cache exists, Firebase SDK/network work starts
-    during idle time so it cannot compete with the first visible render. */
+    painted immediately. Critical catalog/layout data gets the first network turn;
+    reviews, discounts and product-family metadata hydrate afterward during idle time. */
  useEffect(()=>{
   if(!firebaseClient.enabled){setIsLoading(false);return;}
   let active=true;
-  let idleHandle:number|undefined;
-  let timerHandle:number|undefined;
+  let cancelCritical:undefined|(()=>void);
+  let cancelSecondary:undefined|(()=>void);
   const hasCachedCatalog=products.length>0;
   if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
   else{setIsLoading(false);setDataSource('local')}
   setDataError('');
+
   const profileRequest=firebaseClient.read<StoreProfile>('timeforge/settings/store');
   void profileRequest.then(value=>{
    if(!active||!value)return;
@@ -154,9 +170,26 @@ export function CommerceProvider({children}:{children:ReactNode}){
    }));
   }).catch(error=>console.warn('[TimeForge] Store identity refresh failed; cached identity remains visible.',error));
 
-  const refresh=()=>{
+  const refreshSecondary=()=>{
    if(!active)return;
-   void firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products').then(value=>{
+   void Promise.allSettled([
+    firebaseClient.read<ProductGroup[]|Record<string,ProductGroup>>('timeforge/productGroups'),
+    firebaseClient.read<Discount[]|Record<string,Discount>>('timeforge/discounts'),
+    firebaseClient.queryByChild<StoreReview[]|Record<string,StoreReview>>('timeforge/reviews','status','published'),
+   ]).then(([groupResult,discountResult,reviewsResult])=>{
+    if(!active)return;
+    if(groupResult.status==='fulfilled')setProductGroups(firebaseList(groupResult.value));
+    if(discountResult.status==='fulfilled')setDiscounts(firebaseList(discountResult.value));
+    if(reviewsResult.status==='fulfilled'){
+     const remoteReviews=firebaseList(reviewsResult.value);
+     setReviews(current=>remoteReviews.length?remoteReviews:(current.some(item=>item.status==='published')?current:remoteReviews));
+    }
+   });
+  };
+
+  const refreshCritical=()=>{
+   if(!active)return;
+   const catalogRequest=firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products').then(value=>{
     if(!active)return;
     const next=productsFromFirebase(value);
     setProducts(next);
@@ -169,22 +202,13 @@ export function CommerceProvider({children}:{children:ReactNode}){
     else console.warn('[TimeForge] Catalog refresh failed; cached products remain visible.',error);
    }).finally(()=>{if(active)setIsLoading(false)});
 
-   void Promise.allSettled([
+   const layoutRequest=Promise.allSettled([
     firebaseClient.read<Collection[]|Record<string,Collection>>('timeforge/collections'),
-    firebaseClient.read<ProductGroup[]|Record<string,ProductGroup>>('timeforge/productGroups'),
-    firebaseClient.read<Discount[]|Record<string,Discount>>('timeforge/discounts'),
-    firebaseClient.queryByChild<StoreReview[]|Record<string,StoreReview>>('timeforge/reviews','status','published'),
     firebaseClient.read<Theme>('timeforge/themes/published'),
     profileRequest
-   ]).then(([collectionResult,groupResult,discountResult,reviewsResult,publishedResult,profileResult])=>{
+   ]).then(([collectionResult,publishedResult,profileResult])=>{
     if(!active)return;
     if(collectionResult.status==='fulfilled')setCollections(normalizeCollections(collectionResult.value));
-    if(groupResult.status==='fulfilled')setProductGroups(firebaseList(groupResult.value));
-    if(discountResult.status==='fulfilled')setDiscounts(firebaseList(discountResult.value));
-    if(reviewsResult.status==='fulfilled'){
-     const remoteReviews=firebaseList(reviewsResult.value);
-     setReviews(current=>remoteReviews.length?remoteReviews:(current.some(item=>item.status==='published')?current:remoteReviews));
-    }
     const published=publishedResult.status==='fulfilled'&&publishedResult.value?normalizeTheme(publishedResult.value):null;
     const firebaseIdentityFallback=published?storeProfileFromTheme(published):DEFAULT_STORE_PROFILE;
     const remoteProfile=profileResult.status==='fulfilled'&&profileResult.value
@@ -194,59 +218,57 @@ export function CommerceProvider({children}:{children:ReactNode}){
     if(remoteProfile)setStoreProfile(remoteProfile);
     if(published||remoteProfile)setThemeState(cur=>{const nextPublished=published||cur.published;const profile=remoteProfile||normalizeStoreProfile(storeProfile,storeProfileFromTheme(nextPublished));return{...cur,published:applyStoreProfileToTheme(nextPublished,profile),draft:applyStoreProfileToTheme(cur.draft,profile)}});
    });
+
+   void Promise.allSettled([catalogRequest,layoutRequest]).finally(()=>{
+    if(active&&!cancelSecondary)cancelSecondary=scheduleIdleTask(refreshSecondary,hasCachedCatalog?2200:1200);
+   });
   };
 
-  if(hasCachedCatalog){
-   const idleWindow=window as IdleWindow;
-   if(idleWindow.requestIdleCallback)idleHandle=idleWindow.requestIdleCallback(refresh,{timeout:1200});
-   else timerHandle=window.setTimeout(refresh,350);
-  }else refresh();
+  if(hasCachedCatalog)cancelCritical=scheduleIdleTask(refreshCritical,1100);
+  else refreshCritical();
 
-  return()=>{
-   active=false;
-   const idleWindow=window as IdleWindow;
-   if(idleHandle!==undefined)idleWindow.cancelIdleCallback?.(idleHandle);
-   if(timerHandle!==undefined)window.clearTimeout(timerHandle);
-  };
+  return()=>{active=false;cancelCritical?.();cancelSecondary?.()};
  },[]);
 
- /* Protected datasets wait for Firebase Authentication to restore its session.
-    Promise.allSettled keeps one optional/denied path from cancelling every other Admin read. */
+ /* Protected Admin datasets hydrate only when the current screen needs them.
+    The order feed is handled by the realtime subscription below, so it is not
+    downloaded twice on every Admin boot. Cached local data remains available
+    immediately while the route-specific Firebase read refreshes in background. */
  useEffect(()=>{
   if(!firebaseClient.enabled||authLoading||!user||user.access!=='active')return;
-  let active=true;
-  void Promise.allSettled([
-   firebaseClient.read<Customer[]|Record<string,Customer>>('timeforge/customers'),
-   firebaseClient.read<Record<string,NewsletterSubscriber>|NewsletterSubscriber[]>('timeforge/newsletterSubscribers'),
-   firebaseClient.read<Order[]|Record<string,Order>>('timeforge/orders'),
-   firebaseClient.read<InventoryAdjustment[]|Record<string,InventoryAdjustment>>('timeforge/inventoryAdjustments'),
-   firebaseClient.read<Activity[]|Record<string,Activity>>('timeforge/activities'),
-   firebaseClient.read<StoreReview[]|Record<string,StoreReview>>('timeforge/reviews'),
-   firebaseClient.read<Theme>('timeforge/themes/draft'),
-   firebaseClient.read<ThemeVersion[]|Record<string,ThemeVersion>>('timeforge/themes/versions')
-  ]).then(([customerResult,subscriberResult,orderResult,adjustmentResult,activityResult,reviewsResult,draftResult,versionResult])=>{
-   if(!active)return;
-   if(customerResult.status==='fulfilled')setCustomers(firebaseList(customerResult.value));
-   if(subscriberResult.status==='fulfilled')setNewsletterSubscribers(firebaseList(subscriberResult.value));
-   if(orderResult.status==='fulfilled'){
-    const normalizedOrders=firebaseOrders(orderResult.value);
-    setOrders(normalizedOrders);
-    if(Array.isArray(orderResult.value)&&firebaseClient.enabled){
-     void firebaseClient.write('timeforge/orders',Object.fromEntries(normalizedOrders.map(order=>[order.id,order]))).catch(reportFirebaseError);
-    }
-   }
-   if(adjustmentResult.status==='fulfilled')setAdjustments(firebaseList(adjustmentResult.value));
-   if(activityResult.status==='fulfilled')setActivities(firebaseList(activityResult.value));
-   if(reviewsResult.status==='fulfilled')setReviews(firebaseList(reviewsResult.value));
-   if(draftResult.status==='fulfilled'||versionResult.status==='fulfilled')setThemeState(cur=>({...cur,draft:draftResult.status==='fulfilled'&&draftResult.value?normalizeTheme(draftResult.value):cur.draft,versions:versionResult.status==='fulfilled'?normalizeThemeVersions(versionResult.value):cur.versions}));
-  });
-  return()=>{active=false};
- },[authLoading,user?.uid,user?.access]);
+  const sessionId=user.uid;
+  const path=location.pathname;
+  const needed=new Set<string>();
+  if(path==='/admin'){needed.add('customers');needed.add('activities');needed.add('themeVersions')}
+  if(path.startsWith('/admin/customers')||path.startsWith('/admin/customer-segments')||path.startsWith('/admin/draft-orders')){needed.add('customers');needed.add('newsletter')}
+  if(path.startsWith('/admin/inventory'))needed.add('adjustments');
+  if(path.startsWith('/admin/activity'))needed.add('activities');
+  if(path.startsWith('/admin/reviews'))needed.add('reviews');
+  if(path.startsWith('/admin/online-store')){needed.add('draftTheme');needed.add('themeVersions')}
+  if(path.startsWith('/admin/settings'))needed.add('themeVersions');
+
+  const loadDataset=async(key:string)=>{
+   if(protectedLoadedRef.current.has(key)||protectedInFlightRef.current.has(key))return;
+   protectedInFlightRef.current.add(key);
+   try{
+    if(key==='customers'){const value=await firebaseClient.read<Customer[]|Record<string,Customer>>('timeforge/customers');if(protectedSessionRef.current===sessionId)setCustomers(firebaseList(value))}
+    else if(key==='newsletter'){const value=await firebaseClient.read<Record<string,NewsletterSubscriber>|NewsletterSubscriber[]>('timeforge/newsletterSubscribers');if(protectedSessionRef.current===sessionId)setNewsletterSubscribers(firebaseList(value))}
+    else if(key==='adjustments'){const value=await firebaseClient.read<InventoryAdjustment[]|Record<string,InventoryAdjustment>>('timeforge/inventoryAdjustments');if(protectedSessionRef.current===sessionId)setAdjustments(firebaseList(value))}
+    else if(key==='activities'){const value=await firebaseClient.read<Activity[]|Record<string,Activity>>('timeforge/activities');if(protectedSessionRef.current===sessionId)setActivities(firebaseList(value))}
+    else if(key==='reviews'){const value=await firebaseClient.read<StoreReview[]|Record<string,StoreReview>>('timeforge/reviews');if(protectedSessionRef.current===sessionId)setReviews(firebaseList(value))}
+    else if(key==='draftTheme'){const value=await firebaseClient.read<Theme>('timeforge/themes/draft');if(value&&protectedSessionRef.current===sessionId)setThemeState(cur=>({...cur,draft:normalizeTheme(value)}))}
+    else if(key==='themeVersions'){const value=await firebaseClient.read<ThemeVersion[]|Record<string,ThemeVersion>>('timeforge/themes/versions');if(protectedSessionRef.current===sessionId)setThemeState(cur=>({...cur,versions:normalizeThemeVersions(value)}))}
+    if(protectedSessionRef.current===sessionId)protectedLoadedRef.current.add(key);
+   }catch(error){console.warn(`[TimeForge] Deferred Admin dataset ${key} failed to refresh.`,error)}
+   finally{protectedInFlightRef.current.delete(key)}
+  };
+  needed.forEach(key=>{void loadDataset(key)});
+ },[authLoading,user?.uid,user?.access,location.pathname]);
 
  useEffect(()=>{
   if(!firebaseClient.enabled||authLoading||!user||user.access!=='active')return;
   let disposed=false;let unsubscribe:(()=>void)|undefined;
-  void firebaseClient.subscribe<Order[]|Record<string,Order>>('timeforge/orders',value=>{if(!disposed)setOrders(firebaseOrders(value))},error=>{if(!disposed)console.warn('[TimeForge] Order realtime subscription failed.',error)}).then(stop=>{if(disposed)stop();else unsubscribe=stop});
+  void firebaseClient.subscribe<Order[]|Record<string,Order>>('timeforge/orders',value=>{if(disposed)return;const normalized=firebaseOrders(value);setOrders(normalized);if(Array.isArray(value))void firebaseClient.write('timeforge/orders',Object.fromEntries(normalized.map(order=>[order.id,order]))).catch(reportFirebaseError)},error=>{if(!disposed)console.warn('[TimeForge] Order realtime subscription failed.',error)}).then(stop=>{if(disposed)stop();else unsubscribe=stop});
   return()=>{disposed=true;unsubscribe?.()};
  },[authLoading,user?.uid,user?.access]);
 

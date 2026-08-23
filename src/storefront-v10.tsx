@@ -1533,7 +1533,8 @@ function ProductFamilySelector({group,products,current}:{group:ProductGroup;prod
     <header><div><small>MÀU SẮC</small><p><b>Màu sắc:</b> {currentItem?.item.color||current.title}</p></div><span>{items.length} phiên bản</span></header>
     <div>{items.map(({item,product})=>{
       const active=product?.id===current.id||item.productId===current.id||item.sku===current.sku;
-      const content=<><span className="tf504-family-image">{(item.image||product?.images[0])?<img src={optimizedImage(item.image||product?.images[0]||'',240,240)} alt="" width="240" height="240" loading="lazy" decoding="async"/>:<Clock3/>}{active&&<Check/>}</span><span className="tf509-family-copy"><span className="tf509-family-variant"><b>{item.color||product?.title||item.name}</b><small>{item.size||item.sku}</small></span>{product&&<strong>{money(product.price)}</strong>}</span></>;
+      const previewImage=product?productImage(product):item.image;
+      const content=<><span className="tf504-family-image">{previewImage?<img src={optimizedImage(previewImage,240,240,'fit')} alt={product?.title||item.name||item.sku} width="240" height="240" loading="lazy" fetchPriority="low" decoding="async" referrerPolicy="no-referrer"/>:<Clock3/>}{active&&<Check/>}</span><span className="tf509-family-copy"><span className="tf509-family-variant"><b>{item.color||product?.title||item.name}</b><small>{item.size||item.sku}</small></span>{product&&<strong>{money(product.price)}</strong>}</span></>;
       return product?<Link key={item.id} className={active?'is-active':''} to={`/products/${product.handle}`} aria-current={active?'page':undefined}>{content}</Link>:<span key={item.id} className="is-unavailable" title="SKU chưa có trong catalog">{content}</span>;
     })}</div>
   </section>;

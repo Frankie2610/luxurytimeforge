@@ -11,7 +11,7 @@ import {toast as sonnerToast} from 'sonner';
 import {useCommerce} from './context';
 import {useAuth} from './auth';
 import{hasPermission,routePermission,roleLabels}from'./permissions';
-import {useReturns} from './returns-v13';
+import {usePendingReturnCountV661} from './admin-return-count-v661';
 import {AdminCommandPalette} from './admin-v9';
 import {AdminRouteBoundary} from './admin-route-boundary';
 import './v50-admin-polish.css';
@@ -126,15 +126,14 @@ export function AdminLayoutV16(){
   const location=useLocation();
   const navigate=useNavigate();
   const{dataSource,orders,products}=useCommerce();
-  const{items:returns}=useReturns();
+  const pendingReturns=usePendingReturnCountV661();
   const{user,logout}=useAuth();
   const meta=routeMeta(location.pathname);
   const operationalCounts=useMemo(()=>({
     pendingOrders:orders.reduce((count,item)=>count+(item.status==='open'?1:0),0),
-    pendingReturns:returns.reduce((count,item)=>count+(item.status==='requested'?1:0),0),
     lowStock:products.reduce((count,item)=>count+(item.inventory<=3?1:0),0),
-  }),[orders,products,returns]);
-  const{pendingOrders,pendingReturns,lowStock}=operationalCounts;
+  }),[orders,products]);
+  const{pendingOrders,lowStock}=operationalCounts;
   const sections=useMemo<NavSection[]>(()=>[
     {items:[{to:'/admin',label:'Trang chủ',icon:Home}]},
     {label:'Đơn hàng',items:[

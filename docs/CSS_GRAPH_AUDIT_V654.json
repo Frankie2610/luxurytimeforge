@@ -1,15 +1,15 @@
 {
   "version": "0.65.4",
-  "generatedAt": "2026-08-17T05:00:40.612Z",
+  "generatedAt": "2026-08-23T17:38:48.260Z",
   "policy": "Reachability traverses TS/TSX/JS imports AND nested CSS @import. Visual CSS is not auto-deleted from selector repetition alone.",
   "files": {
-    "all": 147,
-    "reachable": 147,
+    "all": 152,
+    "reachable": 152,
     "unreachable": 0
   },
   "bytes": {
-    "all": 1303219,
-    "reachable": 1303219,
+    "all": 1331524,
+    "reachable": 1331524,
     "unreachable": 0
   },
   "entryCss": [
@@ -132,12 +132,17 @@
     "v650-product-tools.css",
     "v650-storefront-polish.css",
     "v655-product-reviews.css",
-    "v657-seo-landing.css"
+    "v657-seo-landing.css",
+    "v658-admin-seo.css",
+    "v658-seo-growth.css",
+    "v659-admin-seo.css",
+    "v659-seo-growth.css",
+    "v660-store-settings.css"
   ],
   "unreachable": [],
-  "ruleCount": 13077,
-  "importantDeclarations": 2723,
-  "duplicatedSelectors": 3320,
+  "ruleCount": 13319,
+  "importantDeclarations": 2732,
+  "duplicatedSelectors": 3375,
   "exactDuplicateRules": 139,
   "topRepeatedSelectors": [
     {
