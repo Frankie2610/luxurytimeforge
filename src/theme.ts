@@ -143,7 +143,7 @@ export const createSection = (type: SectionType): Section => {
 };
 
 const defaultSettings: Theme['settings'] = {
-  storeName: 'Luxury Timeforge', announcement: 'Giảm giá đến 50% · Miễn phí giao hàng cho đơn từ 5.000.000₫', accent: '#7a3f25',
+  storeName: 'Luxury TimeForge', announcement: 'Giảm giá đến 50% · Miễn phí giao hàng cho đơn từ 5.000.000₫', accent: '#7a3f25',
   storeDescription: 'Đồng hồ chính hãng, tuyển chọn kỹ và hậu mãi minh bạch.',
   storePhone: '', storeEmail: '', storeAddress: '', taxId: '',
   facebookUrl: '', instagramUrl: '', tiktokUrl: '', recruitmentUrl: '',
@@ -155,7 +155,7 @@ const defaultSettings: Theme['settings'] = {
 
 export const defaultTheme = (): Theme => ({
   version: 4,
-  name: 'Luxury Timeforge Atelier',
+  name: 'Luxury TimeForge Atelier',
   settings: {...defaultSettings},
   templates: {
     home: t('home', 'Trang chủ', [createSection('hero'), createSection('trust'), createSection('collections'), createSection('products'), createSection('bestSellers'), createSection('imageText'), createSection('testimonials'), createSection('blogPosts'), createSection('newsletter')]),

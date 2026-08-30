@@ -8,7 +8,7 @@ const money=value=>`${Math.max(0,Number(value)||0).toLocaleString('vi-VN')} ₫`
 async function sendPriceAlert(alert,product,currentPrice){
   const key=process.env.RESEND_API_KEY,from=process.env.NEWSLETTER_FROM_EMAIL||process.env.RESEND_FROM_EMAIL||process.env.EMAIL_FROM;if(!key||!from)return false;
   const site=String(process.env.PUBLIC_SITE_URL||process.env.VITE_PUBLIC_SITE_URL||'https://luxurytimeforge.vercel.app').replace(/\/$/,'');
-  const store=process.env.NEWSLETTER_STORE_NAME||'Luxury Timeforge';
+  const store=process.env.NEWSLETTER_STORE_NAME||'Luxury TimeForge';
   const href=`${site}/products/${encodeURIComponent(product.handle||alert.productHandle||'')}`;
   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({from,to:[alert.email],subject:`Giá đã giảm · ${product.title||alert.productTitle}`,html:`<div style="font-family:Arial,sans-serif;line-height:1.65;color:#1d2b23;max-width:620px;margin:auto"><p style="font-size:12px;letter-spacing:.12em;color:#8a6a27">${escapeHtml(store).toUpperCase()}</p><h2 style="margin:0 0 12px">Mẫu bạn theo dõi đã chạm mức giá mong muốn</h2><p><strong>${escapeHtml(product.title||alert.productTitle)}</strong> hiện có giá <strong>${money(currentPrice)}</strong>, thấp hơn hoặc bằng mức theo dõi ${money(alert.targetPrice)}.</p><p><a href="${escapeHtml(href)}" style="display:inline-block;padding:11px 18px;background:#173f2a;color:#fff;text-decoration:none;border-radius:6px">Xem sản phẩm</a></p><p style="font-size:12px;color:#68736d">Giá và tồn kho có thể thay đổi theo thời điểm truy cập.</p></div>`,reply_to:process.env.NEWSLETTER_REPLY_TO||undefined})});
   return response.ok;

@@ -17,7 +17,18 @@ const absolute=(value,origin)=>{
 };
 const list=value=>Array.isArray(value)?value.filter(Boolean):Object.values(value||{}).filter(Boolean);
 const normalized=value=>clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase();
+const canonicalStoreName=value=>normalized(value)==='luxury timeforge'?'Luxury TimeForge':clean(value)||'Luxury TimeForge';
 const productGender=product=>list(product?.metafields).filter(field=>normalized(field?.namespace)==='custom'&&normalized(field?.key)==='gender').flatMap(field=>clean(field?.value).split(/[,;|/]/)).map(normalized);
+const PUBLIC_PRODUCT_ATTRIBUTE_KEYS=new Map([
+  ['gender','Giới tính'],['faceshape','Hình dạng mặt số'],['face_shape','Hình dạng mặt số'],['dial_shape','Hình dạng mặt số'],['watch_face_shape','Hình dạng mặt số'],
+  ['facesize','Kích thước mặt số'],['face_size','Kích thước mặt số'],['case_size','Kích thước mặt số'],['diameter','Kích thước mặt số'],['duong_kinh','Kích thước mặt số'],
+  ['bandmaterial','Chất liệu dây'],['band_material','Chất liệu dây'],['strap_material','Chất liệu dây'],['watch_band_material','Chất liệu dây'],
+  ['bandcolor','Màu dây'],['band_color','Màu dây'],['strap_color','Màu dây'],['casecolor','Màu vỏ'],['case_color','Màu vỏ'],['watch_case_color','Màu vỏ'],
+  ['classification','Phân loại'],['watch_type','Phân loại'],['movement','Bộ máy'],['phan_loai','Phân loại'],
+]);
+const productAttributes=product=>{const out={};for(const field of list(product?.metafields)){const key=normalized(field?.key).replace(/\s+/g,'_');const label=PUBLIC_PRODUCT_ATTRIBUTE_KEYS.get(key);const value=clean(field?.value);if(label&&value&&!out[label])out[label]=value}return out};
+const productOptions=product=>list(product?.options).map(option=>({name:clean(option?.name),values:list(option?.values).map(clean).filter(Boolean)})).filter(option=>option.name&&option.values.length);
+const publicVariants=product=>list(product?.variants).map(variant=>({id:clean(variant?.id)||undefined,title:clean(variant?.title)||undefined,sku:clean(variant?.sku)||undefined,price:Number(variant?.price)||0,compareAtPrice:Number(variant?.compareAtPrice)>Number(variant?.price)?Number(variant?.compareAtPrice):undefined,availability:Number(variant?.inventory)>0?'in_stock':'out_of_stock',options:variant?.optionValues&&typeof variant.optionValues==='object'?variant.optionValues:undefined}));
 const SEO_LANDING_ROUTES=[
   {loc:'/dong-ho-nam',match:p=>productGender(p).some(value=>value==='nam'||value==='male')},
   {loc:'/dong-ho-nu',match:p=>productGender(p).some(value=>value==='nu'||value==='female')},
@@ -86,12 +97,12 @@ async function sendMerchantFeed(req,res){
     const current=Math.max(0,Number(product.price)||0),compare=Math.max(0,Number(product.compareAtPrice)||0),onSale=compare>current&&current>0;
     const gtin=digits(product.barcode),validGtin=[8,12,13,14].includes(gtin.length)?gtin:'';
     const images=(Array.isArray(product.images)?product.images:[]).map(absoluteProductImage).filter(Boolean);
-    const description=text(product.descriptionText||product.descriptionHtml||`${product.title} tại Luxury Timeforge`).slice(0,5000);
+    const description=text(product.descriptionText||product.descriptionHtml||`${product.title} tại Luxury TimeForge`).slice(0,5000);
     const group=groupFor(product);
     return `<item><g:id>${esc(product.sku||product.id)}</g:id><title>${esc(product.title)}</title><description>${esc(description)}</description><link>${esc(`${site}/products/${encodeURIComponent(product.handle)}`)}</link>${images[0]?`<g:image_link>${esc(images[0])}</g:image_link>`:''}${images.slice(1,10).map(image=>`<g:additional_image_link>${esc(image)}</g:additional_image_link>`).join('')}<g:availability>${Number(product.inventory)>0?'in_stock':'out_of_stock'}</g:availability><g:condition>new</g:condition><g:price>${esc(money(onSale?compare:current))}</g:price>${onSale?`<g:sale_price>${esc(money(current))}</g:sale_price>`:''}${clean(product.vendor)?`<g:brand>${esc(product.vendor)}</g:brand>`:''}${validGtin?`<g:gtin>${esc(validGtin)}</g:gtin>`:''}${clean(product.sku)?`<g:mpn>${esc(product.sku)}</g:mpn>`:''}${clean(product.category||product.productType)?`<g:product_type>${esc(product.category||product.productType)}</g:product_type>`:''}${group?`<g:item_group_id>${esc(group.id||group.skuPrefix||group.name)}</g:item_group_id>`:''}<g:identifier_exists>${validGtin||clean(product.sku)?'yes':'no'}</g:identifier_exists></item>`;
   }).join('\n');
   const xml=`<?xml version="1.0" encoding="UTF-8"?>
-<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0"><channel><title>Luxury Timeforge</title><link>${esc(site)}</link><description>Google Merchant Center product feed</description>${items}</channel></rss>`;
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0"><channel><title>Luxury TimeForge</title><link>${esc(site)}</link><description>Google Merchant Center product feed</description>${items}</channel></rss>`;
   res.setHeader('Content-Type','application/xml; charset=utf-8');
   res.setHeader('Cache-Control','public, s-maxage=900, stale-while-revalidate=3600');
   res.setHeader('X-TimeForge-Feed-Items',String(active.length));
@@ -134,14 +145,102 @@ ${entries.join('\n')}
   return res.status(200).send(xml);
 }
 
+const PRIVATE_ROBOT_PATHS=['/api/','/admin/','/checkout','/account/','/order-confirmation/','/payment/','/search','/cart','/wishlist','/compare','/track-order'];
+function robotGroup(agent){return[`User-agent: ${agent}`,'Allow: /',...PRIVATE_ROBOT_PATHS.map(path=>`Disallow: ${path}`),'']}
 function sendRobots(_req,res){
   const site=baseSite();
   const body=[
-    'User-agent: *','Allow: /','Disallow: /admin/','Disallow: /checkout','Disallow: /account/','Disallow: /order-confirmation/','Disallow: /payment/','Disallow: /search',`Sitemap: ${site}/sitemap.xml`,`Sitemap: ${site}/image-sitemap.xml`,'',
+    '# Luxury TimeForge crawler policy',
+    '# Search/discovery: Googlebot + OAI-SearchBot are allowed on all public storefront pages.',
+    '# AI model access: GPTBot and Google-Extended are explicitly allowed on public storefront pages.',
+    ...robotGroup('OAI-SearchBot'),
+    ...robotGroup('GPTBot'),
+    ...robotGroup('Google-Extended'),
+    ...robotGroup('*'),
+    `Sitemap: ${site}/sitemap.xml`,
+    `Sitemap: ${site}/image-sitemap.xml`,
+    '',
   ].join('\n');
   res.setHeader('Content-Type','text/plain; charset=utf-8');
   res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
   return res.status(200).send(body);
+}
+
+async function readPublicCatalogBundle(){
+  const safe=async(label,fn,fallback)=>{try{return await fn()}catch(error){console.warn(`[TimeForge] ${label} read fallback:`,error instanceof Error?error.message:error);return fallback}};
+  const [products,collections,posts,profile]=await Promise.all([
+    safe('products',()=>readCatalog('timeforge/products').then(list),[]),
+    safe('collections',()=>readCatalog('timeforge/collections').then(list),[]),
+    safe('blog posts',()=>readCatalog('timeforge/blogPosts').then(list),[]),
+    safe('store profile',()=>readPublicStoreProfile(),null),
+  ]);
+  const activeProducts=products.filter(product=>product?.handle&&product?.published!==false&&product?.status==='active'&&Number(product?.price)>0);
+  const activeCollections=collections.filter(collection=>collection?.handle&&collection?.status!=='draft');
+  const activePosts=posts.filter(post=>post?.handle&&post?.status==='published');
+  return{profile,products:activeProducts,collections:activeCollections,posts:activePosts};
+}
+
+async function sendAiCatalog(_req,res){
+  const site=baseSite();const bundle=await readPublicCatalogBundle();
+  const payload={
+    schemaVersion:'1.0',generatedAt:new Date().toISOString(),site,language:'vi-VN',currency:'VND',
+    store:{name:canonicalStoreName(bundle.profile?.storeName),description:text(bundle.profile?.seoDescription||bundle.profile?.storeDescription||'Đồng hồ chính hãng, thông tin minh bạch, giao hàng toàn quốc và hỗ trợ hậu mãi.'),url:site,telephone:clean(bundle.profile?.storePhone)||undefined,email:clean(bundle.profile?.storeEmail)||undefined,address:clean(bundle.profile?.storeAddress)||undefined,sameAs:[bundle.profile?.facebookUrl,bundle.profile?.instagramUrl,bundle.profile?.tiktokUrl].map(clean).filter(value=>/^https?:\/\//i.test(value))},
+    policies:{warranty:`${site}/pages/warranty`,shipping:`${site}/pages/shipping`,returns:`${site}/pages/returns`},
+    collections:bundle.collections.map(collection=>({id:collection.id,handle:collection.handle,title:collection.title,description:text(collection.description),url:`${site}/collections/${encodeURIComponent(collection.handle)}`,image:absolute(collection.image,site)||undefined,updatedAt:collection.updatedAt||undefined})),
+    products:bundle.products.map(product=>{const images=list(product.images).map(value=>absolute(value,site)).filter(Boolean);const compare=Number(product.compareAtPrice)||0,price=Number(product.price)||0;const barcode=clean(product.barcode).replace(/\D/g,'');return{id:product.id,handle:product.handle,title:product.title,url:`${site}/products/${encodeURIComponent(product.handle)}`,brand:clean(product.vendor)||undefined,sku:clean(product.sku)||undefined,gtin:[8,12,13,14].includes(barcode.length)?barcode:undefined,category:clean(product.category||product.productType)||undefined,productType:clean(product.productType)||undefined,tags:list(product.tags).map(clean).filter(Boolean).slice(0,30),description:text(product.seoDescription||product.descriptionText||product.descriptionHtml||'').slice(0,5000),attributes:productAttributes(product),options:productOptions(product),variants:publicVariants(product),price,compareAtPrice:compare>price?compare:undefined,currency:'VND',availability:Number(product.inventory)>0?'in_stock':'out_of_stock',images:images.slice(0,10),updatedAt:product.updatedAt||undefined}},),
+    articles:bundle.posts.map(post=>({handle:post.handle,title:post.title,url:`${site}/blogs/${encodeURIComponent(post.handle)}`,excerpt:text(post.excerpt||post.contentHtml).slice(0,1000),author:clean(post.author)||'Luxury TimeForge',image:absolute(post.image,site)||undefined,publishedAt:post.publishedAt||undefined,updatedAt:post.updatedAt||undefined})),
+  };
+  res.setHeader('Content-Type','application/json; charset=utf-8');
+  res.setHeader('Cache-Control','public, s-maxage=300, stale-while-revalidate=1800');
+  res.setHeader('Access-Control-Allow-Origin','*');
+  res.setHeader('X-Robots-Tag','index, follow');
+  return res.status(200).json(payload);
+}
+
+async function sendLlms(_req,res,full=false){
+  const site=baseSite();const bundle=await readPublicCatalogBundle();const storeName=canonicalStoreName(bundle.profile?.storeName);
+  const lines=[
+    `# ${storeName}`,
+    '',
+    '> Cửa hàng đồng hồ chính hãng tại Việt Nam. Dữ liệu công khai trên website gồm catalog sản phẩm, giá bán, tình trạng hàng, nội dung tư vấn và chính sách hậu mãi.',
+    '',
+    '## Nguồn chính thức',
+    `- Website: ${site}/`,
+    `- Catalog máy đọc: ${site}/ai-catalog.json`,
+    `- Sitemap: ${site}/sitemap.xml`,
+    `- Image sitemap: ${site}/image-sitemap.xml`,
+    `- Google Merchant feed: ${site}/google-products.xml`,
+    '',
+    '## Trang mua sắm',
+    `- Tất cả đồng hồ: ${site}/collections`,
+    `- Đồng hồ nam: ${site}/dong-ho-nam`,
+    `- Đồng hồ nữ: ${site}/dong-ho-nu`,
+    `- Đồng hồ dưới 5 triệu: ${site}/dong-ho-duoi-5-trieu`,
+    `- Đồng hồ đang giảm giá: ${site}/dong-ho-sale`,
+    `- Watch Finder: ${site}/watch-finder`,
+    '',
+    '## Chính sách',
+    `- Giới thiệu: ${site}/pages/about`,
+    `- Bảo hành: ${site}/pages/warranty`,
+    `- Giao hàng: ${site}/pages/shipping`,
+    `- Đổi trả: ${site}/pages/returns`,
+    '',
+    '## Nội dung',
+    `- TimeForge Journal: ${site}/blogs`,
+    '',
+    '## Lưu ý dữ liệu',
+    '- Ưu tiên URL sản phẩm và ai-catalog.json cho giá/tình trạng hàng mới nhất.',
+    '- Không dùng các trang admin, tài khoản, checkout hoặc thanh toán làm nguồn thông tin công khai.',
+  ];
+  if(full){
+    lines.push('','## Sản phẩm đang xuất bản');
+    for(const product of bundle.products){lines.push(`- ${product.title} | ${clean(product.vendor)||'Luxury TimeForge'} | SKU ${clean(product.sku)||'N/A'} | ${Math.round(Number(product.price)||0)} VND | ${Number(product.inventory)>0?'Còn hàng':'Tạm hết hàng'} | ${site}/products/${encodeURIComponent(product.handle)}`)}
+    if(bundle.posts.length){lines.push('','## Bài viết');for(const post of bundle.posts)lines.push(`- ${post.title} | ${site}/blogs/${encodeURIComponent(post.handle)}`)}
+  }
+  res.setHeader('Content-Type','text/plain; charset=utf-8');
+  res.setHeader('Cache-Control','public, s-maxage=300, stale-while-revalidate=1800');
+  res.setHeader('Access-Control-Allow-Origin','*');
+  return res.status(200).send(lines.join('\n')+'\n');
 }
 
 async function sendSocialImage(req,res){
@@ -182,6 +281,9 @@ export default async function handler(req,res){
   if(resource==='robots'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendRobots(req,res)}
   if(resource==='image-sitemap'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendImageSitemap(req,res)}
   if(resource==='merchant-feed')return sendMerchantFeed(req,res);
+  if(resource==='ai-catalog'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendAiCatalog(req,res)}
+  if(resource==='llms'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendLlms(req,res,false)}
+  if(resource==='llms-full'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendLlms(req,res,true)}
   if(resource==='social-image')return sendSocialImage(req,res);
   return res.status(404).json({error:'Unknown metadata resource'});
 }

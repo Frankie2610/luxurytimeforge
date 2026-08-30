@@ -227,7 +227,7 @@ export function AuthProvider({children}:{children:ReactNode}){
 
   const loginDemo=()=>{
     if(!demoEnabled)throw new Error('Đăng nhập demo đang bị tắt.');
-    const next:AdminSessionUser={uid:'demo-owner',email:'owner@timeforge.local',name:'Luxury Timeforge Owner',role:'owner',access:'active'};
+    const next:AdminSessionUser={uid:'demo-owner',email:'owner@timeforge.local',name:'Luxury TimeForge Owner',role:'owner',access:'active'};
     writeFirebaseSession(null);setUser(next);sessionStorage.setItem(DEMO_KEY,JSON.stringify(next));
   };
 

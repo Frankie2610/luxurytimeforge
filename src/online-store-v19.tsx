@@ -368,7 +368,7 @@ function ThemeEditorV19({close}: {close: () => void}) {
   };
   const applyPreset = (preset: 'atelier' | 'midnight' | 'minimal') => {
     const palettes = {
-      atelier: {name: 'Luxury Timeforge Atelier', accent: '#7a3f25', background: '#f7f4ef', surface: '#ffffff', text: '#171513', muted: '#746f69', textOnDark: '#f8f5ef', cardRadius: 18, buttonRadius: 999, headingWeight: 600, bodyWeight: 400, motion: 'subtle' as const},
+      atelier: {name: 'Luxury TimeForge Atelier', accent: '#7a3f25', background: '#f7f4ef', surface: '#ffffff', text: '#171513', muted: '#746f69', textOnDark: '#f8f5ef', cardRadius: 18, buttonRadius: 999, headingWeight: 600, bodyWeight: 400, motion: 'subtle' as const},
       midnight: {name: 'TimeForge Midnight', accent: '#c49a62', background: '#0f1411', surface: '#18201b', text: '#f5f1e8', muted: '#a9b2aa', textOnDark: '#ffffff', cardRadius: 14, buttonRadius: 8, headingWeight: 600, bodyWeight: 400, motion: 'expressive' as const},
       minimal: {name: 'TimeForge Minimal', accent: '#254b36', background: '#ffffff', surface: '#ffffff', text: '#171a18', muted: '#6b716d', textOnDark: '#ffffff', cardRadius: 6, buttonRadius: 6, headingWeight: 500, bodyWeight: 400, motion: 'none' as const},
     };

@@ -130,7 +130,7 @@ export function parseGenericRows(data:Record<string,string>[],publish:boolean):I
       barcode:findValue(row,BARCODE),inventory,trackInventory:true,
       weight:num(findValue(row,aliases('Variant Grams','Weight','Trọng lượng','Trong luong'))),
       weightUnit:findValue(row,aliases('Variant Weight Unit','Weight Unit','Đơn vị trọng lượng','Don vi trong luong'))||'g',
-      seoTitle:findValue(row,SEO_TITLE)||`${title} | Luxury Timeforge`,
+      seoTitle:findValue(row,SEO_TITLE)||`${title} | Luxury TimeForge`,
       seoDescription:findValue(row,SEO_DESCRIPTION)||strip(rawDescription).slice(0,155),
       variants:[variant],options:[],metafields:specs.metafields,
       createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),rawShopify:firebaseSafeRawRow(row),
@@ -173,7 +173,7 @@ export function parseShopifyRows(data:Record<string,string>[],headers:string[],p
       status,published,
       images,price:first?.price||num(main['Variant Price']),compareAtPrice:first?.compareAtPrice||num(main['Variant Compare At Price']),cost:num(main['Cost per item']),
       barcode:main['Variant Barcode']||'',inventory:variants.reduce((sum,item)=>sum+item.inventory,0)||num(main['Variant Inventory Qty']),trackInventory:main['Variant Inventory Tracker']==='shopify',weight:num(main['Variant Grams']),weightUnit:main['Variant Weight Unit']||'g',
-      seoTitle:main['SEO Title']||`${main.Title||groupKey} | Luxury Timeforge`,seoDescription:main['SEO Description']||strip(html).slice(0,155),options:optionList(rows),metafields:metafields(main),
+      seoTitle:main['SEO Title']||`${main.Title||groupKey} | Luxury TimeForge`,seoDescription:main['SEO Description']||strip(html).slice(0,155),options:optionList(rows),metafields:metafields(main),
       variants:variants.length?variants:[{id:primarySku,title:'Default Title',sku:primarySku,price:num(main['Variant Price']),compareAtPrice:num(main['Variant Compare At Price']),inventory:num(main['Variant Inventory Qty']),optionValues:{}}],
       createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),rawShopify:firebaseSafeRawRow(main),
     };

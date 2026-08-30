@@ -9,7 +9,7 @@ const storefront=read('src/storefront-v10.tsx');
 const admin=read('src/admin.tsx');
 const pkg=JSON.parse(read('package.json'));
 
-check('Exact fallback store name exists',profile.includes("DEFAULT_STORE_NAME='Luxury Timeforge'"));
+check('Exact fallback store name exists',profile.includes("DEFAULT_STORE_NAME='Luxury TimeForge'"));
 check('Current static logo is the fallback',profile.includes("DEFAULT_STORE_LOGO='/luxury-timeforge-logo.svg'"));
 check('Current favicon is the fallback icon',profile.includes("DEFAULT_STORE_ICON='/favicon.svg'"));
 check('Blank Firebase name falls back but blank logo remains removable',profile.includes('storeName:value?.storeName==null?resolveStoreName(fallback.storeName):resolveStoreName(value.storeName)')&&profile.includes('logoImage:value?.logoImage==null?resolveCustomStoreLogo(fallback.logoImage):resolveCustomStoreLogo(value.logoImage)'));

@@ -1,11 +1,11 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.66.3",
+  "version": "0.66.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/check-css-budget-v654.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender-seo.mjs && node scripts/check-v664-ai-seo.mjs && node scripts/check-css-budget-v654.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b --pretty false",
     "css:audit": "node scripts/css-graph-audit-v654.mjs",
@@ -68,7 +68,8 @@
     "v654:check": "node scripts/check-v654-css-seo.mjs",
     "v655:check": "node scripts/check-v655-seo-conversion.mjs",
     "v656:check": "node scripts/check-v656-product-seo-performance.mjs",
-    "v662:check": "node scripts/check-v662-performance-product-groups.mjs"
+    "v662:check": "node scripts/check-v662-performance-product-groups.mjs",
+    "v664:check": "node scripts/check-v664-ai-seo.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -111,7 +112,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.66.3: PDP hero and zoom use original catalog images while thumbnails and SKU-family previews remain bandwidth-optimized.",
+  "description": "Luxury TimeForge V0.66.4: server-readable SEO prerendering, AI crawler discovery, structured commerce data, live AI catalog and index controls.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

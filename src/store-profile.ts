@@ -1,6 +1,6 @@
 import type {StoreProfile, Theme} from './types';
 
-export const DEFAULT_STORE_NAME='Luxury Timeforge';
+export const DEFAULT_STORE_NAME='Luxury TimeForge';
 export const DEFAULT_STORE_LOGO='/luxury-timeforge-logo.svg';
 export const DEFAULT_STORE_ICON='/favicon.svg';
 
@@ -27,7 +27,7 @@ export const DEFAULT_STORE_PROFILE:StoreProfile={
   updatedAt:'',
 };
 
-export const resolveStoreName=(value:unknown)=>clean(value,DEFAULT_STORE_NAME);
+export const resolveStoreName=(value:unknown)=>{const name=clean(value,DEFAULT_STORE_NAME);return name.toLocaleLowerCase('vi-VN')==='luxury timeforge'?DEFAULT_STORE_NAME:name};
 export const resolveCustomStoreLogo=(value:unknown)=>clean(value);
 export const resolveStoreLogo=(value:unknown)=>resolveCustomStoreLogo(value)||DEFAULT_STORE_LOGO;
 export const resolveStoreIcon=(value:unknown)=>resolveCustomStoreLogo(value)||DEFAULT_STORE_ICON;
