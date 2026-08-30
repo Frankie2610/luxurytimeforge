@@ -2,7 +2,7 @@ import {readFile,access} from 'node:fs/promises';
 import path from 'node:path';
 const root=process.cwd();
 const read=rel=>readFile(path.join(root,rel),'utf8');
-const must=(condition,message)=>{if(!condition)throw new Error(`[V0.66.4 AI/SEO] ${message}`)};
+const must=(condition,message)=>{if(!condition)throw new Error(`[V0.66.x AI/SEO] ${message}`)};
 const pkg=JSON.parse(await read('package.json'));
 const index=await read('index.html');
 const meta=await read('api/meta.js');
@@ -12,7 +12,7 @@ const store=await read('src/store-profile.ts');
 const envExample=await read('.env.example');
 const prerender=await read('scripts/prerender-seo.mjs');
 
-must(pkg.version==='0.66.4','package version must be 0.66.4');
+must(/^0\.66\.(?:4|5)$/.test(pkg.version),'package version must be a compatible 0.66.4/0.66.5 release');
 must(String(pkg.scripts?.build||'').includes('prerender-seo.mjs'),'build must run SEO prerender');
 must(index.includes('rel="canonical"'),'index must include canonical fallback');
 must(index.includes('/llms.txt')&&index.includes('/ai-catalog.json'),'index must advertise AI-readable resources');
@@ -35,7 +35,7 @@ must(seo.includes("'@type':'OfferShippingDetails'"),'product offers need shippin
 must(seo.includes('additionalProperty:productAdditionalProperties'),'product schema must expose public watch attributes');
 must(store.includes("DEFAULT_STORE_NAME='Luxury TimeForge'"),'brand casing must be canonical');
 must(envExample.includes('VITE_PUBLIC_SITE_URL=https://luxurytimeforge.vercel.app'),'production URL must be the env example default');
-must(prerender.includes('data-seo-prerender="v0.66.4"'),'prerender script must emit crawlable route content');
+must(/data-seo-prerender=\"v0\.66\.[45]\"/.test(prerender),'prerender script must emit crawlable route content');
 const rewrites=JSON.stringify(vercel.rewrites||[]);must(rewrites.includes('/llms.txt')&&rewrites.includes('/ai-catalog.json'),'Vercel must route AI resources');
 const headers=JSON.stringify(vercel.headers||[]);must(headers.includes('X-Robots-Tag')&&headers.includes('noindex, nofollow'),'private routes must send X-Robots-Tag');
 try{
@@ -43,10 +43,10 @@ try{
   const built=await read('dist/index.html');must(built.includes('tf-prerender'),'built homepage must contain crawlable fallback');
   for(const rel of ['collections/index.html','watch-finder/index.html','blogs/index.html','pages/about/index.html','pages/warranty/index.html','pages/shipping/index.html','pages/returns/index.html']){
     await access(path.join(root,'dist',rel));
-    const html=await read(`dist/${rel}`);must(html.includes('data-seo-prerender="v0.66.4"'),`${rel} must be prerendered`);
+    const html=await read(`dist/${rel}`);must(/data-seo-prerender=\"v0\.66\.[45]\"/.test(html),`${rel} must be prerendered`);
   }
 }catch(error){
   if(error?.code!=='ENOENT')throw error;
-  console.warn('[V0.66.4 AI/SEO] dist/ not present; source-level checks only.');
+  console.warn('[V0.66.x AI/SEO] dist/ not present; source-level checks only.');
 }
-console.log('[V0.66.4 AI/SEO] checks passed.');
+console.log('[V0.66.x AI/SEO] checks passed.');

@@ -16,6 +16,12 @@ const absolute=(value,origin)=>{
   return `${origin}${raw.startsWith('/')?'':'/'}${raw}`;
 };
 const list=value=>Array.isArray(value)?value.filter(Boolean):Object.values(value||{}).filter(Boolean);
+const fetchWithTimeout=async(url,options={},timeoutMs=4500)=>{
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),Math.max(500,timeoutMs));
+  try{return await fetch(url,{...options,signal:controller.signal})}
+  finally{clearTimeout(timer)}
+};
 const normalized=value=>clean(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').toLowerCase();
 const canonicalStoreName=value=>normalized(value)==='luxury timeforge'?'Luxury TimeForge':clean(value)||'Luxury TimeForge';
 const productGender=product=>list(product?.metafields).filter(field=>normalized(field?.namespace)==='custom'&&normalized(field?.key)==='gender').flatMap(field=>clean(field?.value).split(/[,;|/]/)).map(normalized);
@@ -45,14 +51,14 @@ function resourceFromRequest(req){
 async function readPrivate(path){
   const db=publicDatabaseUrl(),auth=process.env.FIREBASE_DATABASE_AUTH;
   if(!db||!auth)return null;
-  const r=await fetch(`${db}/${path}.json?auth=${encodeURIComponent(auth)}`,{headers:{'Cache-Control':'no-store'}});
+  const r=await fetchWithTimeout(`${db}/${path}.json?auth=${encodeURIComponent(auth)}`,{headers:{'Cache-Control':'no-store'}},4000);
   return r.ok?r.json():null;
 }
 
 async function readPublicStoreProfile(){
   const base=publicDatabaseUrl();
   if(!base)return null;
-  const response=await fetch(`${base}/timeforge/settings/store.json`,{headers:{Accept:'application/json','Cache-Control':'no-cache'}});
+  const response=await fetchWithTimeout(`${base}/timeforge/settings/store.json`,{headers:{Accept:'application/json','Cache-Control':'no-cache'}},4000);
   if(!response.ok)throw new Error(`Firebase public profile read failed (${response.status})`);
   return response.json();
 }
@@ -60,7 +66,7 @@ async function readPublicStoreProfile(){
 async function readPublic(path){
   const base=publicDatabaseUrl();
   if(!base)return null;
-  const response=await fetch(`${base}/${path}.json`,{headers:{Accept:'application/json','Cache-Control':'no-cache'}});
+  const response=await fetchWithTimeout(`${base}/${path}.json`,{headers:{Accept:'application/json','Cache-Control':'no-cache'}},4000);
   if(!response.ok)throw new Error(`Firebase public read failed (${response.status})`);
   return response.json();
 }
@@ -110,11 +116,18 @@ async function sendMerchantFeed(req,res){
 }
 
 async function sendSitemap(_req,res){
-  const site=baseSite(),today=new Date().toISOString().slice(0,10);let products=[],collections=[],posts=[];
-  try{[products,collections,posts]=await Promise.all([readCatalog('timeforge/products').then(list),readCatalog('timeforge/collections').then(list),readCatalog('timeforge/blogPosts').then(list)])}catch{}
+  const site=baseSite(),today=new Date().toISOString().slice(0,10);
+  const safeList=async(label,path)=>{try{return list(await readCatalog(path))}catch(error){console.warn(`[TimeForge] sitemap ${label} fallback:`,error instanceof Error?error.message:error);return[]}};
+  const [products,collections,posts]=await Promise.all([
+    safeList('products','timeforge/products'),
+    safeList('collections','timeforge/collections'),
+    safeList('blog posts','timeforge/blogPosts'),
+  ]);
   const activeProducts=products.filter(p=>p?.handle&&p?.published!==false&&p?.status==='active');
-  const landingUrls=SEO_LANDING_ROUTES.filter(route=>activeProducts.some(route.match)).map(route=>({loc:route.loc,priority:'0.78',freq:'weekly'}));
-  const urls=[
+  // These are permanent editorial landing pages. They remain indexable even while
+  // product data is warming up; an empty client-side result must never emit noindex.
+  const landingUrls=SEO_LANDING_ROUTES.map(route=>({loc:route.loc,priority:'0.78',freq:'weekly'}));
+  const rawUrls=[
     {loc:'/',priority:'1.0',freq:'daily'},{loc:'/collections',priority:'0.9',freq:'daily'},{loc:'/watch-finder',priority:'0.7',freq:'monthly'},{loc:'/blogs',priority:'0.7',freq:'weekly'},
     {loc:'/pages/about',priority:'0.6',freq:'monthly'},{loc:'/pages/warranty',priority:'0.7',freq:'monthly'},{loc:'/pages/shipping',priority:'0.6',freq:'monthly'},{loc:'/pages/returns',priority:'0.6',freq:'monthly'},
     ...landingUrls,
@@ -122,9 +135,13 @@ async function sendSitemap(_req,res){
     ...activeProducts.map(p=>({loc:`/products/${encodeURIComponent(p.handle)}`,priority:'0.8',freq:'weekly',lastmod:String(p.updatedAt||today).slice(0,10)})),
     ...posts.filter(post=>post?.handle&&post?.status==='published').map(post=>({loc:`/blogs/${encodeURIComponent(post.handle)}`,priority:'0.65',freq:'monthly',lastmod:String(post.updatedAt||post.publishedAt||today).slice(0,10)})),
   ];
+  const seen=new Set();const urls=rawUrls.filter(item=>{if(!item?.loc||seen.has(item.loc))return false;seen.add(item.loc);return true});
   const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(u=>`  <url><loc>${esc(site+u.loc)}</loc>${u.lastmod?`<lastmod>${esc(u.lastmod)}</lastmod>`:''}<changefreq>${u.freq}</changefreq><priority>${u.priority}</priority></url>`).join('\n')}\n</urlset>`;
   res.setHeader('Content-Type','application/xml; charset=utf-8');
-  res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
+  res.setHeader('Cache-Control','public, s-maxage=1800, stale-while-revalidate=86400');
+  res.setHeader('X-Robots-Tag','index, follow');
+  res.setHeader('X-Content-Type-Options','nosniff');
+  res.setHeader('X-TimeForge-Sitemap-Urls',String(urls.length));
   return res.status(200).send(xml);
 }
 

@@ -78,7 +78,7 @@ async function fetchJson(dbPath,query={}){
 }
 async function safeFetch(label,dbPath,query={}){
   try{return await fetchJson(dbPath,query)}
-  catch(error){console.warn(`[V0.66.4 SEO] Could not read ${label}; continuing without it.`,error?.message||error);return null}
+  catch(error){console.warn(`[V0.66.5 SEO] Could not read ${label}; continuing without it.`,error?.message||error);return null}
 }
 
 let template=await readFile(path.join(DIST,'index.html'),'utf8');
@@ -96,8 +96,8 @@ if(db){
     safeFetch('content pages','timeforge/contentPages'),
   ]);
   data.profile=profile||null;data.products=list(products);data.collections=list(collections);data.posts=list(posts);data.reviews=list(reviews);data.groups=list(groups);data.contentPages=list(contentPages);
-  console.log(`[V0.66.4 SEO] Catalog loaded: ${data.products.length} products, ${data.collections.length} collections, ${data.posts.length} posts, ${data.reviews.length} published reviews.`);
-}else console.warn('[V0.66.4 SEO] No Firebase database URL at build time; catalog routes will rely on client rendering until the next production build with env configured.');
+  console.log(`[V0.66.5 SEO] Catalog loaded: ${data.products.length} products, ${data.collections.length} collections, ${data.posts.length} posts, ${data.reviews.length} published reviews.`);
+}else console.warn('[V0.66.5 SEO] No Firebase database URL at build time; catalog routes will rely on client rendering until the next production build with env configured.');
 
 const profile=data.profile||{};
 const storeName=normalize(profile.storeName)==='luxury timeforge'?'Luxury TimeForge':clean(profile.storeName)||'Luxury TimeForge';
@@ -164,13 +164,18 @@ function renderHead(html,{title,description,canonical,image,type='website',noind
 }
 function shellBody(route,title,description,inner=''){
   const crumbs=route==='/'?'':`<p class="crumbs"><a href="/">Trang chủ</a> › ${esc(title)}</p>`;
-  return `<main class="tf-prerender" data-seo-prerender="v0.66.4">${crumbs}<h1>${esc(title)}</h1><p>${esc(description)}</p>${inner}<p><a href="/collections">Xem toàn bộ đồng hồ</a> · <a href="/pages/warranty">Bảo hành</a> · <a href="/pages/shipping">Giao hàng</a> · <a href="/pages/returns">Đổi trả</a></p></main>`;
+  return `<main class="tf-prerender" data-seo-prerender="v0.66.5">${crumbs}<h1>${esc(title)}</h1><p>${esc(description)}</p>${inner}<p><a href="/collections">Xem toàn bộ đồng hồ</a> · <a href="/pages/warranty">Bảo hành</a> · <a href="/pages/shipping">Giao hàng</a> · <a href="/pages/returns">Đổi trả</a></p></main>`;
 }
 function injectRoot(html,body){return html.replace(/<div\s+id=["']root["']>[\s\S]*?<\/div>/i,`<div id="root">${body}</div>`)}
 async function writeRoute(route,meta,body){
   let html=renderHead(template,meta);html=injectRoot(html,body);
-  const rel=route==='/'?'':route.replace(/^\//,'');
+  if(route==='/'){await writeFile(path.join(DIST,'index.html'),html);return}
+  const rel=route.replace(/^\//,'');
+  // Keep directory/index.html for conventional static hosting and also emit a flat
+  // .html file. Vercel cleanUrls resolves /products/foo to /products/foo.html
+  // before the SPA catch-all rewrite, so crawlers receive the prerendered document.
   const dir=path.join(DIST,rel);await mkdir(dir,{recursive:true});await writeFile(path.join(dir,'index.html'),html);
+  const flat=path.join(DIST,`${rel}.html`);await mkdir(path.dirname(flat),{recursive:true});await writeFile(flat,html);
 }
 
 const coreRoutes=[];
@@ -198,9 +203,12 @@ pushStatic('/pages/shipping','Chính sách giao hàng đồng hồ',clamp(shippi
 pushStatic('/pages/returns','Chính sách đổi trả đồng hồ',clamp(returnsPage?.lead||'Điều kiện và quy trình đổi trả sản phẩm tại Luxury TimeForge.',158),contentPageHtml(returnsPage,'<p>Yêu cầu đổi trả được xem xét theo tình trạng sản phẩm, thời điểm tiếp nhận và điều kiện đã công bố. Khách hàng nên giữ nguyên hộp, phụ kiện, tem và chứng từ đi kèm.</p>'));
 
 for(const landing of landingDefs){
-  const matched=activeProducts.filter(landing.match).slice(0,48);if(!matched.length)continue;
-  const inner=`<h2>${matched.length} mẫu phù hợp</h2><ul>${matched.map(p=>`<li><a href="/products/${encodeURIComponent(p.handle)}">${esc(p.title)}</a> — ${esc(money(p.price))}</li>`).join('')}</ul>`;
-  pushStatic(landing.path,`${landing.title} | ${storeName}`,landing.description,inner,matched[0]?.images?.[0]||socialImage,'website',[{'@type':'ItemList',itemListElement:matched.slice(0,24).map((p,i)=>({'@type':'ListItem',position:i+1,url:`${site}/products/${encodeURIComponent(p.handle)}`,name:p.title}))}]);
+  const matched=activeProducts.filter(landing.match).slice(0,48);
+  const inner=matched.length
+    ?`<h2>${matched.length} mẫu phù hợp</h2><ul>${matched.map(p=>`<li><a href="/products/${encodeURIComponent(p.handle)}">${esc(p.title)}</a> — ${esc(money(p.price))}</li>`).join('')}</ul>`
+    :`<h2>Khám phá sản phẩm</h2><p>Danh sách sản phẩm được cập nhật từ catalog Luxury TimeForge. Xem toàn bộ đồng hồ hoặc quay lại trang này khi catalog hoàn tất đồng bộ.</p>`;
+  const itemList=matched.length?[{'@type':'ItemList',itemListElement:matched.slice(0,24).map((p,i)=>({'@type':'ListItem',position:i+1,url:`${site}/products/${encodeURIComponent(p.handle)}`,name:p.title}))}]:[];
+  pushStatic(landing.path,`${landing.title} | ${storeName}`,landing.description,inner,matched[0]?.images?.[0]||socialImage,'website',itemList);
 }
 
 for(const entry of coreRoutes)await writeRoute(entry.route,entry.meta,entry.body);
@@ -230,4 +238,4 @@ for(const post of activePosts){
   await writeRoute(route,{title,description,canonical,image,type:'article',graph},shellBody(route,title,description,inner));
 }
 
-console.log(`[V0.66.4 SEO] Prerendered ${coreRoutes.length+activeCollections.length+activeProducts.length+activePosts.length} routes into dist/.`);
+console.log(`[V0.66.5 SEO] Prerendered ${coreRoutes.length+activeCollections.length+activeProducts.length+activePosts.length} routes into dist/.`);

@@ -28,7 +28,7 @@ const productAdditionalProperties=(product:Product)=>{const seen=new Set<string>
 
 export function SeoHeadV60(){
   const location=useLocation();
-  const{products,collections,productGroups,storeProfile}=useStorefrontData();
+  const{products,collections,productGroups,storeProfile,isLoading}=useStorefrontData();
   const reviews=useStoreReviews();
   const{posts}=useBlogPostsV18();
   const seo=useMemo(()=>{
@@ -47,7 +47,7 @@ export function SeoHeadV60(){
     const collectionProducts=collection?resolvesCollectionProducts(collection,products).filter(item=>item.status==='active'&&item.published!==false):[];
     let title=storeProfile.seoTitle||`${storeName} | Đồng hồ chính hãng`,description=storeProfile.seoDescription||storeProfile.storeDescription||'Đồng hồ chính hãng, thông tin minh bạch, giao hàng toàn quốc và hỗ trợ hậu mãi từ Luxury TimeForge.',image=storeProfile.socialShareImage||storeProfile.logoImage||FALLBACK_IMAGE,type='website',noindex=false;
     if(product){title=product.seoTitle||`${product.title} chính hãng | ${storeName}`;description=product.seoDescription||product.descriptionText||clean(product.descriptionHtml)||`${product.title} chính hãng tại ${storeName}. Xem giá, tình trạng hàng, thông số và chính sách bảo hành.`;image=product.images[0]||image;type='product'}
-    else if(landing){title=`${landing.title} | ${storeName}`;description=landing.description;image=landingProducts[0]?.images[0]||image;if(!landingProducts.length)noindex=true}
+    else if(landing){title=`${landing.title} | ${storeName}`;description=landing.description;image=landingProducts[0]?.images[0]||image}
     else if(collection){title=`${collection.title} | Đồng hồ chính hãng | ${storeName}`;description=collection.description||`Khám phá bộ sưu tập ${collection.title} được ${storeName} tuyển chọn.`;image=collection.image||image}
     else if(path==='/collections'){title=`Đồng hồ chính hãng | ${storeName}`;description='Khám phá đồng hồ theo thương hiệu, mức giá, giới tính, chất liệu dây, kích thước mặt và tình trạng còn hàng.'}
     else if(path==='/watch-finder'){title=`Tư vấn chọn đồng hồ theo nhu cầu | ${storeName}`;description='Tìm mẫu đồng hồ phù hợp theo phong cách, kích thước và ngân sách với công cụ tư vấn của Luxury TimeForge.'}
@@ -58,10 +58,12 @@ export function SeoHeadV60(){
     else if(path.startsWith('/pages/')){const slug=path.split('/').filter(Boolean).pop()||'';title=`${slug.replace(/-/g,' ')} | ${storeName}`}
     else if(path==='/search'||path==='/wishlist'||path==='/compare'||path==='/cart'||path==='/checkout'||path==='/404'||path==='/track-order'||path.startsWith('/account')||path.startsWith('/order-confirmation')||path.startsWith('/payment/')||path.startsWith('/admin'))noindex=true;
     const canonicalPath=path==='/'?'':path.replace(/\/$/,'');const paginatedRoute=path==='/collections'||path.startsWith('/collections/')||path==='/blogs';const canonicalSearch=paginatedRoute&&page>1?`?page=${page}`:'';if(canonicalSearch)title=`${title} – Trang ${page}`;const canonical=`${site}${canonicalPath}${canonicalSearch}`;const absoluteImage=/^https?:\/\//i.test(image)?image:`${site}${image.startsWith('/')?'':'/'}${image}`;
-    return{site,storeName,path,title:clamp(clean(title),68),description:clamp(clean(description),158),image:absoluteImage,type,noindex,canonical,product,collection,collectionProducts,landing,landingProducts,post};
-  },[collections,location.pathname,location.search,posts,products,storeProfile]);
+    const dynamicDataRoute=Boolean(landing||productHandle||collectionHandle||postHandle);const deferHeadUpdate=isLoading&&dynamicDataRoute;
+    return{site,storeName,path,title:clamp(clean(title),68),description:clamp(clean(description),158),image:absoluteImage,type,noindex,canonical,product,collection,collectionProducts,landing,landingProducts,post,deferHeadUpdate};
+  },[collections,isLoading,location.pathname,location.search,posts,products,storeProfile]);
 
   useEffect(()=>{
+    if(seo.deferHeadUpdate)return;
     document.documentElement.lang='vi';document.title=seo.title;
     setMeta('meta[name="description"]',{name:'description',content:seo.description});
     setMeta('meta[name="robots"]',{name:'robots',content:seo.noindex?'noindex, nofollow':'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'});
