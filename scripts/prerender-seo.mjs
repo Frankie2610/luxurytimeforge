@@ -78,7 +78,7 @@ async function fetchJson(dbPath,query={}){
 }
 async function safeFetch(label,dbPath,query={}){
   try{return await fetchJson(dbPath,query)}
-  catch(error){console.warn(`[V0.66.5 SEO] Could not read ${label}; continuing without it.`,error?.message||error);return null}
+  catch(error){console.warn(`[V0.66.6 SEO] Could not read ${label}; continuing without it.`,error?.message||error);return null}
 }
 
 let template=await readFile(path.join(DIST,'index.html'),'utf8');
@@ -96,8 +96,8 @@ if(db){
     safeFetch('content pages','timeforge/contentPages'),
   ]);
   data.profile=profile||null;data.products=list(products);data.collections=list(collections);data.posts=list(posts);data.reviews=list(reviews);data.groups=list(groups);data.contentPages=list(contentPages);
-  console.log(`[V0.66.5 SEO] Catalog loaded: ${data.products.length} products, ${data.collections.length} collections, ${data.posts.length} posts, ${data.reviews.length} published reviews.`);
-}else console.warn('[V0.66.5 SEO] No Firebase database URL at build time; catalog routes will rely on client rendering until the next production build with env configured.');
+  console.log(`[V0.66.6 SEO] Catalog loaded: ${data.products.length} products, ${data.collections.length} collections, ${data.posts.length} posts, ${data.reviews.length} published reviews.`);
+}else console.warn('[V0.66.6 SEO] No Firebase database URL at build time; catalog routes will rely on client rendering until the next production build with env configured.');
 
 const profile=data.profile||{};
 const storeName=normalize(profile.storeName)==='luxury timeforge'?'Luxury TimeForge':clean(profile.storeName)||'Luxury TimeForge';
@@ -159,12 +159,17 @@ function renderHead(html,{title,description,canonical,image,type='website',noind
   if(googleVerification)html=setAttrMeta(html,/<meta\s+name=["']google-site-verification["'][^>]*>/i,`<meta name="google-site-verification" content="${esc(googleVerification)}"/>`);
   const structured=`<script id="tf60-structured-data" type="application/ld+json">${jsonSafe({'@context':'https://schema.org','@graph':graph.filter(Boolean)})}</script>`;
   if(/<script\s+id=["']tf60-structured-data["'][\s\S]*?<\/script>/i.test(html))html=html.replace(/<script\s+id=["']tf60-structured-data["'][\s\S]*?<\/script>/i,structured);else html=html.replace('</head>',`${structured}\n</head>`);
-  if(!html.includes('id="tf-prerender-style"'))html=html.replace('</head>',`<style id="tf-prerender-style">.tf-prerender{max-width:1180px;margin:0 auto;padding:32px 20px 48px;font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;color:#18231d}.tf-prerender h1{font-size:clamp(28px,5vw,48px);line-height:1.12;margin:0 0 14px}.tf-prerender h2{margin-top:30px}.tf-prerender a{color:#1f4930}.tf-prerender img{max-width:360px;height:auto}.tf-prerender ul{padding-left:20px}.tf-prerender .price{font-size:1.35rem;font-weight:700}.tf-prerender .crumbs{font-size:.9rem;margin-bottom:18px}</style>\n</head>`);
+  if(!html.includes('id="tf-prerender-boot-script"'))html=html.replace('</head>',`<script id="tf-prerender-boot-script">(function(){var d=document.documentElement;d.classList.add('tf-js');window.setTimeout(function(){if(!d.classList.contains('tf-app-mounted'))d.classList.remove('tf-js')},8000)})();</script>
+</head>`);
+  if(!html.includes('id="tf-prerender-style"'))html=html.replace('</head>',`<style id="tf-prerender-style">.tf-prerender{max-width:1180px;margin:0 auto;padding:32px 20px 48px;font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;color:#18231d}.tf-prerender h1{font-size:clamp(28px,5vw,48px);line-height:1.12;margin:0 0 14px}.tf-prerender h2{margin-top:30px}.tf-prerender a{color:#1f4930}.tf-prerender img{max-width:360px;height:auto}.tf-prerender ul{padding-left:20px}.tf-prerender .price{font-size:1.35rem;font-weight:700}.tf-prerender .crumbs{font-size:.9rem;margin-bottom:18px}.tf-prerender-boot{display:none}.tf-js .tf-prerender{display:none}.tf-js .tf-prerender-boot{min-height:65vh;display:grid;place-items:center;padding:24px;background:#fff;color:#201e1b}.tf-prerender-boot>div{width:min(360px,86vw);display:grid;justify-items:center;gap:12px;text-align:center}.tf-prerender-boot strong{font:700 15px/1.3 system-ui,-apple-system,Segoe UI,sans-serif}.tf-prerender-boot small{font:600 11px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;color:#777}.tf-prerender-boot .bar{width:100%;height:3px;border-radius:999px;overflow:hidden;background:#eceae6;position:relative}.tf-prerender-boot .bar:after{content:'';position:absolute;inset:0 auto 0 0;width:36%;border-radius:inherit;background:#1f4930;animation:tf-prerender-load 1s ease-in-out infinite alternate}.tf-prerender-boot .dots{display:flex;gap:7px}.tf-prerender-boot .dots i{width:8px;height:8px;border-radius:50%;background:#d8d4ce;animation:tf-prerender-pulse .8s infinite alternate}.tf-prerender-boot .dots i:nth-child(2){animation-delay:.16s}.tf-prerender-boot .dots i:nth-child(3){animation-delay:.32s}@keyframes tf-prerender-load{to{transform:translateX(178%)}}@keyframes tf-prerender-pulse{to{opacity:.35;transform:translateY(-3px)}}@media(prefers-reduced-motion:reduce){.tf-prerender-boot .bar:after,.tf-prerender-boot .dots i{animation:none}}</style>
+</head>`);
   return html;
 }
 function shellBody(route,title,description,inner=''){
   const crumbs=route==='/'?'':`<p class="crumbs"><a href="/">Trang chủ</a> › ${esc(title)}</p>`;
-  return `<main class="tf-prerender" data-seo-prerender="v0.66.5">${crumbs}<h1>${esc(title)}</h1><p>${esc(description)}</p>${inner}<p><a href="/collections">Xem toàn bộ đồng hồ</a> · <a href="/pages/warranty">Bảo hành</a> · <a href="/pages/shipping">Giao hàng</a> · <a href="/pages/returns">Đổi trả</a></p></main>`;
+  const boot=`<div class="tf-prerender-boot" aria-hidden="true"><div><div class="bar"></div><strong>${esc(storeName)}</strong><small>Đang đồng bộ danh mục chính thức…</small><span class="dots"><i></i><i></i><i></i></span></div></div>`;
+  const seo=`<main class="tf-prerender" data-seo-prerender="v0.66.6">${crumbs}<h1>${esc(title)}</h1><p>${esc(description)}</p>${inner}<p><a href="/collections">Xem toàn bộ đồng hồ</a> · <a href="/pages/warranty">Bảo hành</a> · <a href="/pages/shipping">Giao hàng</a> · <a href="/pages/returns">Đổi trả</a></p></main>`;
+  return `${boot}${seo}`;
 }
 function injectRoot(html,body){return html.replace(/<div\s+id=["']root["']>[\s\S]*?<\/div>/i,`<div id="root">${body}</div>`)}
 async function writeRoute(route,meta,body){
@@ -238,4 +243,4 @@ for(const post of activePosts){
   await writeRoute(route,{title,description,canonical,image,type:'article',graph},shellBody(route,title,description,inner));
 }
 
-console.log(`[V0.66.5 SEO] Prerendered ${coreRoutes.length+activeCollections.length+activeProducts.length+activePosts.length} routes into dist/.`);
+console.log(`[V0.66.6 SEO] Prerendered ${coreRoutes.length+activeCollections.length+activeProducts.length+activePosts.length} routes into dist/.`);

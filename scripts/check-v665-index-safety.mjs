@@ -6,8 +6,8 @@ must(!seo.includes('if(!landingProducts.length)noindex=true'),'SEO landing pages
 must(seo.includes('deferHeadUpdate=isLoading&&dynamicDataRoute')&&seo.includes('if(seo.deferHeadUpdate)return'),'dynamic head mutation waits for storefront hydration');
 must(meta.includes("const fetchWithTimeout=")&&meta.includes("sitemap ${label} fallback")&&meta.includes("X-TimeForge-Sitemap-Urls"),'main sitemap uses bounded, independent catalog reads and debug header');
 must(meta.includes('const landingUrls=SEO_LANDING_ROUTES.map('),'all permanent SEO landing pages are always listed in sitemap');
-must(pre.includes("writeFile(flat,html)")&&pre.includes('data-seo-prerender="v0.66.5"')&&!pre.includes('if(!matched.length)continue'),'prerender emits clean-URL HTML for SEO landings even while catalog is unavailable');
+must(pre.includes("writeFile(flat,html)")&&pre.includes('data-seo-prerender="v0.66.6"')&&!pre.includes('if(!matched.length)continue'),'prerender emits clean-URL HTML for SEO landings even while catalog is unavailable');
 const cfg=JSON.parse(vercel);must(cfg.cleanUrls===true,'Vercel cleanUrls is enabled so prerendered .html wins before SPA fallback');must((cfg.rewrites||[]).some(r=>r.source==='/(.*)'&&r.destination==='/'),'SPA fallback targets root without an .html destination under cleanUrls');
 const publicIndex=(cfg.headers||[]).filter(x=>['/dong-ho-nam','/dong-ho-nu','/dong-ho-duoi-5-trieu','/dong-ho-sale'].includes(x.source));must(publicIndex.length===4&&publicIndex.every(x=>x.headers?.some(h=>h.key==='X-Robots-Tag'&&h.value.startsWith('index'))),'SEO landing routes declare indexable X-Robots-Tag');
-const packageJson=JSON.parse(pkg);must(packageJson.version==='0.66.5'&&packageJson.scripts?.build?.includes('check-v665-index-safety.mjs'),'package/build pipeline includes V0.66.5 index safety check');
+const packageJson=JSON.parse(pkg);must(/^0\.66\.(?:5|6)$/.test(packageJson.version)&&packageJson.scripts?.build?.includes('check-v665-index-safety.mjs'),'package/build pipeline includes index safety check');
 if(failures)process.exit(1);console.log('V0.66.5 index safety checks passed.');

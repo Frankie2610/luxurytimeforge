@@ -1,11 +1,11 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.66.5",
+  "version": "0.66.6",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/prerender-seo.mjs && node scripts/check-v664-ai-seo.mjs && node scripts/check-v665-index-safety.mjs && node scripts/check-css-budget-v654.mjs",
+    "build": "tsc -b && vite build && node scripts/prerender-seo.mjs && node scripts/check-v664-ai-seo.mjs && node scripts/check-v665-index-safety.mjs && node scripts/check-v666-prerender-flash.mjs && node scripts/check-css-budget-v654.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc -b --pretty false",
     "css:audit": "node scripts/css-graph-audit-v654.mjs",
@@ -113,7 +113,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.66.5: index-safe SEO landings, resilient sitemap fetching, clean-URL prerender delivery, structured commerce data and AI crawler discovery.",
+  "description": "Luxury TimeForge V0.66.6: flash-free SEO prerender boot, index-safe SEO landings, resilient sitemap fetching, clean-URL prerender delivery, structured commerce data and AI crawler discovery.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"
