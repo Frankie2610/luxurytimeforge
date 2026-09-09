@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import {PayOS} from '@payos/node';
 import {firebaseAppendUnique,firebaseEntries,firebasePatch,firebaseRead,firebaseWrite,findOrder} from './firebase-rest.js';
+import {syncWarrantyForPaidOrder} from './warranty-automation.js';
 
 export const paymentSessionPath=(orderId)=>`timeforge/paymentSessions/${orderId}`;
 
@@ -136,6 +137,7 @@ export async function syncPaymentState({orderId,status,paymentLinkId,reference,o
     ...(paymentStatus==='paid'?{status:found.order.status==='open'?'confirmed':found.order.status,paidAt:paidAt||new Date().toISOString(),paymentConfirmationSource:'payos_webhook'}:{}),
   };
   await firebasePatch(`timeforge/orders/${found.key}`,patch);
+  if(paymentStatus==='paid')await syncWarrantyForPaidOrder(orderId).catch(error=>console.warn('[TimeForge] Warranty automation skipped:',error?.message||error));
   return{persisted:true,order:{...found.order,...patch}};
 }
 

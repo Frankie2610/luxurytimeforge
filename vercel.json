@@ -247,5 +247,11 @@
       ]
     }
   ],
-  "cleanUrls": true
+  "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/price-alerts/process",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

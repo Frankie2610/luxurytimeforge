@@ -1,4 +1,4 @@
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useState,type FormEvent} from 'react';
 import {ArrowLeft,ArrowRight,Check,ChevronRight,Compass,ListFilter,Plus,RotateCcw,Scale,Share2,ShoppingBag,Sparkles,Trash2} from 'lucide-react';
 import {Link,useSearchParams} from 'react-router-dom';
 import {toast} from 'sonner';
@@ -14,6 +14,7 @@ import './v571-storefront-polish.css';
 import './v572-storefront-tools.css';
 import './v573-compare-polish.css';
 import './v576-compare-polish.css';
+import './v670-ai-automation.css';
 
 type CompareRow={label:string;always?:boolean;read:(product:Product,specs:ProductSpecsV571)=>string};
 const spec=(key:ProductSpecKey)=>(_:Product,specs:ProductSpecsV571)=>specs[key]||'—';
@@ -133,11 +134,65 @@ const finderReasons=(item:FinderIndexed,answers:FinderAnswers)=>{
   return reasons.slice(0,3);
 };
 
+
+type AiFinderIntent={recipient:'all'|'men'|'women';budgetMin:number;budgetMax:number;style:'sport'|'classic'|'fashion'|'minimal'|'luxury'|'casual'|'all';brand:string;caseMin:number;caseMax:number;strap:string[];colors:string[];keywords:string[];summary:string};
+type AiFinderResult=FinderIndexed&{score:number;reasons:string[]};
+const foldAi=(value:string)=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').toLocaleLowerCase('vi').replace(/[^a-z0-9]+/g,' ').trim();
+const numberFromText=(value:string)=>Number(String(value||'').replace(',','.'))||0;
+const moneyMultiplier=(unit:string)=>/trieu|tr\b|m\b/i.test(foldAi(unit))?1_000_000:/nghin|ngan|k\b/i.test(foldAi(unit))?1_000:1;
+const localAiIntent=(query:string,brands:string[]):AiFinderIntent=>{
+  const raw=String(query||'');const text=foldAi(raw);let budgetMin=0,budgetMax=0,caseMin=0,caseMax=0;
+  const range=raw.match(/(?:tu|từ)?\s*(\d+(?:[.,]\d+)?)\s*(trieu|triệu|tr|m)?\s*(?:-|–|—|den|đến|toi|tới)\s*(\d+(?:[.,]\d+)?)\s*(trieu|triệu|tr|m)/i);
+  if(range){budgetMin=numberFromText(range[1])*moneyMultiplier(range[2]||range[4]||'');budgetMax=numberFromText(range[3])*moneyMultiplier(range[4]||range[2]||'')}
+  else{const under=raw.match(/(?:duoi|dưới|toi da|tối đa|max)\s*(\d+(?:[.,]\d+)?)\s*(trieu|triệu|tr|m|nghin|nghìn|ngan|ngàn|k)?/i);if(under)budgetMax=numberFromText(under[1])*moneyMultiplier(under[2]||'');else{const around=raw.match(/(?:khoang|khoảng|tam|tầm)?\s*(\d+(?:[.,]\d+)?)\s*(trieu|triệu|tr|m)\b/i);if(around){const value=numberFromText(around[1])*moneyMultiplier(around[2]);budgetMin=Math.round(value*.78);budgetMax=Math.round(value*1.12)}}}
+  const caseRange=raw.match(/(\d{2}(?:[.,]\d+)?)\s*(?:-|–|—|den|đến)\s*(\d{2}(?:[.,]\d+)?)\s*mm/i);if(caseRange){caseMin=numberFromText(caseRange[1]);caseMax=numberFromText(caseRange[2])}else{const caseUnder=raw.match(/(?:duoi|dưới|toi da|tối đa|max)?\s*(\d{2}(?:[.,]\d+)?)\s*mm/i);if(caseUnder){const value=numberFromText(caseUnder[1]);if(/duoi|dưới|toi da|tối đa|max/i.test(caseUnder[0]))caseMax=value;else{caseMin=Math.max(0,value-2);caseMax=value+2}}}
+  const recipient=/\b(nu|women|female)\b/.test(text)?'women':/\b(nam|men|male)\b/.test(text)?'men':'all';
+  const style:AiFinderIntent['style']= /the thao|sport|chronograph|nang dong/.test(text)?'sport':/toi gian|minimal/.test(text)?'minimal':/sang trong|luxury|cao cap/.test(text)?'luxury':/co dien|classic|thanh lich|van phong|cong so/.test(text)?'classic':/thoi trang|fashion|noi bat/.test(text)?'fashion':/casual|hang ngay|de deo/.test(text)?'casual':'all';
+  const brand=brands.find(value=>text.includes(foldAi(value)))||'';
+  const strap=[] as string[];if(/kim loai|thep|steel|stainless/.test(text))strap.push('steel');if(/day da|leather/.test(text))strap.push('leather');if(/silicone|cao su|rubber/.test(text))strap.push('silicone');if(/mesh|luoi/.test(text))strap.push('mesh');
+  const colors=[] as string[];[['black',/den|black/],['silver',/bac|silver/],['gold',/vang|gold/],['rose gold',/rose gold|vang hong/],['blue',/xanh duong|blue/],['green',/xanh la|green/],['white',/trang|white/],['brown',/nau|brown/]].forEach(([value,pattern])=>{if((pattern as RegExp).test(text))colors.push(value as string)});
+  const keywords=['van phong','cong so','di lam','du tiec','du lich','hang ngay','mong','nhe','chronograph','automatic','quartz'].filter(key=>text.includes(key));
+  return{recipient,budgetMin,budgetMax,style,brand,caseMin,caseMax,strap,colors,keywords,summary:raw.trim().slice(0,180)};
+};
+const diameterNumber=(value:string)=>Number(String(value||'').replace(',','.').match(/\d+(?:\.\d+)?/)?.[0]||0);
+const aiResultReasons=(item:FinderIndexed,intent:AiFinderIntent)=>{
+  const reasons:string[]=[];const diameter=diameterNumber(item.specs.diameter||item.specs.size||'');const text=item.text;
+  if((!intent.budgetMin||item.product.price>=intent.budgetMin)&&(!intent.budgetMax||item.product.price<=intent.budgetMax)&&(intent.budgetMin||intent.budgetMax))reasons.push('Đúng ngân sách');
+  if(intent.brand&&foldAi(item.product.vendor)===foldAi(intent.brand))reasons.push(`Đúng ${item.product.vendor}`);
+  if(intent.recipient!=='all'&&genderMatches(String(item.specs.gender||'').toLocaleLowerCase('vi'),intent.recipient))reasons.push(`Phù hợp ${intent.recipient==='men'?'nam':'nữ'}`);
+  if(diameter&&((!intent.caseMin||diameter>=intent.caseMin)&&(!intent.caseMax||diameter<=intent.caseMax))&&(intent.caseMin||intent.caseMax))reasons.push(`${diameter} mm phù hợp`);
+  if(intent.strap.length&&intent.strap.some(value=>text.includes(foldAi(value==='steel'?'thép kim loại':value==='leather'?'dây da':value==='silicone'?'silicone':value))))reasons.push('Đúng chất liệu dây');
+  if(intent.style!=='all'&&stylePattern(intent.style==='minimal'||intent.style==='luxury'||intent.style==='casual'?'classic':intent.style as FinderAnswers['style']).test(text))reasons.push(`Hợp phong cách ${intent.style==='classic'?'thanh lịch':intent.style==='sport'?'thể thao':intent.style==='fashion'?'thời trang':intent.style}`);
+  if(item.product.compareAtPrice>item.product.price)reasons.push('Đang có ưu đãi');
+  return reasons.slice(0,3);
+};
+const aiFinderScore=(item:FinderIndexed,intent:AiFinderIntent)=>{
+  const product=item.product;let score=0;const diameter=diameterNumber(item.specs.diameter||item.specs.size||'');const gender=String(item.specs.gender||'').toLocaleLowerCase('vi');
+  if(product.inventory>0)score+=8;else score-=100;
+  if(intent.budgetMin||intent.budgetMax){if((!intent.budgetMin||product.price>=intent.budgetMin)&&(!intent.budgetMax||product.price<=intent.budgetMax))score+=14;else score-=8}
+  if(intent.brand)score+=foldAi(product.vendor)===foldAi(intent.brand)?12:-2;
+  if(intent.recipient!=='all')score+=genderMatches(gender,intent.recipient)?9:-3;
+  if(intent.caseMin||intent.caseMax){if(diameter&&(!intent.caseMin||diameter>=intent.caseMin)&&(!intent.caseMax||diameter<=intent.caseMax))score+=10;else if(diameter)score-=5}
+  if(intent.strap.length)score+=intent.strap.some(value=>item.text.includes(foldAi(value==='steel'?'thép kim loại':value==='leather'?'dây da':value==='silicone'?'silicone':value)))?7:-1;
+  if(intent.colors.length)score+=intent.colors.some(value=>item.text.includes(foldAi(value)))?4:0;
+  if(intent.keywords.length)score+=intent.keywords.filter(value=>item.text.includes(foldAi(value))).length*2;
+  if(intent.style!=='all'){const resolved=intent.style==='minimal'||intent.style==='luxury'||intent.style==='casual'?'classic':intent.style as FinderAnswers['style'];if(stylePattern(resolved).test(item.text))score+=8}
+  if(product.compareAtPrice>product.price)score+=1;
+  return score;
+};
+function AiWatchAdvisor({indexedProducts,brands}:{indexedProducts:FinderIndexed[];brands:string[]}){
+  const[query,setQuery]=useState('');const[busy,setBusy]=useState(false);const[intent,setIntent]=useState<AiFinderIntent|null>(null);const[provider,setProvider]=useState<'gemini'|'fallback'|''>('');
+  const results=useMemo<AiFinderResult[]>(()=>intent?indexedProducts.filter(item=>item.product.status==='active'&&item.product.published&&item.product.inventory>0).map(item=>({...item,score:aiFinderScore(item,intent),reasons:aiResultReasons(item,intent)})).sort((a,b)=>b.score-a.score||a.product.price-b.product.price).slice(0,4):[],[indexedProducts,intent]);
+  const submit=async(event:FormEvent)=>{event.preventDefault();const value=query.trim();if(value.length<3){toast.info('Mô tả thêm ngân sách, phong cách hoặc kích thước bạn muốn.');return}setBusy(true);let next:AiFinderIntent|null=null;let source:'gemini'|'fallback'='fallback';try{const response=await fetch('/api/meta?resource=watch-advisor',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:value})});const payload=await response.json().catch(()=>({}));if(response.ok&&payload?.intent){next=payload.intent as AiFinderIntent;source='gemini'}}catch{}if(!next)next=localAiIntent(value,brands);const ranked=indexedProducts.filter(item=>item.product.status==='active'&&item.product.published&&item.product.inventory>0).map(item=>({...item,score:aiFinderScore(item,next!)})).sort((a,b)=>b.score-a.score||a.product.price-b.product.price).slice(0,4);setIntent(next);setProvider(source);setBusy(false);trackCommerceEvent('watch_finder_completed',{metadata:{mode:'ai',provider:source,query:value.slice(0,120),contentIds:ranked.map(item=>item.product.id).join(',')}})};
+  return <section className="tf670-ai-finder" aria-label="AI Watch Advisor"><header><span><Sparkles/></span><div><small>AI WATCH ADVISOR</small><h1>Nói nhu cầu, hệ thống lọc catalog thật.</h1><p>Ví dụ: “Nam, khoảng 7 triệu, mặt dưới 42mm, dây kim loại, đi làm văn phòng.”</p></div></header><form onSubmit={submit}><textarea value={query} onChange={event=>setQuery(event.target.value)} placeholder="Mô tả ngân sách, phong cách, kích thước, thương hiệu..." rows={2}/><button type="submit" disabled={busy||!query.trim()}>{busy?'Đang phân tích...':'Tìm bằng AI'}<ArrowRight/></button></form>{intent&&<div className="tf670-ai-summary"><div><span className={provider==='gemini'?'is-ai':'is-fallback'}><Sparkles/>{provider==='gemini'?'Gemini':'Smart fallback'}</span><b>{intent.summary||query}</b><small>AI chỉ hiểu nhu cầu; kết quả bên dưới được lọc từ catalog và tồn kho thật.</small></div><button type="button" onClick={()=>{setIntent(null);setProvider('');setQuery('')}}><RotateCcw/>Làm lại</button></div>}{intent&&<div className="tf670-ai-results">{results.length?results.map(({product,reasons},index)=><article key={product.id}><span>{String(index+1).padStart(2,'0')}</span><Link to={`/products/${product.handle}`}><SmartImage src={productImage(product)} alt={product.title} width={520} height={520}/><small>{product.vendor}</small><h2>{product.title}</h2><strong>{money(product.price)}</strong><div>{reasons.map(reason=><em key={reason}>{reason}</em>)}</div><b>Xem sản phẩm<ArrowRight/></b></Link></article>):<div className="tf670-ai-empty"><Compass/><b>Chưa có mẫu phù hợp đang còn hàng.</b><span>Thử nới ngân sách hoặc kích thước.</span></div>}</div>}<footer><span>Gemini → hiểu câu tự nhiên</span><span>Catalog thật → xếp hạng</span><span>Inventory realtime → loại mẫu hết hàng</span></footer></section>;
+}
+
 export function WatchFinderPageV57(){
   const{products}=useProductCatalog();
   const[step,setStep]=useState(0);
   const[answers,setAnswers]=useState<Partial<FinderAnswers>>({});
   const indexedProducts=useMemo<FinderIndexed[]>(()=>products.map(product=>({product,text:productSearchTextV571(product).toLocaleLowerCase('vi'),specs:extractProductSpecsV571(product)})),[products]);
+  const aiBrands=useMemo(()=>[...new Set(products.map(product=>product.vendor.trim()).filter(Boolean))],[products]);
   const finderSteps=useMemo<FinderStep[]>(()=>{
     const counts=new Map<string,{label:string;count:number}>();
     products.filter(product=>product.status==='active'&&product.published&&product.vendor.trim()).forEach(product=>{
@@ -169,6 +224,8 @@ export function WatchFinderPageV57(){
   const current=finderSteps[step];
   return <main className="tf57-feature-page tf57-finder-page">
     <nav className="tf57-feature-breadcrumb"><Link to="/">Trang chủ</Link><ChevronRight/><span>Tư vấn chọn đồng hồ</span></nav>
+    <AiWatchAdvisor indexedProducts={indexedProducts} brands={aiBrands}/>
+    <div className="tf670-finder-divider"><span>hoặc</span><b>Chọn theo 4 câu hỏi nhanh</b></div>
     <section className="tf57-finder-shell">
       <aside><Sparkles/><small>WATCH FINDER</small><h1>Tìm chiếc đồng hồ hợp gu trong một phút.</h1><p>4 câu hỏi ngắn, không cần đăng nhập. Kết quả lấy trực tiếp từ catalog đang có hàng.</p><div className="tf571-finder-step-dots" aria-label={`Bước ${step+1} trên ${finderSteps.length}`}>{finderSteps.map((item,index)=><i key={item.key} className={index<=step?'is-active':''}/>)}</div><div className="tf57-finder-progress"><span style={{width:`${step/finderSteps.length*100}%`}}/></div><small>{step+1}/{finderSteps.length}</small></aside>
       <div className="tf57-finder-question"><header><small>{current.eyebrow}</small><h2>{current.title}</h2><p>{current.description}</p></header><div>{current.options.map(option=><button type="button" key={option.value} onClick={()=>choose(option.value)} className={answers[current.key]===option.value?'is-selected':''}><span><b>{option.label}</b><small>{option.note}</small></span><Check/></button>)}</div>{step>0&&<button className="tf57-finder-back" type="button" onClick={()=>setStep(index=>index-1)}><ArrowLeft/>Quay lại</button>}</div>

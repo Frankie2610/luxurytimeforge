@@ -48,6 +48,23 @@ function resourceFromRequest(req){
   try{return clean(new URL(req.url||'','http://localhost').searchParams.get('resource'))}catch{return''}
 }
 
+
+const GEMINI_ENDPOINT='https://generativelanguage.googleapis.com/v1beta';
+const clampNumber=(value,min,max)=>Math.min(max,Math.max(min,Number(value)||0));
+const normalizeAdvisorRecipient=value=>['men','women','all'].includes(value)?value:'all';
+const normalizeAdvisorStyle=value=>['sport','classic','fashion','minimal','luxury','casual','all'].includes(value)?value:'all';
+const safeAdvisorList=value=>Array.isArray(value)?value.map(item=>clean(item).slice(0,80)).filter(Boolean).slice(0,8):[];
+const safeAdvisorIntent=raw=>({recipient:normalizeAdvisorRecipient(clean(raw?.recipient).toLowerCase()),budgetMin:clampNumber(raw?.budgetMin,0,500000000),budgetMax:clampNumber(raw?.budgetMax,0,500000000),style:normalizeAdvisorStyle(clean(raw?.style).toLowerCase()),brand:clean(raw?.brand).slice(0,80),caseMin:clampNumber(raw?.caseMin,0,80),caseMax:clampNumber(raw?.caseMax,0,80),strap:safeAdvisorList(raw?.strap),colors:safeAdvisorList(raw?.colors),keywords:safeAdvisorList(raw?.keywords),summary:clean(raw?.summary).slice(0,240)});
+function extractAdvisorJson(value){const source=clean(value).replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();try{return JSON.parse(source)}catch{}const match=source.match(/\{[\s\S]*\}/);if(!match)return null;try{return JSON.parse(match[0])}catch{return null}}
+async function sendWatchAdvisor(req,res){
+  if(req.method!=='POST')return res.status(405).json({message:'Method not allowed'});
+  const query=clean(req.body?.query).slice(0,600);if(query.length<3)return res.status(400).json({message:'Hãy mô tả nhu cầu chọn đồng hồ rõ hơn một chút.'});
+  const apiKey=clean(process.env.GEMINI_API_KEY||process.env.GOOGLE_GEMINI_API_KEY);if(!apiKey)return res.status(501).json({message:'Gemini chưa được cấu hình.',fallback:true});
+  const model=clean(process.env.GEMINI_MODEL||'gemini-2.5-flash-lite');
+  const prompt=`Bạn là bộ phân tích nhu cầu mua đồng hồ cho website Việt Nam. Chỉ chuyển câu của khách thành JSON có cấu trúc; KHÔNG tự đề xuất sản phẩm, KHÔNG bịa dữ liệu catalog.\n\nCâu khách: ${JSON.stringify(query)}\n\nTrả về đúng một JSON object, không markdown, schema:\n{\n  "recipient":"men|women|all",\n  "budgetMin":number,\n  "budgetMax":number,\n  "style":"sport|classic|fashion|minimal|luxury|casual|all",\n  "brand":"",\n  "caseMin":number,\n  "caseMax":number,\n  "strap":["steel|leather|silicone|mesh|other"],\n  "colors":["black|silver|gold|rose gold|blue|green|white|brown|other"],\n  "keywords":["từ khóa tiếng Việt ngắn"],\n  "summary":"1 câu tiếng Việt tóm tắt nhu cầu"\n}\nQuy tắc: tiền là VND; nếu khách nói 5 triệu thì 5000000. Nếu chỉ nói dưới 7 triệu: budgetMin=0, budgetMax=7000000. Nếu nói khoảng 5-8 triệu thì đúng khoảng đó. Nếu không nêu thì để 0. Case size mm. Nếu không biết thì để 0 hoặc chuỗi/list rỗng.`;
+  try{const response=await fetch(`${GEMINI_ENDPOINT}/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{temperature:0.1,responseMimeType:'application/json'}})});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload?.error?.message||`Gemini request failed (${response.status})`);const output=payload?.candidates?.[0]?.content?.parts?.map(part=>part?.text||'').join('')||'';const parsed=extractAdvisorJson(output);if(!parsed)throw new Error('Gemini returned invalid JSON');return res.status(200).json({ok:true,provider:'gemini',model,intent:safeAdvisorIntent(parsed)})}catch(error){return res.status(502).json({message:error instanceof Error?error.message:'AI advisor failed',fallback:true})}
+}
+
 async function readPrivate(path){
   const db=publicDatabaseUrl(),auth=process.env.FIREBASE_DATABASE_AUTH;
   if(!db||!auth)return null;
@@ -301,6 +318,7 @@ export default async function handler(req,res){
   if(resource==='ai-catalog'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendAiCatalog(req,res)}
   if(resource==='llms'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendLlms(req,res,false)}
   if(resource==='llms-full'){if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');return sendLlms(req,res,true)}
+  if(resource==='watch-advisor')return sendWatchAdvisor(req,res);
   if(resource==='social-image')return sendSocialImage(req,res);
   return res.status(404).json({error:'Unknown metadata resource'});
 }
