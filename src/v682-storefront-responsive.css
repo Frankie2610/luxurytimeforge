@@ -1,0 +1,11 @@
+/* V0.68.2 — route-final storefront polish. Keep this import after legacy storefront CSS. */
+.tf-storefront-v4912{width:100%;max-width:100%;overflow-x:clip}
+.tf-storefront-v4912 .tf-product-brand-v4918{color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;text-shadow:0 1px 2px rgba(0,0,0,.18)}
+.tf-storefront-v4912 .tf-product-info-v4918>.tf-product-brand-v4918{color:#fff!important;-webkit-text-fill-color:#fff!important}
+.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input){min-width:0;max-width:100%;height:44px;border:1px solid #cbd7d0!important;border-radius:12px!important;background:#fff!important;color:#1c3026!important;-webkit-text-fill-color:#1c3026!important;font-size:16px!important;line-height:1.2!important;box-shadow:none!important;outline:none!important}
+.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input)::placeholder{color:#76847c!important;-webkit-text-fill-color:#76847c!important;opacity:1}
+.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input):focus{border-color:#173f2a!important;box-shadow:0 0 0 4px rgba(23,63,42,.11)!important}
+.tf-storefront-v4912 :is(button,a){-webkit-tap-highlight-color:transparent}
+.tf-storefront-v4912 :is(.tf-btn,.tf-button,.tf-product-quick-add-v4918){max-width:100%;text-align:center}
+@media(max-width:1050px){.tf-storefront-v4912{overflow-x:hidden}.tf-storefront-v4912 :is(.tf-header-inner,.tf4912-header-inner,.tf-store-header-inner){min-width:0;max-width:100%}}
+@media(max-width:720px){.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input){height:42px!important;border-radius:11px!important}.tf-storefront-v4912 :is(.tf-btn,.tf-button){min-height:43px}}
