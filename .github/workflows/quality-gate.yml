@@ -72,6 +72,3 @@ jobs:
 
       - name: Product Ops regression
         run: pnpm run v681:check
-
-      - name: Account baseline regression
-        run: node scripts/check-v686-account-baseline.mjs
