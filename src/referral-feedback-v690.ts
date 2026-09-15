@@ -1,7 +1,6 @@
 import {toast} from 'sonner';
 
 const ATTRIBUTION_KEY='tf:referral-attribution:v1';
-const INSTALL_KEY='__tfReferralFeedbackV690Installed';
 
 type ReferralOrder={
   referralCode?:string;
@@ -14,7 +13,7 @@ type OrderResponse={order?:ReferralOrder};
 declare global{interface Window{__tfReferralFeedbackV690Installed?:boolean}}
 
 export function installReferralFeedbackV690(){
-  if(typeof window==='undefined'||window[INSTALL_KEY as keyof Window])return;
+  if(typeof window==='undefined'||window.__tfReferralFeedbackV690Installed)return;
   window.__tfReferralFeedbackV690Installed=true;
   const originalFetch=window.fetch.bind(window);
   window.fetch=async(...args)=>{
