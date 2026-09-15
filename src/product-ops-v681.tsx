@@ -69,7 +69,7 @@ export function ProductOpsCenterV681(){
   const releaseHealth=releaseBlocked?'BLOCKED':highOpsBlockers?'RISK ACCEPTANCE':'READY';
 
   const toggleUat=(id:string)=>setUat(current=>{const next=current.map(x=>x.id===id?{...x,done:!x.done}:x);saveJson(UAT_KEY,next);return next});
-  const updateRelease=<K extends keyof ReleaseControl>(key:K,value:ReleaseControl[K])=>setRelease(current=>{const next={...current,[key]:value};saveJson(RELEASE_KEY,next);return next});
+  const updateRelease=<K extends keyof ReleaseControl,>(key:K,value:ReleaseControl[K])=>setRelease(current=>{const next={...current,[key]:value};saveJson(RELEASE_KEY,next);return next});
   const advanceImprovement=(id:string)=>setImprovements(current=>{const next=current.map(item=>item.id!==id?item:{...item,status:item.status==='planned'?'doing':item.status==='doing'?'done':'planned'});saveJson(IMPROVEMENT_KEY,next);return next});
 
   return <div className="po681">
