@@ -15,6 +15,7 @@ import {sectionLabels} from './theme';
 import {resolveStoreLogo,resolveStoreName} from './store-profile';
 import {useWishlist} from './wishlist';
 import {campaignDiscountCodeV59,clearCampaignOfferV59} from './campaign-offer-v59';
+import {readReferralAttribution,readReferralSettings,referralFriendDiscount} from './referral-v68';
 import './v4912-commerce.css';
 import './v4915-commerce-fixes.css';
 import './v4920-commerce-mobile.css';
@@ -69,7 +70,10 @@ function useSummary(discountCode = '', paymentMethod: CheckoutPayload['paymentMe
     const discount = discountCode ? evaluateDiscount(discountCode, subtotal, shipping) : null;
     const shippingAfterDiscount = Math.max(0, shipping - (discount?.shippingDiscount || 0));
     const paymentDiscount = paymentMethod === 'bank_transfer' ? bankTransferDiscount(integration, subtotal) : {amount: 0, label: ''};
-    return {lines, subtotal, shipping, shippingAfterDiscount, discount, paymentDiscount, total: subtotal - (discount?.amount || 0) - paymentDiscount.amount + shippingAfterDiscount};
+    const referral = readReferralAttribution();
+    const referralSettings = referral?.settingsSnapshot || readReferralSettings();
+    const referralDiscount = referral?.code && !discount?.valid ? referralFriendDiscount(subtotal, referralSettings) : 0;
+    return {lines, subtotal, shipping, shippingAfterDiscount, discount, paymentDiscount, referral, referralDiscount, total: subtotal - (discount?.amount || 0) - paymentDiscount.amount - referralDiscount + shippingAfterDiscount};
   }, [cart, products, discountCode, evaluateDiscount, paymentMethod, integration]);
 }
 
@@ -79,11 +83,12 @@ function LuxuryCheckoutLogo() {
   return <Link className="tf4912-checkout-logo" to="/"><SmartImage src={resolveStoreLogo(storeProfile.logoImage)} alt={storeName} width={180} height={54} priority /></Link>;
 }
 
-function SummaryRows({subtotal, shipping, discount, paymentDiscount, total}: {subtotal: number; shipping: number; discount: ReturnType<typeof useSummary>['discount']; paymentDiscount?: ReturnType<typeof useSummary>['paymentDiscount']; total: number}) {
+function SummaryRows({subtotal, shipping, discount, paymentDiscount, referralDiscount=0, total}: {subtotal: number; shipping: number; discount: ReturnType<typeof useSummary>['discount']; paymentDiscount?: ReturnType<typeof useSummary>['paymentDiscount']; referralDiscount?: number; total: number}) {
   return <dl className="tf4927-summary-totals">
     <div><dt>Tạm tính</dt><dd>{money(subtotal)}</dd></div>
     {discount?.valid && <div className="is-discount"><dt>Giảm giá <span>{discount.discount?.code}</span></dt><dd>–{money(discount.amount)}</dd></div>}
     {!!paymentDiscount?.amount && <div className="is-discount"><dt>{paymentDiscount.label || 'Ưu đãi chuyển khoản'}</dt><dd>–{money(paymentDiscount.amount)}</dd></div>}
+    {!!referralDiscount && <div className="is-discount"><dt>Ưu đãi giới thiệu <span>NEW CUSTOMER</span></dt><dd>–{money(referralDiscount)}</dd></div>}
     <div><dt>Vận chuyển</dt><dd>{shipping <= 0 ? 'Miễn phí' : money(shipping)}</dd></div>
     <div className="is-total"><dt>Tổng cộng <small>VND</small></dt><dd>{money(total)}</dd></div>
   </dl>;
@@ -157,7 +162,7 @@ export function CartPageV11() {
   const showCoupon = cartMain?.settings.showCoupon !== false;
   const showShippingEstimate = cartMain?.settings.showShippingEstimate !== false;
   const showTrust = cartMain?.settings.showTrust !== false && trustSection?.visible !== false;
-  const {lines, subtotal, shippingAfterDiscount, discount, total} = useSummary(applied);
+  const {lines, subtotal, shippingAfterDiscount, discount, referralDiscount, total} = useSummary(applied);
   const quantity = lines.reduce((sum, item) => sum + item.line.quantity, 0);
   const supplement = supplemental.map((section) => <ThemeSectionV27 key={section.id} section={section}/>);
   const saveForLater = (productId: string, variantId: string, title: string) => {
@@ -269,7 +274,7 @@ export function CartPageV11() {
         <aside className="tf4927-order-summary">
           <header className="tf4927-order-summary__header"><small>ĐƠN HÀNG CỦA BẠN</small><h2>Tóm tắt đơn hàng</h2><p>Kiểm tra ưu đãi và tổng tiền trước khi thanh toán.</p></header>
           {showCoupon && <div className="tf4927-coupon"><label htmlFor="cart-discount-code">Mã ưu đãi</label><div><input id="cart-discount-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="Nhập mã giảm giá"/><Button type="button" variant="secondary" className="tf4927-coupon-apply" onClick={() => setApplied(code.trim())}>Áp dụng</Button></div>{applied && <p className={discount?.valid ? 'is-success' : 'is-error'}>{discount?.message || 'Mã giảm giá không hợp lệ.'}</p>}</div>}
-          <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} total={total}/>
+          <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} referralDiscount={referralDiscount} total={total}/>
           <Link className="tf4927-checkout-cta" to={`/checkout${applied ? `?discount=${encodeURIComponent(applied)}` : ''}`}><span>Tiếp tục thanh toán<small>COD, chuyển khoản hoặc PayOS</small></span><ArrowRight/></Link>
           <div className="tf4927-safe-label"><LockKeyhole/><span>Thanh toán an toàn</span></div>
           <PaymentBenefitsV4927/>
@@ -345,11 +350,14 @@ export function CheckoutPageV11() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const [initialDraft] = useState(readCheckoutDraftV580);
+  const [initialReferral] = useState(readReferralAttribution);
   const [payload, setPayload] = useState<CheckoutPayload>(() => ({
     ...(initialDraft?.payload || initialPayload),
     customer: {...(initialDraft?.payload.customer || initialPayload.customer)},
     shippingAddress: {...(initialDraft?.payload.shippingAddress || initialPayload.shippingAddress)},
     discountCode: params.get('discount') || campaignDiscountCodeV59() || initialDraft?.payload.discountCode || '',
+    referralCode: initialReferral?.code || initialDraft?.payload.referralCode || '',
+    referralDeviceId: initialReferral?.deviceId || initialDraft?.payload.referralDeviceId || '',
   }));
   const [draftState, setDraftState] = useState<'idle' | 'restored' | 'saved'>(() => initialDraft ? 'restored' : 'idle');
   const draftDisabled = useRef(false);
@@ -388,7 +396,7 @@ export function CheckoutPageV11() {
     window.addEventListener('keydown', close);
     return () => {document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', close);};
   }, [summaryOpen]);
-  const {lines, subtotal, shippingAfterDiscount, discount, paymentDiscount, total} = useSummary(payload.discountCode,payload.paymentMethod,integration);
+  const {lines, subtotal, shippingAfterDiscount, discount, paymentDiscount, referral, referralDiscount, total} = useSummary(payload.discountCode,payload.paymentMethod,integration);
   const transferReferencePreview = useMemo(() => {
     const firstSku = lines[0]?.variant?.sku || lines[0]?.product?.sku || 'ORDER';
     return `TF${vietnamDateStamp()}-${compactTransferSku(firstSku)}`;
@@ -467,6 +475,7 @@ export function CheckoutPageV11() {
         {payload.discountCode && <aside className={`tf59-checkout-campaign ${discount?.valid ? 'is-valid' : 'is-pending'}`}>
           <BadgePercent/><span><b>Mã từ liên kết quảng cáo: {payload.discountCode}</b><small>{discount?.valid ? `Đã áp dụng, giảm ${money(discount.amount)}.` : discount?.message || 'Đang kiểm tra điều kiện ưu đãi.'}</small></span>
         </aside>}
+        {referral?.code && <aside className="tf59-checkout-campaign is-valid"><Gift/><span><b>Referral {referral.code}</b><small>{referralDiscount?`Tạm tính ưu đãi ${money(referralDiscount)}. Server sẽ xác minh khách mới và anti-fraud trước khi chốt đơn.`:'Referral đã ghi nhận; ưu đãi sẽ áp dụng khi đủ điều kiện đơn tối thiểu.'}</small></span></aside>}
 
         {draftState !== 'idle' && <aside className={`tf580-checkout-draft is-${draftState}`} aria-live="polite">
           <CheckCircle2/>
@@ -545,7 +554,7 @@ export function CheckoutPageV11() {
           </div>
           <div className="tf4927-coupon"><label htmlFor="checkout-discount-code">Mã giảm giá</label><div><input id="checkout-discount-code" value={payload.discountCode} onChange={(event) => setPayload({...payload, discountCode: event.target.value.toUpperCase()})} placeholder="Nhập mã ưu đãi"/><Button type="button" variant="secondary" className="tf4927-coupon-apply" onClick={() => setPayload({...payload, discountCode: payload.discountCode.trim()})}>Áp dụng</Button></div></div>
           {payload.discountCode && <p className={discount?.valid ? 'tf4912-message is-success' : 'tf4912-message is-error'}>{discount?.message || 'Mã không hợp lệ.'}</p>}
-          <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} paymentDiscount={paymentDiscount} total={total}/>
+          <SummaryRows subtotal={subtotal} shipping={shippingAfterDiscount} discount={discount} paymentDiscount={paymentDiscount} referralDiscount={referralDiscount} total={total}/>
           <Button className="tf4912-place-order" size="lg" full disabled={busy||noPaymentMethod}>{busy ? 'Đang gửi yêu cầu...' : submitLabel}</Button>
           <div className="tf4912-checkout-trust"><span><i><LockKeyhole/></i><b>Kết nối bảo mật</b><small>Dữ liệu được mã hóa</small></span><span><i><ShieldCheck/></i><b>Thông tin minh bạch</b><small>Không có phí ẩn</small></span><span><i><PackageCheck/></i><b>Đóng gói an toàn</b><small>Bảo hiểm vận chuyển</small></span></div>
         </section>

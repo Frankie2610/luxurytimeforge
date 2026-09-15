@@ -113,6 +113,10 @@
         "marketing": {
           ".read": true,
           ".write": "auth != null && ((auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || (auth.token.email == 'giaquyenvan96@gmail.com' && (auth.token.firebase.sign_in_provider != 'google.com' || root.child('timeforge/adminMembers').child(auth.uid).child('allowGoogleSignIn').val() == true)))) || (root.child('timeforge/adminMembers').child(auth.uid).child('status').val() == 'active' && (auth.token.firebase.sign_in_provider != 'google.com' || root.child('timeforge/adminMembers').child(auth.uid).child('allowGoogleSignIn').val() == true) && (root.child('timeforge/adminMembers').child(auth.uid).child('role').val() == 'owner' || root.child('timeforge/adminMembers').child(auth.uid).child('role').val() == 'admin' || root.child('timeforge/adminMembers').child(auth.uid).child('role').val() == 'manager')))"
+        },
+        "referral": {
+          ".read": true,
+          ".write": "auth != null && ((auth.token.email != null && (auth.token.email == 'giaquyenvan@gmail.com' || (auth.token.email == 'giaquyenvan96@gmail.com' && (auth.token.firebase.sign_in_provider != 'google.com' || root.child('timeforge/adminMembers').child(auth.uid).child('allowGoogleSignIn').val() == true)))) || (root.child('timeforge/adminMembers').child(auth.uid).child('status').val() == 'active' && (auth.token.firebase.sign_in_provider != 'google.com' || root.child('timeforge/adminMembers').child(auth.uid).child('allowGoogleSignIn').val() == true) && (root.child('timeforge/adminMembers').child(auth.uid).child('role').val() == 'owner' || root.child('timeforge/adminMembers').child(auth.uid).child('role').val() == 'admin' || root.child('timeforge/adminMembers').child(auth.uid).child('role').val() == 'manager')))"
         }
       },
       "blogPosts": {
@@ -159,3 +163,4 @@
     }
   }
 }
+

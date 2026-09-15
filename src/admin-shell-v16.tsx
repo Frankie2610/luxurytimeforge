@@ -3,7 +3,7 @@ import './admin-v4938.css';
 import {useEffect,useLayoutEffect,useMemo,useState,type ComponentType} from 'react';
 import {Link,NavLink,Outlet,useLocation,useNavigate} from 'react-router-dom';
 import {
-  Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,History,Link2,
+  Activity,ArrowUpRight,BadgePercent,BarChart3,Bell,Boxes,ChevronDown,ChevronRight,History,Link2,Gift,
   BookOpen,CircleUserRound,FileText,FileUp,Home,Layers3,LayoutTemplate,Megaphone,Menu,PackageSearch,Plus,
   PanelLeftClose,PanelLeftOpen,RotateCcw,Rows3,Search,Settings,ShoppingBag,Store,Tags,Users,UserRoundSearch,Wrench,X,MessageSquareQuote,
 } from 'lucide-react';
@@ -64,6 +64,7 @@ const adminRoutePrefetchers:Record<string,()=>Promise<unknown>>={
   analytics:()=>import('./analytics-v15'),
   marketing:()=>import('./meta-ads-v57'),
   discounts:()=>import('./admin-operations-v10'),
+  referrals:()=>import('./referral-admin-v68'),
   returns:()=>import('./returns-v13'),
   blogs:()=>import('./blog-v18'),
   reviews:()=>import('./reviews-admin-v60'),
@@ -96,6 +97,7 @@ const pageMap:Record<string,PageMeta>={
   '/admin/analytics':{title:'Phân tích',eyebrow:'Báo cáo',description:'Doanh thu, chuyển đổi và nguồn tạo đơn hàng.'},
   '/admin/marketing/meta':{title:'Meta Ads',eyebrow:'Marketing',description:'Quản lý Pixel, UTM, feed sản phẩm và chất lượng tín hiệu quảng cáo.'},
   '/admin/discounts':{title:'Mã giảm giá',eyebrow:'Marketing',description:'Thiết lập ưu đãi, điều kiện và thời gian hiệu lực.'},
+  '/admin/referrals':{title:'Referral & Growth',eyebrow:'CRM / Growth Ops',description:'Quản lý link giới thiệu, chính sách thưởng, chống gian lận và business impact.'},
   '/admin/blogs':{title:'Bài viết',eyebrow:'Nội dung',description:'Tạo và quản lý nội dung cho TimeForge Journal.'},
   '/admin/reviews':{title:'Review & testimonial',eyebrow:'Nội dung',description:'Quản lý review dạng chữ và hình ảnh hiển thị trên storefront.'},
   '/admin/pages':{title:'Trang nội dung',eyebrow:'Nội dung',description:'Biên tập trang Giới thiệu, Bảo hành, Giao hàng và Đổi trả trên website khách.'},
@@ -153,6 +155,7 @@ export function AdminLayoutV16(){
     ]},
     {label:'Marketing & nội dung',items:[
       {to:'/admin/discounts',label:'Mã giảm giá',icon:BadgePercent},
+      {to:'/admin/referrals',label:'Referral & Growth',icon:Gift},
       {to:'/admin/marketing/meta',label:'Meta Ads',icon:Megaphone},
       {to:'/admin/blogs',label:'Bài viết',icon:BookOpen},
       {to:'/admin/reviews',label:'Review & testimonial',icon:MessageSquareQuote},

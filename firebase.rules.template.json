@@ -113,6 +113,10 @@
         "marketing": {
           ".read": true,
           ".write": "__MARKETING_MANAGE_CONDITION__"
+        },
+        "referral": {
+          ".read": true,
+          ".write": "__MARKETING_MANAGE_CONDITION__"
         }
       },
       "blogPosts": {

@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.67.0",
+  "version": "0.68.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -71,7 +71,8 @@
     "v662:check": "node scripts/check-v662-performance-product-groups.mjs",
     "v664:check": "node scripts/check-v664-ai-seo.mjs",
     "v665:check": "node scripts/check-v665-index-safety.mjs",
-    "v670:check": "node scripts/check-v670-ai-automation.mjs"
+    "v670:check": "node scripts/check-v670-ai-automation.mjs",
+    "v680:check": "node scripts/check-v680-referral-growth.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -114,7 +115,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.67.0: AI Watch Advisor, automated back-in-stock notifications, and paid-order warranty activation handoff on top of the V0.66.6 SEO/performance baseline.",
+  "description": "Luxury TimeForge V0.68.0: CRM referral growth engine, configurable anti-fraud rules, server-side referral pricing, Growth Ops review queue, and responsive referral journeys.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"
