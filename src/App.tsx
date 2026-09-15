@@ -20,10 +20,10 @@ const CartPageV11=lazy(()=>import('./checkout-route-v685').then(m=>({default:m.C
 const CheckoutPageV11=lazy(()=>import('./checkout-route-v685').then(m=>({default:m.CheckoutPageV11})));
 const OrderConfirmationV11=lazy(()=>import('./checkout-route-v685').then(m=>({default:m.OrderConfirmationV11})));
 const PayOSReturnPageV4927=lazy(()=>import('./payos-return-v4927').then(m=>({default:m.PayOSReturnPageV4927})));
-const CustomerLoginV12=lazy(()=>import('./account-route-v685').then(m=>({default:m.CustomerLoginV12})));
-const CustomerAccountV12=lazy(()=>import('./account-route-v685').then(m=>({default:m.CustomerAccountV12})));
-const CustomerOrderV12=lazy(()=>import('./account-route-v685').then(m=>({default:m.CustomerOrderV12})));
-const TrackOrderV12=lazy(()=>import('./account-route-v685').then(m=>({default:m.TrackOrderV12})));
+const CustomerLoginV12=lazy(()=>import('./customer-account-v12').then(m=>({default:m.CustomerLoginV12})));
+const CustomerAccountV12=lazy(()=>import('./customer-account-v12').then(m=>({default:m.CustomerAccountV12})));
+const CustomerOrderV12=lazy(()=>import('./customer-account-v12').then(m=>({default:m.CustomerOrderV12})));
+const TrackOrderV12=lazy(()=>import('./customer-account-v12').then(m=>({default:m.TrackOrderV12})));
 const CustomerReturnV13=lazy(()=>import('./returns-v13').then(m=>({default:m.CustomerReturnV13})));
 const ReturnsAdminV13=lazy(()=>import('./returns-v13').then(m=>({default:m.ReturnsAdminV13})));
 const IntegrationsV13=lazy(()=>import('./integrations-v13').then(m=>({default:m.IntegrationsV13})));
