@@ -1,5 +1,4 @@
 import * as storefront from './storefront-v10';
-import './v685-storefront-final.css';
 
 export const StoreLayoutV10 = storefront.StoreLayoutV10;
 export const HomeV10 = storefront.HomeV10;
