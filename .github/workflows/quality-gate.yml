@@ -1,0 +1,74 @@
+name: Quality Gate
+
+on:
+  push:
+    branches:
+      - master
+      - 'feat/**'
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Typecheck · Build · Regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Production build
+        id: production_build
+        shell: bash
+        run: |
+          set +e
+          pnpm run build 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Comment build failure on PR
+        if: failure() && github.event_name == 'pull_request' && steps.production_build.outputs.exit_code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          {
+            echo '### ❌ Quality Gate — production build failed'
+            echo
+            echo '```text'
+            tail -n 160 build.log
+            echo '```'
+          } > pr-build-comment.md
+          gh pr comment "$PR_NUMBER" --body-file pr-build-comment.md
+
+      - name: Referral regression
+        run: pnpm run v680:check
+
+      - name: Product Ops regression
+        run: pnpm run v681:check
