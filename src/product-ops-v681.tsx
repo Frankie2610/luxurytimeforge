@@ -38,6 +38,7 @@ function readJson<T>(key:string,fallback:T):T{
 function saveJson(key:string,value:unknown){try{window.localStorage.setItem(key,JSON.stringify(value))}catch{/* Local persistence is a convenience, not a release blocker. */}}
 function ageHours(date:string){return Math.max(0,(Date.now()-new Date(date).getTime())/3600000)}
 function money(value:number){return new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0}).format(value||0)}
+function nextImprovementStatus(status:ImprovementStatus):ImprovementStatus{return status==='planned'?'doing':status==='doing'?'done':'planned'}
 
 export function ProductOpsCenterV681(){
   const{orders,products}=useCommerce();
@@ -70,7 +71,7 @@ export function ProductOpsCenterV681(){
 
   const toggleUat=(id:string)=>setUat(current=>{const next=current.map(x=>x.id===id?{...x,done:!x.done}:x);saveJson(UAT_KEY,next);return next});
   const updateRelease=<K extends keyof ReleaseControl,>(key:K,value:ReleaseControl[K])=>setRelease(current=>{const next={...current,[key]:value};saveJson(RELEASE_KEY,next);return next});
-  const advanceImprovement=(id:string)=>setImprovements(current=>{const next=current.map(item=>item.id!==id?item:{...item,status:item.status==='planned'?'doing':item.status==='doing'?'done':'planned'});saveJson(IMPROVEMENT_KEY,next);return next});
+  const advanceImprovement=(id:string)=>setImprovements(current=>{const next=current.map(item=>item.id!==id?item:{...item,status:nextImprovementStatus(item.status)});saveJson(IMPROVEMENT_KEY,next);return next});
 
   return <div className="po681">
     <section className="po681-hero">
