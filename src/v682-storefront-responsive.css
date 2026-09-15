@@ -1,11 +1,56 @@
-/* V0.68.2 — route-final storefront polish. Keep this import after legacy storefront CSS. */
-.tf-storefront-v4912{width:100%;max-width:100%;overflow-x:clip}
-.tf-storefront-v4912 .tf-product-brand-v4918{color:#fff!important;-webkit-text-fill-color:#fff!important;opacity:1!important;text-shadow:0 1px 2px rgba(0,0,0,.18)}
-.tf-storefront-v4912 .tf-product-info-v4918>.tf-product-brand-v4918{color:#fff!important;-webkit-text-fill-color:#fff!important}
-.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input){min-width:0;max-width:100%;height:44px;border:1px solid #cbd7d0!important;border-radius:12px!important;background:#fff!important;color:#1c3026!important;-webkit-text-fill-color:#1c3026!important;font-size:16px!important;line-height:1.2!important;box-shadow:none!important;outline:none!important}
-.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input)::placeholder{color:#76847c!important;-webkit-text-fill-color:#76847c!important;opacity:1}
-.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input):focus{border-color:#173f2a!important;box-shadow:0 0 0 4px rgba(23,63,42,.11)!important}
-.tf-storefront-v4912 :is(button,a){-webkit-tap-highlight-color:transparent}
-.tf-storefront-v4912 :is(.tf-btn,.tf-button,.tf-product-quick-add-v4918){max-width:100%;text-align:center}
-@media(max-width:1050px){.tf-storefront-v4912{overflow-x:hidden}.tf-storefront-v4912 :is(.tf-header-inner,.tf4912-header-inner,.tf-store-header-inner){min-width:0;max-width:100%}}
-@media(max-width:720px){.tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input){height:42px!important;border-radius:11px!important}.tf-storefront-v4912 :is(.tf-btn,.tf-button){min-height:43px}}
+/* V0.68.3 — hard-refresh-safe storefront guards.
+   This file is loaded from app.css before lazy route CSS, so every rule that must
+   survive route chunk injection uses a stronger scoped selector + !important. */
+html body .tf-storefront-v4912{width:100%!important;max-width:100%!important;overflow-x:clip!important}
+
+/* Product-card vendor badge: LOCMAN / ADIDAS / etc. */
+html body .tf-storefront-v4912 .tf-product-info-v4918>small.tf-product-brand-v4918{
+  width:max-content!important;max-width:100%!important;min-height:26px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  margin:0 0 2px!important;padding:0 10px!important;border:1px solid #173f2a!important;
+  border-radius:999px!important;background:#173f2a!important;color:#fff!important;
+  -webkit-text-fill-color:#fff!important;opacity:1!important;text-shadow:none!important;
+  font-size:9px!important;font-weight:850!important;line-height:1!important;letter-spacing:.1em!important;
+  text-transform:uppercase!important;white-space:nowrap!important
+}
+
+/* PDP vendor link, e.g. <a href="/collections?brand=ADIDAS">ADIDAS</a>. */
+html body .tf-storefront-v4912 .tf-pdp491-title>a[href*="/collections?brand="]{
+  width:max-content!important;max-width:100%!important;min-height:28px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  margin:0 0 9px!important;padding:0 11px!important;border:1px solid #173f2a!important;
+  border-radius:999px!important;background:#173f2a!important;color:#fff!important;
+  -webkit-text-fill-color:#fff!important;text-decoration:none!important;box-shadow:0 6px 16px rgba(23,63,42,.13)!important;
+  font-size:9px!important;font-weight:850!important;line-height:1!important;letter-spacing:.1em!important;
+  text-transform:uppercase!important;white-space:nowrap!important
+}
+html body .tf-storefront-v4912 .tf-pdp491-title>a[href*="/collections?brand="]:hover{
+  border-color:#0f3220!important;background:#0f3220!important;color:#fff!important;-webkit-text-fill-color:#fff!important
+}
+
+/* Search controls keep a clean, readable treatment after lazy storefront CSS loads. */
+html body .tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input,.v29-search-field input){
+  min-width:0!important;max-width:100%!important;height:44px!important;box-sizing:border-box!important;
+  border:1px solid #cbd7d0!important;border-radius:12px!important;background:#fff!important;
+  color:#1c3026!important;-webkit-text-fill-color:#1c3026!important;font-size:16px!important;
+  line-height:1.2!important;box-shadow:none!important;outline:none!important
+}
+html body .tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input,.v29-search-field input)::placeholder{
+  color:#76847c!important;-webkit-text-fill-color:#76847c!important;opacity:1!important
+}
+html body .tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input,.v29-search-field input):focus{
+  border-color:#173f2a!important;box-shadow:0 0 0 4px rgba(23,63,42,.11)!important
+}
+html body .tf-storefront-v4912 :is(button,a){-webkit-tap-highlight-color:transparent}
+html body .tf-storefront-v4912 :is(.tf-btn,.tf-button,.tf-product-quick-add-v4918){max-width:100%!important;text-align:center!important}
+
+@media(max-width:1050px){
+  html body .tf-storefront-v4912{overflow-x:hidden!important}
+  html body .tf-storefront-v4912 :is(.lux-header-inner,.tf-header-inner,.tf4912-header-inner,.tf-store-header-inner){min-width:0!important;max-width:100%!important}
+}
+@media(max-width:720px){
+  html body .tf-storefront-v4912 .tf-product-info-v4918>small.tf-product-brand-v4918{min-height:24px!important;padding-inline:8px!important;font-size:8px!important;letter-spacing:.085em!important}
+  html body .tf-storefront-v4912 .tf-pdp491-title>a[href*="/collections?brand="]{min-height:26px!important;padding-inline:9px!important;font-size:8px!important}
+  html body .tf-storefront-v4912 :is(input[type="search"],.tf-search-input,.tf-header-search input,.tf4912-search input,.v29-search-field input){height:42px!important;border-radius:11px!important}
+  html body .tf-storefront-v4912 :is(.tf-btn,.tf-button){min-height:43px!important}
+}
