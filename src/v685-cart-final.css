@@ -1,0 +1,4 @@
+@import "./v682-cart-responsive.css";
+
+/* V0.68.5 — route-final cart layer. Keep cart ownership after legacy commerce CSS. */
+html body .tf4912-cart-route,html body .tf4912-cart-page{max-width:100%!important;overflow-x:hidden!important}
