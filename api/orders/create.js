@@ -11,6 +11,8 @@ export default async function handler(req,res){
       return res.status(409).json({
         confirmationRequired:true,
         reason:preflight.reason||'Ưu đãi không thể áp dụng cho đơn hàng này.',
+        stripDiscount:preflight.stripDiscount,
+        stripReferral:preflight.stripReferral,
         message:'Ưu đãi không thể áp dụng. Vui lòng xác nhận nếu bạn muốn tiếp tục thanh toán theo giá ban đầu.',
       });
     }
