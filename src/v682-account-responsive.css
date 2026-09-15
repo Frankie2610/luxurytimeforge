@@ -1,0 +1,36 @@
+/* V0.68.2 — final account/login CSS. Imported last so lazy-route CSS cannot regress after refresh. */
+.v12-account-page.v524-account-page{width:100%;max-width:100%;min-height:100vh;overflow-x:hidden;background:#f5f7f5;color:#17251e}
+.v524-account-header{width:100%;max-width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;box-sizing:border-box}
+.v524-account-header>*{min-width:0}
+.v524-account-header nav{display:flex;align-items:center;flex:0 0 auto}
+.v524-account-header .v12-icon-link{width:42px;height:42px;display:grid;place-items:center;flex:0 0 42px;border:1px solid #d5ded8!important;border-radius:11px!important;background:#fff!important;color:#24483a!important;-webkit-text-fill-color:#24483a!important;box-shadow:0 5px 14px rgba(25,53,38,.06)!important}
+.v524-account-header .v12-icon-link svg{width:17px;height:17px;stroke:currentColor}
+.v524-login-layout{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.v524-login-layout>*{min-width:0;box-sizing:border-box}
+.v524-login-copy{overflow:hidden}
+.v524-login-copy>p{color:rgba(245,255,250,.80)!important;-webkit-text-fill-color:rgba(245,255,250,.80)!important}
+.v524-login-copy .v524-login-eyebrow{color:#d9eee5!important;-webkit-text-fill-color:#d9eee5!important}
+.v524-login-copy .v524-login-benefits>span{border-color:rgba(255,255,255,.17)!important;background:rgba(255,255,255,.08)!important;color:#fff!important;box-shadow:none!important}
+.v524-login-copy .v524-login-benefits :is(b,svg){color:#fff!important;-webkit-text-fill-color:#fff!important}
+.v524-login-copy .v524-login-benefits small{color:rgba(255,255,255,.72)!important;-webkit-text-fill-color:rgba(255,255,255,.72)!important}
+.v524-login-copy .v524-login-benefits svg{background:rgba(255,255,255,.12)!important}
+.v524-login-form-wrap{min-width:0;box-sizing:border-box}
+.v524-login-card,.v524-login-assurance{max-width:100%;box-sizing:border-box}
+.v524-login-card{width:min(500px,100%)!important;border:1px solid #d9e2dd!important;background:#fff!important;box-shadow:0 22px 54px rgba(22,54,40,.10)!important}
+.v524-login-card label{width:100%;min-width:0;box-sizing:border-box}
+.v524-login-card label span{color:#263b31!important;-webkit-text-fill-color:#263b31!important;font-weight:800!important}
+.v524-login-card input{width:100%!important;min-width:0!important;height:52px!important;box-sizing:border-box!important;padding:0 15px!important;border:1px solid #cbd7d0!important;border-radius:12px!important;background:#fff!important;color:#182a21!important;-webkit-text-fill-color:#182a21!important;font-size:16px!important;line-height:1.2!important;box-shadow:none!important;outline:none!important;appearance:none}
+.v524-login-card input::placeholder{color:#7a8880!important;-webkit-text-fill-color:#7a8880!important;opacity:1}
+.v524-login-card input:hover{border-color:#aebfb5!important}
+.v524-login-card input:focus{border-color:#0b5a42!important;box-shadow:0 0 0 4px rgba(11,90,66,.11)!important}
+.v524-login-card :is(.v12-primary,.v12-track-link){width:100%!important;min-width:0!important;min-height:50px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;box-sizing:border-box!important;border-radius:12px!important;font-weight:820!important;text-decoration:none!important}
+.v524-login-card .v12-primary{border:1px solid #0b5a42!important;background:#0b5a42!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 9px 22px rgba(11,90,66,.16)!important}
+.v524-login-card .v12-primary svg{stroke:#fff!important}
+.v524-login-card .v12-track-link{border:1px solid #c7d5cd!important;background:#f5f8f6!important;color:#214a38!important;-webkit-text-fill-color:#214a38!important;box-shadow:none!important}
+.v524-login-card .v12-track-link svg{stroke:currentColor!important}
+.v524-login-card :is(.v12-primary,.v12-track-link):focus-visible,.v524-account-header :is(a,button):focus-visible{outline:3px solid rgba(11,90,66,.20)!important;outline-offset:3px!important}
+@media(hover:hover) and (pointer:fine){.v524-login-card .v12-primary:hover:not(:disabled){background:#073d2f!important;border-color:#073d2f!important;transform:translateY(-1px)}.v524-login-card .v12-track-link:hover{background:#ebf3ee!important;border-color:#9fb7aa!important;transform:translateY(-1px)}}
+@media(max-width:1050px){.v524-login-layout{grid-template-columns:1fr!important}.v524-login-copy{min-height:auto!important;padding:52px 32px 58px!important}.v524-login-form-wrap{padding:34px 20px 48px!important}.v524-login-card,.v524-login-assurance{width:min(620px,100%)!important;margin-inline:auto!important}.v524-login-benefits{width:min(680px,100%)!important}}
+@media(max-width:720px){.v524-account-header{height:68px!important;padding:0 14px!important}.v524-account-header nav{gap:6px!important}.v524-login-copy{padding:42px 20px 48px!important}.v524-login-copy h1{font-size:clamp(40px,9vw,54px)!important;line-height:1.03!important}.v524-login-form-wrap{padding:24px 14px 40px!important}.v524-login-card{padding:30px 22px!important;border-radius:20px!important}.v524-login-benefits{grid-template-columns:1fr 1fr!important}.v524-login-benefits>span{min-height:80px!important}}
+@media(max-width:520px){.v524-account-header{height:64px!important;padding-inline:11px!important}.v524-account-brand-copy small{display:none!important}.v524-account-brand-copy b{font-size:16px!important}.v524-account-header nav a{min-width:40px!important;height:40px!important;padding:0 10px!important}.v524-account-shop-link{font-size:0!important;width:40px!important;padding:0!important}.v524-account-shop-link svg{margin:0!important}.v524-login-copy{padding:36px 17px 42px!important}.v524-login-copy h1{font-size:clamp(36px,11vw,46px)!important}.v524-login-benefits{grid-template-columns:1fr!important}.v524-login-form-wrap{padding:18px 10px 34px!important}.v524-login-card{padding:24px 17px!important;border-radius:18px!important}.v524-login-card h2{font-size:31px!important}.v524-login-card input{height:50px!important}.v524-login-card :is(.v12-primary,.v12-track-link){min-height:48px!important}.v524-login-assurance{align-items:flex-start!important}}
+@media(prefers-reduced-motion:reduce){.v524-account-page *{transition:none!important}}
