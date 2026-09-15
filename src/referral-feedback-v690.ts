@@ -36,8 +36,9 @@ export function installReferralFeedbackV690(){
       if(!init||typeof init.body!=='string')return response;
       const body=JSON.parse(init.body) as Record<string,unknown>;
       body.confirmOriginalPrice=true;
-      if(data.stripReferral){try{localStorage.removeItem(ATTRIBUTION_KEY)}catch{}}
-      return originalFetch(input,{...init,body:JSON.stringify(body)});
+      const retry=await originalFetch(input,{...init,body:JSON.stringify(body)});
+      if(retry.ok&&data.stripReferral){try{localStorage.removeItem(ATTRIBUTION_KEY)}catch{}}
+      return retry;
     }catch{
       return response;
     }
