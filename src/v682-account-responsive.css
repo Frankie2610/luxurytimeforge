@@ -1,0 +1,137 @@
+/* V0.68.4 — hard-refresh-safe account/login guards.
+   Account route CSS is lazy-loaded, so these selectors intentionally outrank older !important polish rules. */
+html body .v12-account-page.v524-account-page{width:100%!important;max-width:100%!important;min-height:100vh!important;overflow-x:hidden!important;background:#f5f7f5!important;color:#17251e!important}
+html body .v12-account-page.v524-account-page .v524-account-header{width:100%!important;max-width:100%!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-account-header>*{min-width:0!important}
+html body .v12-account-page.v524-account-page .v524-account-header nav{display:flex!important;align-items:center!important;flex:0 0 auto!important;min-width:0!important}
+html body .v12-account-page.v524-account-page .v524-account-shop-link,html body .v12-account-page.v524-account-page .v524-account-logout{box-sizing:border-box!important;white-space:nowrap!important}
+
+html body .v12-account-page.v524-account-page .v524-login-layout{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-login-layout>*{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-login-copy{position:relative!important;overflow:hidden!important;color:#fff!important;background:radial-gradient(circle at 82% 20%,rgba(255,255,255,.13),transparent 32%),radial-gradient(circle at 6% 88%,rgba(132,192,164,.18),transparent 34%),linear-gradient(145deg,#0e6249 0%,#083e30 58%,#062f25 100%)!important}
+html body .v12-account-page.v524-account-page .v524-login-copy h1{color:#fff!important;-webkit-text-fill-color:#fff!important}
+html body .v12-account-page.v524-account-page .v524-login-copy>p{color:rgba(245,255,250,.80)!important;-webkit-text-fill-color:rgba(245,255,250,.80)!important}
+html body .v12-account-page.v524-account-page .v524-login-eyebrow{color:#d9eee5!important;-webkit-text-fill-color:#d9eee5!important}
+html body .v12-account-page.v524-account-page .v524-login-benefits>span{border:1px solid rgba(255,255,255,.17)!important;border-radius:16px!important;background:rgba(255,255,255,.08)!important;color:#fff!important;box-shadow:none!important;backdrop-filter:blur(8px)!important}
+html body .v12-account-page.v524-account-page .v524-login-benefits>span>i{background:rgba(255,255,255,.12)!important;color:#fff!important}
+html body .v12-account-page.v524-account-page .v524-login-benefits>span b{color:#fff!important;-webkit-text-fill-color:#fff!important}
+html body .v12-account-page.v524-account-page .v524-login-benefits>span small{color:rgba(255,255,255,.72)!important;-webkit-text-fill-color:rgba(255,255,255,.72)!important}
+html body .v12-account-page.v524-account-page .v524-login-benefits>span svg{color:#fff!important;stroke:#fff!important}
+
+html body .v12-account-page.v524-account-page .v524-login-form-wrap{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-login-card,html body .v12-account-page.v524-account-page .v524-login-assurance{max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-login-card{width:min(500px,100%)!important;border:1px solid #d9e2dd!important;border-radius:24px!important;background:#fff!important;box-shadow:0 22px 54px rgba(22,54,40,.10)!important}
+html body .v12-account-page.v524-account-page .v524-login-card label{width:100%!important;min-width:0!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-login-card label>span{width:max-content!important;max-width:100%!important;display:inline-flex!important;align-items:center!important;min-height:24px!important;margin-bottom:7px!important;padding:0 8px!important;border-radius:999px!important;background:#edf5ef!important;color:#315f47!important;-webkit-text-fill-color:#315f47!important;font-size:10px!important;font-weight:800!important}
+html body .v12-account-page.v524-account-page .v524-login-card input{width:100%!important;min-width:0!important;height:52px!important;box-sizing:border-box!important;padding:0 15px!important;border:1px solid #cbd7d0!important;border-radius:12px!important;background:#fff!important;color:#182a21!important;-webkit-text-fill-color:#182a21!important;font-size:16px!important;line-height:1.2!important;box-shadow:none!important;outline:none!important;appearance:none!important}
+html body .v12-account-page.v524-account-page .v524-login-card input::placeholder{color:#7a8880!important;-webkit-text-fill-color:#7a8880!important;opacity:1!important}
+html body .v12-account-page.v524-account-page .v524-login-card input:hover{border-color:#aebfb5!important}
+html body .v12-account-page.v524-account-page .v524-login-card input:focus{border-color:#0b5a42!important;box-shadow:0 0 0 4px rgba(11,90,66,.11)!important}
+html body .v12-account-page.v524-account-page .v524-login-card :is(.v12-primary,.v12-track-link){width:100%!important;min-width:0!important;min-height:50px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;box-sizing:border-box!important;border-radius:12px!important;font-weight:820!important;text-decoration:none!important}
+html body .v12-account-page.v524-account-page .v524-login-card .v12-primary{border:1px solid #0b5a42!important;background:#0b5a42!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 9px 22px rgba(11,90,66,.16)!important}
+html body .v12-account-page.v524-account-page .v524-login-card .v12-primary svg{stroke:#fff!important}
+html body .v12-account-page.v524-account-page .v524-login-card .v12-track-link{border:1px solid #c7d5cd!important;background:#f5f8f6!important;color:#214a38!important;-webkit-text-fill-color:#214a38!important;box-shadow:none!important}
+html body .v12-account-page.v524-account-page .v524-login-card .v12-track-link svg{stroke:currentColor!important}
+html body .v12-account-page.v524-account-page .v524-login-card :is(.v12-primary,.v12-track-link):focus-visible,html body .v12-account-page.v524-account-page .v524-account-header :is(a,button):focus-visible{outline:3px solid rgba(11,90,66,.20)!important;outline-offset:3px!important}
+
+/* Authenticated account: explicitly own the layout so legacy v524/v582/v526 rules cannot fight after refresh. */
+html body .v12-account-page.v524-account-page .v524-account-hero{width:100%!important;max-width:100%!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(360px,48vw)!important;gap:clamp(24px,4vw,54px)!important;align-items:center!important;box-sizing:border-box!important;overflow:hidden!important}
+html body .v12-account-page.v524-account-page .v524-account-hero>*{min-width:0!important;max-width:100%!important}
+html body .v12-account-page.v524-account-page .v524-account-hero-copy{min-width:0!important;max-width:690px!important}
+html body .v12-account-page.v524-account-page .v524-account-hero h1{max-width:100%!important;overflow-wrap:anywhere!important}
+html body .v12-account-page.v524-account-page .tf582-account-pills{max-width:100%!important;display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+html body .v12-account-page.v524-account-page .v524-account-quick-actions{max-width:100%!important;display:flex!important;flex-wrap:wrap!important;gap:9px!important}
+html body .v12-account-page.v524-account-page .v524-account-quick-actions a{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-account-stats{width:100%!important;min-width:0!important;max-width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v524-account-stats span{min-width:0!important;max-width:100%!important;box-sizing:border-box!important;overflow:hidden!important}
+html body .v12-account-page.v524-account-page .v524-account-stats b{max-width:100%!important;overflow-wrap:anywhere!important;font-size:clamp(16px,2vw,21px)!important;line-height:1.25!important}
+html body .v12-account-page.v524-account-page .v12-account-grid{width:min(1420px,100%)!important;max-width:100%!important;min-width:0!important;margin-inline:auto!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(300px,360px)!important;gap:28px!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v12-account-grid>main,html body .v12-account-page.v524-account-page .v12-account-grid>aside{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v12-account-grid>aside{display:grid!important;align-content:start!important;gap:14px!important}
+html body .v12-account-page.v524-account-page :is(.v12-profile-card,.v12-address-card,.v12-order-list>article,.v12-empty-state){min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v12-profile-card :is(h2,p),html body .v12-account-page.v524-account-page .v12-address-card :is(h3,p,address,code){max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+html body .v12-account-page.v524-account-page .rf68-member-referral code{width:100%!important;max-width:100%!important;box-sizing:border-box!important;overflow-wrap:anywhere!important;white-space:normal!important}
+html body .v12-account-page.v524-account-page .v12-order-list article>header,html body .v12-account-page.v524-account-page .v12-order-list article>footer{min-width:0!important;max-width:100%!important;box-sizing:border-box!important}
+html body .v12-account-page.v524-account-page .v12-order-list article>header>* ,html body .v12-account-page.v524-account-page .v12-order-list article>footer>*{min-width:0!important;max-width:100%!important}
+html body .v12-account-page.v524-account-page .v12-order-list article>footer>div:last-child{display:flex!important;flex-wrap:wrap!important;gap:8px!important}
+
+@media(hover:hover) and (pointer:fine){
+  html body .v12-account-page.v524-account-page .v524-login-card .v12-primary:hover:not(:disabled){background:#073d2f!important;border-color:#073d2f!important;transform:translateY(-1px)!important}
+  html body .v12-account-page.v524-account-page .v524-login-card .v12-track-link:hover{background:#ebf3ee!important;border-color:#9fb7aa!important;transform:translateY(-1px)!important}
+}
+@media(max-width:1100px){
+  html body .v12-account-page.v524-account-page .v524-account-hero{grid-template-columns:minmax(0,1fr)!important;gap:24px!important;padding:48px 28px 32px!important}
+  html body .v12-account-page.v524-account-page .v524-account-hero-copy{max-width:760px!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats{width:100%!important;max-width:760px!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid{grid-template-columns:minmax(0,1fr)!important;gap:20px!important;padding:30px 24px 64px!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid>aside{grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:start!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid>aside>.v12-address-card:last-child{grid-column:1/-1!important}
+}
+@media(max-width:1050px){
+  html body .v12-account-page.v524-account-page .v524-login-layout{grid-template-columns:minmax(0,1fr)!important}
+  html body .v12-account-page.v524-account-page .v524-login-copy{min-height:auto!important;padding:52px 32px 58px!important}
+  html body .v12-account-page.v524-account-page .v524-login-form-wrap{padding:34px 20px 48px!important}
+  html body .v12-account-page.v524-account-page .v524-login-card,html body .v12-account-page.v524-account-page .v524-login-assurance{width:min(620px,100%)!important;margin-inline:auto!important}
+  html body .v12-account-page.v524-account-page .v524-login-benefits{width:min(680px,100%)!important}
+}
+@media(max-width:720px){
+  html body .v12-account-page.v524-account-page .v524-account-header{height:68px!important;padding:0 14px!important;gap:10px!important}
+  html body .v12-account-page.v524-account-page .v524-account-header nav{gap:6px!important}
+  html body .v12-account-page.v524-account-page .v524-login-copy{padding:42px 20px 48px!important}
+  html body .v12-account-page.v524-account-page .v524-login-copy h1{font-size:clamp(40px,9vw,54px)!important;line-height:1.03!important}
+  html body .v12-account-page.v524-account-page .v524-login-form-wrap{padding:24px 14px 40px!important}
+  html body .v12-account-page.v524-account-page .v524-login-card{padding:30px 22px!important;border-radius:20px!important}
+  html body .v12-account-page.v524-account-page .v524-login-benefits{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  html body .v12-account-page.v524-account-page .v524-login-benefits>span{min-height:80px!important}
+  html body .v12-account-page.v524-account-page .v524-account-hero{padding:36px 16px 24px!important;gap:18px!important}
+  html body .v12-account-page.v524-account-page .v524-account-hero h1{font-size:clamp(34px,8vw,44px)!important;line-height:1.05!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats{grid-template-columns:repeat(3,minmax(0,1fr))!important;border-radius:16px!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats span{min-height:76px!important;padding:14px 12px!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats span+span{border-top:0!important;border-left:1px solid #e0e8e3!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid{padding:22px 12px 56px!important;gap:16px!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid>aside{grid-template-columns:minmax(0,1fr)!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid>aside>.v12-address-card:last-child{grid-column:auto!important}
+  html body .v12-account-page.v524-account-page .v12-section-title{gap:10px!important;flex-wrap:wrap!important}
+  html body .v12-account-page.v524-account-page .v12-order-list article>footer{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+  html body .v12-account-page.v524-account-page .v12-order-list article>footer>div:last-child{width:100%!important}
+}
+@media(max-width:520px){
+  html body .v12-account-page.v524-account-page .v524-account-header{height:64px!important;padding-inline:11px!important}
+  html body .v12-account-page.v524-account-page .v524-account-brand{gap:8px!important;min-width:0!important}
+  html body .v12-account-page.v524-account-page .v524-account-brand-mark{width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:11px!important}
+  html body .v12-account-page.v524-account-page .v524-account-brand-copy{min-width:0!important}
+  html body .v12-account-page.v524-account-page .v524-account-brand-copy small{display:none!important}
+  html body .v12-account-page.v524-account-page .v524-account-brand-copy b{max-width:150px!important;overflow:hidden!important;font-size:16px!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  html body .v12-account-page.v524-account-page .v524-account-header nav a,html body .v12-account-page.v524-account-page .v524-account-header nav button{min-width:40px!important;width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:0!important;border-radius:11px!important}
+  html body .v12-account-page.v524-account-page .v524-account-header nav svg{width:17px!important;height:17px!important;margin:0!important}
+  html body .v12-account-page.v524-account-page .v524-login-copy{padding:36px 17px 42px!important}
+  html body .v12-account-page.v524-account-page .v524-login-copy h1{font-size:clamp(36px,11vw,46px)!important}
+  html body .v12-account-page.v524-account-page .v524-login-benefits{grid-template-columns:minmax(0,1fr)!important}
+  html body .v12-account-page.v524-account-page .v524-login-form-wrap{padding:18px 10px 34px!important}
+  html body .v12-account-page.v524-account-page .v524-login-card{padding:24px 17px!important;border-radius:18px!important}
+  html body .v12-account-page.v524-account-page .v524-login-card h2{font-size:31px!important;line-height:1.08!important}
+  html body .v12-account-page.v524-account-page .v524-login-card input{height:50px!important}
+  html body .v12-account-page.v524-account-page .v524-login-card :is(.v12-primary,.v12-track-link){min-height:48px!important}
+  html body .v12-account-page.v524-account-page .v524-login-assurance{align-items:flex-start!important}
+  html body .v12-account-page.v524-account-page .v524-account-hero{padding:30px 12px 20px!important}
+  html body .v12-account-page.v524-account-page .v524-account-hero h1{font-size:34px!important}
+  html body .v12-account-page.v524-account-page .v524-account-hero p{font-size:13px!important;line-height:1.58!important}
+  html body .v12-account-page.v524-account-page .tf582-account-pills{gap:6px!important}
+  html body .v12-account-page.v524-account-page .tf582-account-pills span{font-size:9px!important;padding:6px 8px!important}
+  html body .v12-account-page.v524-account-page .v524-account-quick-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important}
+  html body .v12-account-page.v524-account-page .v524-account-quick-actions a{min-height:42px!important;padding:0 8px!important;justify-content:center!important;font-size:10px!important;text-align:center!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats span{padding:12px 8px!important;min-height:70px!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats b{font-size:14px!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats small{font-size:8px!important;letter-spacing:.04em!important}
+  html body .v12-account-page.v524-account-page .v12-account-grid{padding:18px 9px 48px!important}
+  html body .v12-account-page.v524-account-page :is(.v12-profile-card,.v12-address-card){padding:18px!important;border-radius:15px!important}
+  html body .v12-account-page.v524-account-page .v12-order-list article>header,html body .v12-account-page.v524-account-page .v12-order-list article>footer{padding:12px!important}
+}
+@media(max-width:380px){
+  html body .v12-account-page.v524-account-page .v524-account-brand-copy b{max-width:112px!important;font-size:14px!important}
+  html body .v12-account-page.v524-account-page .v524-login-card{padding-inline:14px!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats{grid-template-columns:minmax(0,1fr)!important}
+  html body .v12-account-page.v524-account-page .v524-account-stats span+span{border-left:0!important;border-top:1px solid #e0e8e3!important}
+  html body .v12-account-page.v524-account-page .v524-account-quick-actions{grid-template-columns:minmax(0,1fr)!important}
+}
+@media(prefers-reduced-motion:reduce){html body .v12-account-page.v524-account-page *{transition:none!important}}
