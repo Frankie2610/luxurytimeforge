@@ -1,0 +1,26 @@
+/* V0.68.1 — referral fraud decisions should be readable at a glance. */
+.rf68-queue .rf68-table-wrap{border-color:#dfe6e2;box-shadow:0 5px 18px rgba(25,55,39,.035)}
+.rf68-queue table{min-width:1120px}
+.rf68-queue th{padding:11px 12px;background:#f4f7f5;color:#536159;font-size:10px;font-weight:850;letter-spacing:.075em}
+.rf68-queue td{padding:14px 12px;color:#26352d}
+.rf68-queue tbody tr:hover{background:#fbfdfc}
+.rf68-queue code{display:inline-flex;align-items:center;min-height:25px;padding:0 7px;border:1px solid #dce4df;border-radius:7px;background:#f6f8f7;color:#294437;font-size:10px;font-weight:800}
+.rf68-risk,.rf68-status,.rf68-decision{min-height:27px;align-items:center;justify-content:center;padding:0 9px;border:1px solid transparent;border-radius:999px;font-weight:850;font-size:9.5px;line-height:1;text-transform:uppercase;letter-spacing:.025em}
+.rf68-risk.is-low,.rf68-status.is-qualified,.rf68-decision.is-qualified{border-color:#bde3ce;background:#ecfdf5;color:#076a4b}
+.rf68-risk.is-medium,.rf68-status.is-review,.rf68-status.is-pending,.rf68-decision.is-review,.rf68-decision.is-pending{border-color:#efd98b;background:#fff9df;color:#855908}
+.rf68-risk.is-high,.rf68-status.is-blocked,.rf68-status.is-revoked,.rf68-decision.is-blocked,.rf68-decision.is-revoked{border-color:#f1c4c4;background:#fff0f0;color:#a71919}
+.rf68-decision-cell{min-width:235px;display:grid;justify-items:start;gap:7px}
+.rf68-reasons{display:flex;flex-wrap:wrap;gap:5px;max-width:330px}
+.rf68-reasons>span{display:inline-flex;align-items:center;min-height:25px;padding:4px 8px;border:1px solid #dce4df;border-radius:8px;background:#f7f9f8;color:#47564e;font-size:10px;font-weight:680;line-height:1.35}
+.rf68-decision.is-blocked+.rf68-reasons>span{border-color:#f0d0d0;background:#fff7f7;color:#7b3131}
+.rf68-block-note{display:block!important;margin:0!important;padding:7px 9px;border-left:3px solid #b42318;border-radius:0 8px 8px 0;background:#fff1f0;color:#85342e!important;font-size:10px!important;font-weight:730;line-height:1.45}
+.rf68-queue-actions{display:grid;gap:6px;min-width:92px}
+.rf68-queue-actions button{min-height:34px;justify-content:center;padding:0 10px;border-radius:9px;font-size:10px;font-weight:800;transition:background-color .16s ease,border-color .16s ease,transform .16s ease,box-shadow .16s ease}
+.rf68-queue-actions button:first-child{border-color:#b8d8c5;background:#eef8f1;color:#17643f}
+.rf68-queue-actions button:last-child{border-color:#e3c4c4;background:#fff7f7;color:#9b3030}
+.rf68-queue-actions button svg{width:14px;height:14px;stroke:currentColor}
+.rf68-queue-actions button:focus-visible,.rf68-row-actions :is(button,a):focus-visible{outline:3px solid rgba(31,111,84,.2);outline-offset:2px}
+.rf68-row-actions :is(button,a){transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
+@media(hover:hover) and (pointer:fine){.rf68-queue-actions button:hover,.rf68-row-actions :is(button,a):hover{transform:translateY(-1px)}.rf68-queue-actions button:first-child:hover{border-color:#82ba98;background:#e4f5e9}.rf68-queue-actions button:last-child:hover{border-color:#d99090;background:#ffeded}.rf68-row-actions :is(button,a):hover{border-color:#aebfb5;background:#f3f7f4}}
+@media(max-width:640px){.rf68-queue .rf68-table-wrap{margin-inline:-4px}.rf68-decision-cell{min-width:210px}.rf68-reasons{max-width:270px}.rf68-queue-actions button{min-height:36px}}
+@media(prefers-reduced-motion:reduce){.rf68-queue-actions button,.rf68-row-actions :is(button,a){transition:none}}
