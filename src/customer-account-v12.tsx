@@ -11,6 +11,7 @@ import './v704-member-polish.css';
 import './v705-luxury-mobile.css';
 import './v706-track-tiers.css';
 import './v708-member-refinement.css';
+import './v709-luxury-track-polish.css';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft, ArrowRight, Award, BadgePercent, Bell, BookOpen, CalendarDays, Check, ChevronRight, CircleUserRound, Clock3, Copy,
@@ -332,6 +333,16 @@ export function TrackOrderV12() {
    </section>
    <section className="tf706-invoice tf707-invoice"><div className="tf706-invoice-meta"><span><small>Người nhận</small><strong>{found.customerName||'Khách hàng'}</strong></span><span><small>Thanh toán</small><strong>{trackedPaymentLabel(found)}</strong></span></div><div className="tf706-invoice-total"><span>Tổng tiền đơn hàng</span><strong>{money(found.total)}</strong></div></section>
   </motion.section>:<motion.div key="empty" className="v12-form-error tf706-track-error" initial={{opacity:0}} animate={{opacity:1}} role="alert">{error||'Không tìm thấy đơn hàng phù hợp. Vui lòng kiểm tra lại mã đơn và thông tin liên hệ.'}</motion.div>)}</AnimatePresence>
-  <Link className="v12-track-account tf706-member-invite" to="/member/login"><UserRound aria-hidden="true"/>Tham gia TimeForge để lưu lịch sử mua hàng và nhận quyền lợi thành viên<ArrowRight aria-hidden="true"/></Link>
+  <aside className="tf709-member-invitation" aria-label="Quyền lợi TimeForge Member">
+   <div className="tf709-invitation-content">
+    <span className="tf709-invitation-monogram" aria-hidden="true"><UserRound/></span>
+    <div className="tf709-invitation-copy">
+     <small>TIMEFORGE MEMBER</small>
+     <h3>Hành trình mua sắm, thêm nhiều đặc quyền.</h3>
+     <p>Lưu lịch sử đơn hàng, tích điểm và nhận ưu đãi dành riêng cho thành viên.</p>
+    </div>
+   </div>
+   <Link className="tf709-invitation-action" to="/member/login"><span>Khám phá đặc quyền</span><ArrowRight aria-hidden="true"/></Link>
+  </aside>
  </section></AccountShell>;
 }
