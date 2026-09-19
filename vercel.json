@@ -245,6 +245,24 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/member",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/member/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ],
   "cleanUrls": true,

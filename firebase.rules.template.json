@@ -69,6 +69,18 @@
         ".read": "__CUSTOMERS_CONDITION__",
         ".write": "__CUSTOMERS_MANAGE_CONDITION__"
       },
+      "memberAuth": {
+        ".read": false,
+        ".write": false
+      },
+      "memberHolds": {
+        ".read": false,
+        ".write": false
+      },
+      "memberOpportunities": {
+        ".read": false,
+        ".write": false
+      },
       "orders": {
         ".read": "__ORDERS_CONDITION__",
         ".write": "__ORDERS_MANAGE_CONDITION__"
@@ -115,6 +127,10 @@
           ".write": "__MARKETING_MANAGE_CONDITION__"
         },
         "referral": {
+          ".read": true,
+          ".write": "__MARKETING_MANAGE_CONDITION__"
+        },
+        "member": {
           ".read": true,
           ".write": "__MARKETING_MANAGE_CONDITION__"
         }

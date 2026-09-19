@@ -178,10 +178,12 @@ export function buildTrackingUrl(template:string,trackingNumber:string){
 }
 
 export async function createStorefrontOrder(payload:CheckoutPayload,cart:Array<{productId:string;variantId:string;quantity:number}>,requestId:string):Promise<Order>{
+  let memberSessionToken='';
+  try{const session=JSON.parse(window.localStorage.getItem('tf.v12.customer-session')||'null');memberSessionToken=String(session?.token||'')}catch{}
   const response=await fetch('/api/orders/create',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({payload,cart,requestId}),
+    body:JSON.stringify({payload,cart,requestId,memberSessionToken}),
   });
   const data=await response.json().catch(()=>({})) as {order?:Order;message?:string};
   if(!response.ok||!data.order)throw new Error(data.message||'Không thể ghi nhận đơn hàng.');

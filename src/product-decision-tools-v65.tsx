@@ -5,6 +5,7 @@ import {toast} from 'sonner';
 import type {Product} from './types';
 import {money,uid} from './utils';
 import './v650-product-tools.css';
+import {MemberFomoV70} from './member-fomo-v70';
 
 type Props={product:Product;variantId:string;variantTitle?:string;sku?:string;price:number};
 const PRICE_ALERT_PREFIX='tf:price-alert:v1:';
@@ -55,4 +56,4 @@ function PriceDropAlert({product,variantId,variantTitle,sku,price}:Props){
   </details>;
 }
 
-export function ProductDecisionToolsV65(props:Props){return <section className="tf65-product-decision-tools" aria-label="Công cụ hỗ trợ chọn đồng hồ"><WristFitAdvisor product={props.product}/><PriceDropAlert {...props}/></section>}
+export function ProductDecisionToolsV65(props:Props){return <><section className="tf65-product-decision-tools" aria-label="Công cụ hỗ trợ chọn đồng hồ"><WristFitAdvisor product={props.product}/><PriceDropAlert {...props}/></section><MemberFomoV70 product={props.product} variantId={props.variantId} price={props.price}/></>}

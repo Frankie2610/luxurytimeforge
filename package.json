@@ -1,7 +1,7 @@
 {
   "name": "timeforge-commerce",
   "private": true,
-  "version": "0.68.0",
+  "version": "0.70.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -72,7 +72,9 @@
     "v664:check": "node scripts/check-v664-ai-seo.mjs",
     "v665:check": "node scripts/check-v665-index-safety.mjs",
     "v670:check": "node scripts/check-v670-ai-automation.mjs",
-    "v680:check": "node scripts/check-v680-referral-growth.mjs"
+    "v680:check": "node scripts/check-v680-referral-growth.mjs",
+    "v690:check": "node scripts/check-v690-member-hub.mjs",
+    "v700:check": "node scripts/check-v700-member-fomo.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -115,7 +117,7 @@
     "typescript": "7.0.2",
     "vite": "8.1.5"
   },
-  "description": "Luxury TimeForge V0.68.0: CRM referral growth engine, configurable anti-fraud rules, server-side referral pricing, Growth Ops review queue, and responsive referral journeys.",
+  "description": "Luxury TimeForge V0.70.0: Guest/Member separation, password Member auth, server order linking, real inventory Personal Hold, Stock Pressure, Member Opportunity Window, Tier Unlock Purchase, tiered loyalty and responsive Member Hub.",
   "packageManager": "pnpm@10.15.1",
   "engines": {
     "node": ">=22 <25"

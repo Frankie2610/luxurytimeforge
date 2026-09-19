@@ -8,6 +8,9 @@ const orderNumber=()=>`TF-${vietnamStamp()}-${crypto.randomInt(1000,10000)}`;
 const bankTransferContent=(lines,number)=>{const raw=cleanText(lines?.[0]?.sku,100).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12)||'ORDER';const suffix=String(number||'').replace(/\D/g,'').slice(-4)||String(crypto.randomInt(1000,10000));return`TF${vietnamStamp()}-${raw}-${suffix}`};
 const safeRequestId=(value)=>{const input=cleanText(value,120);return/^[A-Za-z0-9_-]{8,120}$/.test(input)?input:`order_${crypto.randomUUID().replaceAll('-','')}`};
 const uid=(prefix)=>`${prefix}_${crypto.randomUUID().replaceAll('-','')}`;
+const safeEqual=(a,b)=>{const left=Buffer.from(String(a||''));const right=Buffer.from(String(b||''));return left.length===right.length&&crypto.timingSafeEqual(left,right)};
+const verifyMemberSession=(token)=>{try{const secret=process.env.CUSTOMER_SESSION_SECRET;if(!secret||!token)return null;const[payload,signature]=String(token).split('.');const expected=crypto.createHmac('sha256',secret).update(payload).digest('base64url');if(!payload||!signature||!safeEqual(signature,expected))return null;const data=JSON.parse(Buffer.from(payload,'base64url').toString('utf8'));return data.customerId&&Number(data.expiresAt)>Date.now()?data:null}catch{return null}};
+
 
 function normalizePaymentMethod(value){
   const method=String(value||'cod');
@@ -98,20 +101,24 @@ function customerFromOrder(customerEntries,payload,total){
   const id=uid('customer');return{key:id,customer:{id,name:cleanText(payload.customer?.name,120),email,phone,ordersCount:1,totalSpent:total,tags:['Online'],createdAt:now,acceptsMarketing:false,addresses:[addressItem],notes:[]}};
 }
 
-export async function createVerifiedStorefrontOrder({payload,cart,requestId,requestContext={}}){
+export async function createVerifiedStorefrontOrder({payload,cart,requestId,requestContext={},memberSessionToken=''}){
   if(!payload||!Array.isArray(cart)||!cart.length||cart.length>50)throw new Error('Giỏ hàng không hợp lệ.');
   const id=safeRequestId(requestId);
   const existing=await findOrder(id).catch(()=>null);
   if(existing)return existing.order;
   const method=normalizePaymentMethod(payload.paymentMethod);
-  const[catalogRaw,discountRaw,integrationRaw,customersRaw,referralRaw,ordersRaw]=await Promise.all([
+  const[catalogRaw,discountRaw,integrationRaw,customersRaw,referralRaw,ordersRaw,holdsRaw,opportunitiesRaw]=await Promise.all([
     firebaseRead('timeforge/products'),
     firebaseRead('timeforge/discounts').catch(()=>({})),
     firebaseRead('timeforge/settings/integrations').catch(()=>({})),
     firebaseRead('timeforge/customers').catch(()=>({})),
     firebaseRead('timeforge/settings/referral').catch(()=>({})),
     firebaseRead('timeforge/orders').catch(()=>({})),
+    firebaseRead('timeforge/memberHolds').catch(()=>({})),
+    firebaseRead('timeforge/memberOpportunities').catch(()=>({})),
   ]);
+  const memberSession=verifyMemberSession(memberSessionToken);
+  const activeHolds=firebaseEntries(holdsRaw).filter(([,hold])=>hold?.status==='active'&&Number(hold?.expiresAt)>Date.now());
   const productEntries=firebaseEntries(catalogRaw);
   const discountEntries=firebaseEntries(discountRaw);
   const settings=normalizeIntegrations(integrationRaw||{});
@@ -139,7 +146,9 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     const variants=Array.isArray(product.variants)?product.variants:[];
     const variant=variants.find(item=>item?.id===line.variantId)||variants[0];
     const inventory=Number(variant?.inventory??product.inventory??0);
-    if(inventory<line.quantity)throw new Error(`${cleanText(product.title,80)} không đủ tồn kho.`);
+    const reservedByOthers=activeHolds.filter(([,hold])=>String(hold?.productId||'')===String(product.id)&&(!hold?.variantId||String(hold.variantId)===String(variant?.id||line.variantId))&&String(hold?.customerId||'')!==String(memberSession?.customerId||'')).length;
+    const available=Math.max(0,inventory-reservedByOthers);
+    if(available<line.quantity)throw new Error(`${cleanText(product.title,80)} chỉ còn ${available} chiếc có thể đặt ngay vì một phần tồn kho đang được Member giữ.`);
     const unitPrice=Number(variant?.price??product.price);
     if(!Number.isSafeInteger(unitPrice)||unitPrice<=0)throw new Error('Giá sản phẩm không hợp lệ.');
     return{id:`line_${index+1}_${id.slice(-8)}`,productKey:found[0],productId:product.id,variantId:variant?.id||line.variantId,title:cleanText(product.title,160),variantTitle:cleanText(variant?.title||'Default Title',100),sku:cleanText(variant?.sku||product.sku,100),image:cleanText(product.images?.[0],800),quantity:line.quantity,unitPrice,lineTotal:unitPrice*line.quantity};
@@ -160,16 +169,20 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
   const customerResult=customerFromOrder(firebaseEntries(customersRaw),payload,total);
   const number=orderNumber();
   const transferContent=method==='bank_transfer'?bankTransferContent(lines,number):'';
+  const activeOpportunity=memberSession?firebaseEntries(opportunitiesRaw).find(([,item])=>item?.status==='active'&&String(item?.customerId||'')===String(memberSession.customerId)&&Number(item?.expiresAt)>Date.now()&&lines.some(line=>line.productId===item.productId)):null;
   const order={
     id,number,createdAt:now,updatedAt:now,customerId:customerResult.customer.id,customerName:cleanText(payload.customer.name,120),customerEmail:cleanText(payload.customer.email,160),customerPhone:cleanText(payload.customer.phone,30),
     shippingAddress:{fullName:cleanText(address.fullName||payload.customer.name,120),phone:cleanText(address.phone||payload.customer.phone,30),email:cleanText(address.email||payload.customer.email,160),address1:cleanText(address.address1,180),address2:cleanText(address.address2,180),ward:cleanText(address.ward,100),district:cleanText(address.district,100),city:cleanText(address.city,100),country:cleanText(address.country||'Việt Nam',80),postalCode:cleanText(address.postalCode,20)},
     lines:lines.map(({productKey,...line})=>line),subtotal,discountCode:promo.code,discountAmount,promotionDiscountAmount:promo.amount,paymentDiscountAmount:paymentDiscount.amount,paymentDiscountLabel:paymentDiscount.label,referralCode:referral.code||undefined,referralDiscountAmount:referralDiscount||0,referralReferrerId:referral.referrerId||undefined,referralFraudScore:referral.code?referral.score:undefined,referralRiskLevel:referral.code?referral.riskLevel:undefined,referralRewardStatus:referral.code?referral.status:undefined,referralRiskSignals:referral.code?referral.signals:undefined,referralDeviceId:referral.code?referral.deviceId:undefined,referralIpHash:referral.code?referral.ipHash:undefined,shippingAmount,taxAmount:0,total,currency:'VND',status:'open',paymentStatus:'pending',fulfillmentStatus:'unfulfilled',paymentMethod:method,paymentProvider:method==='payos'?'payos':undefined,
     ...(method==='bank_transfer'&&settings.preferred?{bankAccountId:settings.preferred.id,bankName:settings.preferred.bankName,bankAccountName:settings.preferred.accountName,bankAccountNumber:settings.preferred.accountNumber,bankTransferContent:transferContent}:{}),
+    ...(activeOpportunity?{memberOpportunityId:String(activeOpportunity[1].id||activeOpportunity[0]),memberCreditMultiplier:Math.max(1,Number(activeOpportunity[1].creditMultiplier)||1),memberBonusLabel:`Member Opportunity x${Math.max(1,Number(activeOpportunity[1].creditMultiplier)||1)} Forge Credits`}:{}),
     note:cleanText(payload.note,1000),source:'storefront',
   };
   const updates={};
   updates[`timeforge/orders/${id}`]=order;
   updates[`timeforge/customers/${customerResult.key}`]=customerResult.customer;
+  if(memberSession){for(const[holdKey,hold]of activeHolds){if(String(hold?.customerId||'')===String(memberSession.customerId)&&lines.some(line=>line.productId===hold?.productId&&(!hold?.variantId||line.variantId===hold.variantId)))updates[`timeforge/memberHolds/${holdKey}`]=null;}}
+  if(activeOpportunity){updates[`timeforge/memberOpportunities/${activeOpportunity[0]}`]={...activeOpportunity[1],status:'used',usedAt:now,orderId:id};}
   const linesByProduct=new Map();
   for(const line of lines){
     const grouped=linesByProduct.get(line.productKey)||[];
