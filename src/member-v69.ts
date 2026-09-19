@@ -52,8 +52,10 @@ export async function loadMemberSettings():Promise<MemberSettings>{
 }
 export async function saveMemberSettings(settings:MemberSettings){
   const next=normalizeMemberSettings({...settings,updatedAt:new Date().toISOString()});
+  if(!firebaseClient.enabled)throw new Error('Chưa kết nối cơ sở dữ liệu. Không thể công bố thể lệ thành viên.');
+  // Never report a public loyalty rule as published if Firebase did not persist it.
+  await firebaseClient.write('timeforge/settings/member',next);
   if(typeof window!=='undefined')localStorage.setItem(KEY,JSON.stringify(next));
-  if(firebaseClient.enabled)await firebaseClient.write('timeforge/settings/member',next);
   return next;
 }
 export const eligibleMemberOrders=(orders:Order[])=>orders.filter(order=>order.paymentStatus==='paid'&&order.status!=='cancelled'&&order.fulfillmentStatus!=='returned');
