@@ -47,7 +47,7 @@ function AccountShell({customer, children}: {customer?: Customer; children: Reac
   const storeName=resolveStoreName(storeProfile.storeName);
   const storeLogo=resolveStoreLogo(storeProfile.logoImage);
   const logout = () => {localStorage.removeItem(SESSION_KEY);localStorage.removeItem('tf.v70.member-customer');localStorage.removeItem('tf.v70.member-orders'); navigate('/account/login', {replace:true});};
-  return <div className="v12-account-page v524-account-page"><a className="v12-skip-link" href="#account-main">Bỏ qua đến nội dung</a><header className="v12-account-header v524-account-header"><Link to="/" className="v12-account-logo v524-account-brand"><span className="v524-account-brand-mark"><img src={storeLogo} alt="" width="48" height="48" decoding="async"/></span><span className="v524-account-brand-copy"><b>{storeName}</b><small>Khu vực thành viên</small></span></Link><nav aria-label="Tài khoản khách hàng"><Link className="v524-account-shop-link" to="/collections" aria-label="Tiếp tục mua sắm"><ShoppingBag/>Tiếp tục mua sắm</Link>{customer&&<button className="v524-account-logout" onClick={logout}><LogOut/>Đăng xuất</button>}</nav></header><main id="account-main">{children}</main></div>;
+  return <div className="v12-account-page v524-account-page"><a className="v12-skip-link" href="#account-main">Bỏ qua đến nội dung</a><header className="v12-account-header v524-account-header"><Link to="/" className="v12-account-logo v524-account-brand"><span className="v524-account-brand-mark"><img src={storeLogo} alt="" width="48" height="48" decoding="async"/></span><span className="v524-account-brand-copy"><b>{storeName}</b><small>Khu vực thành viên</small></span></Link><nav aria-label="Tài khoản khách hàng"><Link className="v524-account-shop-link" to="/collections" aria-label="Tiếp tục mua sắm" title="Tiếp tục mua sắm"><ShoppingBag/>Tiếp tục mua sắm</Link>{customer&&<button className="v524-account-logout" type="button" aria-label="Đăng xuất khỏi tài khoản" title="Đăng xuất" onClick={logout}><LogOut/>Đăng xuất</button>}</nav></header><main id="account-main">{children}</main></div>;
 }
 const SESSION_CUSTOMER_KEY='tf.v70.member-customer';
 const SESSION_ORDERS_KEY='tf.v70.member-orders';
@@ -94,7 +94,7 @@ function MemberRules({settings,compact=false}:{settings:MemberSettings;compact?:
    <p>Tham gia miễn phí. Hạng được tính theo tổng chi tiêu từ những đơn đã thanh toán, không tính đơn hủy hoặc hoàn trả.</p>
    <div className="tf704-tier-table" role="table" aria-label="Điều kiện và quyền lợi từng hạng">
     <div className="tf704-tier-table-head" role="row"><span role="columnheader">Hạng</span><span role="columnheader">Chi tiêu từ</span><span role="columnheader">Hệ số điểm</span><span role="columnheader">Giữ hàng</span></div>
-    {settings.tiers.map(tier=><div className={`tf704-tier-row is-${tier.id}`} role="row" key={tier.id}><strong role="cell">{tier.label}</strong><span role="cell">{tier.minSpend?money(tier.minSpend):'Đăng ký miễn phí'}</span><span role="cell">×{tier.creditMultiplier.toLocaleString('vi-VN',{maximumFractionDigits:2})}</span><span role="cell">{settings.personalHoldEnabled?`${tier.holdMinutes} phút`:'Tạm chưa áp dụng'}</span></div>)}
+    {settings.tiers.map(tier=><div className={`tf704-tier-row is-${tier.id}`} role="row" key={tier.id}><strong role="cell">{tier.label}</strong><span role="cell" data-label="Chi tiêu từ">{tier.minSpend?money(tier.minSpend):'Đăng ký miễn phí'}</span><span role="cell" data-label="Hệ số điểm">×{tier.creditMultiplier.toLocaleString('vi-VN',{maximumFractionDigits:2})}</span><span role="cell" data-label="Giữ hàng">{settings.personalHoldEnabled?`${tier.holdMinutes} phút`:'Tạm chưa áp dụng'}</span></div>)}
    </div>
    <div className="tf704-tier-perks" aria-label="Quyền lợi theo từng hạng">{settings.tiers.map(tier=><article key={tier.id} className={`is-${tier.id}`}><strong>{tier.label}</strong><p>{tier.benefits.length?tier.benefits.join(' · '):'Quyền lợi được cập nhật theo từng chương trình.'}</p></article>)}</div>
    <p>Cứ mỗi {money(settings.creditSpendUnit)} chi tiêu hợp lệ, bạn nhận 1 điểm cơ bản; hệ số tính theo hạng xét theo lịch sử chi tiêu. Điểm được ghi nhận sau khi thanh toán thành công và có thể được điều chỉnh khi hoàn trả.</p>
@@ -146,7 +146,7 @@ function MemberNotifications({customerId,updates}:{customerId:string;updates:Mem
    body.style.position=bodyPosition;
    body.style.top=bodyTop;
    body.style.width=bodyWidth;
-   window.scrollTo({top:scrollY,left:0,behavior:'instant'});
+   window.scrollTo({top:scrollY,left:0,behavior:'auto'});
   };
  },[open]);
  return <div className="tf704-notification-wrap">
