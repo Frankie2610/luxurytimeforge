@@ -2,7 +2,11 @@ name: TimeForge typecheck and build
 on:
   push:
     branches:
-      - fix/vercel-type-error-redeploy
+      - fix/member-luxury-responsive-contrast-notice-v708
+      - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 jobs:
   build:
