@@ -1,0 +1,182 @@
+/* TimeForge customer polish: distinct member metals, clear order journey, flat consent area. */
+.v12-account-page .tf690-pass.is-member{
+ background:linear-gradient(145deg,#1e583e 0%,#123d2d 63%,#0c3024 100%);
+ border-color:#5b8872;color:#fff;
+}
+.v12-account-page .tf690-pass.is-member header>b{
+ color:#d1efda;background:#2f7952;border-color:#79ad8c;
+}
+.v12-account-page .tf690-pass.is-silver{
+ background:linear-gradient(145deg,#e8ecef 0%,#c3ccd2 53%,#a5b1bd 100%);
+ border-color:#a2b1bb;color:#233747;box-shadow:0 18px 36px #32465320,inset 0 1px 0 #ffffffa8;
+}
+.v12-account-page .tf690-pass.is-silver :is(.tf690-pass-name,.tf690-pass-progress b,.tf690-pass-progress small,.tf690-pass-progress p,.tf690-pass header span,.tf690-pass p,.tf690-pass p strong,.tf690-pass p b){
+ color:#213747;
+}
+.v12-account-page .tf690-pass.is-silver header>b{
+ color:#213947;border-color:#8597a2;background:#eaf0f3;font-weight:700;
+}
+.v12-account-page .tf690-pass.is-silver .tf690-progress-track{background:#7f939f49}
+.v12-account-page .tf690-pass.is-silver .tf690-progress-track i{background:#486879}
+.v12-account-page .tf690-pass.is-gold{
+ background:linear-gradient(145deg,#f9e7ad 0%,#dfbf69 47%,#bd9239 100%);
+ border-color:#bb9140;color:#433013;box-shadow:0 19px 39px #86662326,inset 0 1px 0 #fff9ddad;
+}
+.v12-account-page .tf690-pass.is-gold :is(.tf690-pass-name,.tf690-pass-progress b,.tf690-pass-progress small,.tf690-pass header span,.tf690-pass p,.tf690-pass p strong,.tf690-pass p b){color:#422f11}
+.v12-account-page .tf690-pass.is-gold header>b{
+ color:#ffedb9;border-color:#76521e;background:#76521e;font-weight:700;
+}
+.v12-account-page .tf690-pass.is-gold .tf690-progress-track{background:#86621f51}
+.v12-account-page .tf690-pass.is-gold .tf690-progress-track i{background:#795419}
+.v12-account-page .tf690-pass.is-platinum{
+ background:linear-gradient(145deg,#60768c 0%,#3c5066 53%,#26394c 100%);
+ border-color:#bccad5;color:#f4f7f9;box-shadow:0 19px 39px #1a2e402b,inset 0 1px 0 #ffffff3d;
+}
+.v12-account-page .tf690-pass.is-platinum :is(.tf690-pass-name,.tf690-pass-progress b,.tf690-pass-progress small,.tf690-pass header span,.tf690-pass p,.tf690-pass p strong,.tf690-pass p b){color:#f5f7fa}
+.v12-account-page .tf690-pass.is-platinum header>b{
+ color:#273c4e;border-color:#e1e9ee;background:#e0e7ed;font-weight:700;
+}
+/* In the eligibility table and tier perks, use solid metal-coded accents, not gradients or crowding. */
+.v12-account-page .tf704-tier-row strong,.v12-account-page .tf704-tier-perks>article strong{display:inline-flex;align-items:center;width:fit-content;min-height:28px;padding:4px 10px;border:1px solid transparent;border-radius:8px;font-weight:700;font-size:12px;line-height:1.2}
+.v12-account-page .tf704-tier-row.is-member strong,.v12-account-page .tf704-tier-perks>article.is-member strong{color:#174932;background:#e0eee4;border-color:#b7d5c0}
+.v12-account-page .tf704-tier-row.is-silver strong,.v12-account-page .tf704-tier-perks>article.is-silver strong{color:#334957;background:#e5ebee;border-color:#bdcbd4}
+.v12-account-page .tf704-tier-row.is-gold strong,.v12-account-page .tf704-tier-perks>article.is-gold strong{color:#67470e;background:#f7e7b6;border-color:#d9b867}
+.v12-account-page .tf704-tier-row.is-platinum strong,.v12-account-page .tf704-tier-perks>article.is-platinum strong{color:#fff;background:#40576d;border-color:#8095a6}
+.v12-account-page .tf706-tier-stat.is-member>svg,.v12-account-page .tf690-tier-benefits.is-member>header>svg{color:#236746}
+.v12-account-page .tf706-tier-stat.is-silver>svg,.v12-account-page .tf690-tier-benefits.is-silver>header>svg{color:#637b8a}
+.v12-account-page .tf706-tier-stat.is-gold>svg,.v12-account-page .tf690-tier-benefits.is-gold>header>svg{color:#a47922}
+.v12-account-page .tf706-tier-stat.is-platinum>svg,.v12-account-page .tf690-tier-benefits.is-platinum>header>svg{color:#536a81}
+.v12-account-page .tf706-tier-stat.is-silver b{color:#475e6b}
+.v12-account-page .tf706-tier-stat.is-gold b{color:#896016}
+.v12-account-page .tf706-tier-stat.is-platinum b{color:#526d82}
+/* Consent is a plain, well-aligned checkbox row; no tinted pill or washed-out chip. */
+.v12-account-page .tf700-auth-card label.tf700-terms{
+ display:grid!important;grid-template-columns:19px minmax(0,1fr)!important;align-items:start;
+ width:100%;max-width:100%;min-width:0;gap:11px!important;padding:13px 0;margin:12px 0 8px;
+ border:0;border-top:1px solid #e3e9e2;border-radius:0;background:transparent!important;box-shadow:none!important;
+}
+.v12-account-page .tf700-auth-card label.tf700-terms>input[type="checkbox"]{
+ display:block;position:static;grid-column:1;grid-row:1;width:18px!important;height:18px!important;
+ min-width:18px;min-height:18px;max-width:18px;max-height:18px;padding:0;margin:3px 0 0;
+ accent-color:#15513a;border:1px solid #94ac9b;border-radius:4px;
+}
+.v12-account-page .tf700-auth-card label.tf700-terms>span{
+ display:block;grid-column:2;grid-row:1;width:auto;max-width:100%;min-width:0;
+ color:#31473b!important;font-size:12px!important;font-weight:400!important;
+ line-height:1.65!important;overflow-wrap:break-word;white-space:normal!important;
+}
+.v12-account-page .tf700-auth-card label.tf700-terms a{color:#174f38;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.v12-account-page .tf700-auth-card label.tf700-terms a:hover{color:#0b3222}
+/* Track order: one clear order summary followed by a stable progress + itemized receipt. */
+.v12-account-page .tf706-track-page{width:min(960px,calc(100% - 36px));margin:26px auto 64px;gap:17px}
+.v12-account-page .tf706-track-page>.tf706-track-hero{border:1px solid #2a583e;border-radius:21px;padding:clamp(25px,4vw,40px);background:#133e2c;box-shadow:0 14px 32px #1c382222}
+.v12-account-page .tf706-track-hero>small{display:inline-flex;align-items:center;gap:9px;color:#e5cea0;font-size:11px;font-weight:700;letter-spacing:.1em}
+.v12-account-page .tf706-track-hero h1{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:clamp(28px,4.2vw,43px);font-weight:700;line-height:1.15;letter-spacing:-.035em;color:#fff}
+.v12-account-page .tf706-track-hero p{font-size:14px;line-height:1.7;color:#e1ede3;max-width:680px}
+.v12-account-page .tf706-track-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px;padding:23px 25px;border:1px solid #dce5da;border-radius:19px;background:#fff;box-shadow:0 12px 27px #17371f0c}
+.v12-account-page .tf706-track-form label{min-width:0;display:grid;gap:7px}
+.v12-account-page .tf706-track-form label>span{font-size:13px;font-weight:700;color:#264735}
+.v12-account-page .tf706-track-form input{width:100%;height:50px;min-width:0;font-size:14px;background:#fff;color:#1c3f2a;border-color:#bdcebf}
+.v12-account-page .tf706-track-form>button{grid-column:1/-1;min-height:49px;display:flex;align-items:center;justify-content:center;gap:9px;border:0;border-radius:11px;font-size:14px;font-weight:700;background:#15513a;color:#fff}
+.v12-account-page .tf706-track-form>button:disabled{background:#607d6b;color:#fff;opacity:1}
+.v12-account-page .tf706-track-form>button svg{width:17px;height:17px}
+.v12-account-page .tf706-result{display:grid;gap:14px;min-width:0;max-width:100%}
+.v12-account-page .tf706-order-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:clamp(20px,3vw,28px);border:1px solid #dfe7dd;border-radius:19px;background:#fff;box-shadow:0 12px 29px #193b220b}
+.v12-account-page .tf706-order-header>div{display:grid;gap:5px;min-width:0}
+.v12-account-page .tf706-order-header small{font-size:11px;color:#6c7c6d;letter-spacing:.07em;font-weight:700}
+.v12-account-page .tf706-order-header small span{color:#22523a;font-weight:700;letter-spacing:0}
+.v12-account-page .tf706-order-header h2{margin:4px 0 1px;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:clamp(23px,3vw,29px);font-weight:700;color:#143b29}
+.v12-account-page .tf706-order-header p{margin:0;color:#637869;font-size:12px;line-height:1.55}
+.v12-account-page .tf706-status-badge{flex:none;max-width:100%;display:inline-flex;align-items:center;justify-content:center;padding:8px 11px;border:1px solid #bdd5c3;border-radius:9px;color:#20563a;background:#eaf4ec;font-size:12px;font-weight:700;line-height:1.35;text-align:center}
+.v12-account-page .tf706-status-badge.is-cancelled{color:#873c35;border-color:#ead1ce;background:#fff0ee}
+.v12-account-page .tf706-status-badge.is-delivered{color:#185338;border-color:#a9d0b3;background:#e2f1e6}
+.v12-account-page .tf706-progress-card,.v12-account-page .tf706-products,.v12-account-page .tf706-invoice{min-width:0;padding:clamp(18px,3vw,26px);border:1px solid #dfe7dc;border-radius:19px;background:#fff;box-shadow:0 9px 25px #193b220a}
+.v12-account-page .tf706-card-heading,.v12-account-page .tf706-products-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.v12-account-page .tf706-card-heading>div,.v12-account-page .tf706-products-heading>div{display:grid;gap:4px;min-width:0}
+.v12-account-page .tf706-card-heading small,.v12-account-page .tf706-products-heading small{font-size:10px;letter-spacing:.1em;font-weight:700;color:#78907d}
+.v12-account-page .tf706-card-heading h3,.v12-account-page .tf706-products-heading h3{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:19px;font-weight:700;color:#193e2b;line-height:1.3}
+.v12-account-page .tf706-card-heading>svg{width:20px;height:20px;flex:none;color:#b19963}
+.v12-account-page .tf706-products-heading>span{flex:none;font-size:12px;font-weight:600;color:#566f5d}
+.v12-account-page .tf706-progress{min-width:0}
+.v12-account-page .tf706-progress>ol{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0;padding:0;list-style:none}
+.v12-account-page .tf706-progress>ol>li{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0;padding:0 4px;text-align:center}
+.v12-account-page .tf706-progress>ol>li:not(:last-child)::after{content:"";position:absolute;left:calc(50% + 24px);right:calc(-50% + 24px);top:20px;height:2px;background:#dce7dd}
+.v12-account-page .tf706-progress>ol>li.is-complete:not(:last-child)::after{background:#377752}
+.v12-account-page .tf706-progress-marker{position:relative;z-index:1;display:grid;place-items:center;width:42px;height:42px;border:1px solid #d1ddd2;border-radius:50%;background:#fff;color:#7e9585;font-size:12px;font-weight:700;line-height:1}
+.v12-account-page .tf706-progress-marker svg{width:19px;height:19px}
+.v12-account-page .tf706-progress .is-complete .tf706-progress-marker{border-color:#2e7550;background:#236747;color:#fff}
+.v12-account-page .tf706-progress .is-next .tf706-progress-marker{border-color:#91b69c;background:#eaf5ec;color:#1c6040}
+.v12-account-page .tf706-progress-text{max-width:100%;font-size:12px;font-weight:600;line-height:1.5;color:#718474}
+.v12-account-page .tf706-progress .is-complete .tf706-progress-text{color:#214e35;font-weight:700}
+.v12-account-page .tf706-progress-exception{margin:18px 0 0;font-size:12px;color:#8c3d32}
+.v12-account-page .tf706-shipping-card{display:flex;align-items:flex-start;gap:15px;min-width:0;padding:19px 23px;border:1px solid #d9e5da;border-radius:17px;background:#f1f6f0}
+.v12-account-page .tf706-shipping-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:1px solid #c6dccc;border-radius:12px;color:#236345;background:#fff}
+.v12-account-page .tf706-shipping-icon svg{width:20px;height:20px}
+.v12-account-page .tf706-shipping-card>div{display:grid;gap:4px;min-width:0}
+.v12-account-page .tf706-shipping-card small{font-size:10px;font-weight:700;color:#5b7864;letter-spacing:.1em}
+.v12-account-page .tf706-shipping-card strong{font-size:15px;font-weight:700;color:#1e5036}
+.v12-account-page .tf706-shipping-card p{margin:0;font-size:12px;line-height:1.6;color:#526b59;overflow-wrap:anywhere}
+.v12-account-page .tf706-products-heading{padding-bottom:14px;border-bottom:1px solid #e4ebe2}
+.v12-account-page .tf706-product-list{display:grid;gap:0}
+.v12-account-page .tf706-product-row{display:grid;grid-template-columns:92px minmax(0,1fr) minmax(100px,auto);gap:16px;align-items:center;min-width:0;padding:16px 0;border-bottom:1px solid #ebf0e9}
+.v12-account-page .tf706-product-row:last-child{border-bottom:0;padding-bottom:2px}
+.v12-account-page .tf706-product-image{display:grid;place-items:center;width:92px;height:102px;padding:8px;border:1px solid #edf0eb;border-radius:13px;background:#fafbf8;overflow:hidden}
+.v12-account-page .tf706-product-image :is(img,picture){display:block;max-width:100%;max-height:100%;height:auto;object-fit:contain}
+.v12-account-page .tf706-product-info{display:grid;gap:7px;min-width:0}
+.v12-account-page .tf706-product-info>strong{font-size:14px;font-weight:700;line-height:1.45;color:#203c2a;overflow-wrap:break-word}
+.v12-account-page .tf706-product-info>small{font-size:12px;color:#718175;line-height:1.4;overflow-wrap:anywhere}
+.v12-account-page .tf706-product-info>span{font-size:12px;color:#526958;line-height:1.5}
+.v12-account-page .tf706-product-info>span i{font-style:normal;margin:0 3px}
+.v12-account-page .tf706-product-total{justify-self:end;font-size:14px;font-weight:700;color:#1b432e;white-space:nowrap}
+.v12-account-page .tf706-empty-products{font-size:13px;line-height:1.6;color:#607564}
+.v12-account-page .tf706-invoice{padding:0;overflow:hidden}
+.v12-account-page .tf706-invoice-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:21px 24px}
+.v12-account-page .tf706-invoice-meta>span{display:grid;gap:7px;min-width:0}
+.v12-account-page .tf706-invoice-meta small{font-size:11px;color:#6f8274;font-weight:600}
+.v12-account-page .tf706-invoice-meta strong{font-size:14px;font-weight:700;color:#284b34;line-height:1.5;overflow-wrap:anywhere}
+.v12-account-page .tf706-invoice-total{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px 24px;background:#143e2c;color:#fff}
+.v12-account-page .tf706-invoice-total>span{font-size:13px;font-weight:600;color:#e4f1e5}
+.v12-account-page .tf706-invoice-total strong{font-size:clamp(20px,3vw,27px);font-weight:700;color:#fae8c0;white-space:nowrap}
+.v12-account-page .tf706-member-invite{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;min-height:49px;padding:12px 16px;border:1px solid #d5e2d6;border-radius:13px;background:#fff;color:#245338;font-size:13px;font-weight:600;text-align:center;line-height:1.5}
+.v12-account-page .tf706-member-invite svg{width:17px;height:17px;flex:none}
+.v12-account-page .tf706-track-error{max-width:100%;margin:0;padding:18px;border:1px solid #eed3cf;border-radius:14px;background:#fff7f5;color:#963f36;font-size:13px;line-height:1.55}
+@media(max-width:700px){
+.v12-account-page .tf706-track-page{width:calc(100% - 22px);margin:14px auto 42px;gap:12px}
+.v12-account-page .tf706-track-page>.tf706-track-hero{padding:25px 19px;border-radius:17px}
+.v12-account-page .tf706-track-hero h1{font-size:clamp(27px,7vw,35px)}
+.v12-account-page .tf706-track-hero p{font-size:13px}
+.v12-account-page .tf706-track-form{grid-template-columns:minmax(0,1fr);gap:12px;padding:18px 15px;border-radius:16px}
+.v12-account-page .tf706-track-form>button{grid-column:1;min-height:49px}
+.v12-account-page .tf706-order-header{padding:19px 17px;border-radius:16px}
+.v12-account-page .tf706-order-header h2{font-size:24px}
+.v12-account-page .tf706-status-badge{font-size:11px;padding:6px 9px}
+.v12-account-page .tf706-progress-card,.v12-account-page .tf706-products{padding:18px 14px;border-radius:16px}
+.v12-account-page .tf706-card-heading,.v12-account-page .tf706-products-heading{margin-bottom:17px}
+.v12-account-page .tf706-card-heading h3,.v12-account-page .tf706-products-heading h3{font-size:18px}
+.v12-account-page .tf706-progress>ol>li{padding:0 2px;gap:8px}
+.v12-account-page .tf706-progress-marker{width:34px;height:34px;font-size:11px}
+.v12-account-page .tf706-progress-marker svg{width:16px;height:16px}
+.v12-account-page .tf706-progress>ol>li:not(:last-child)::after{left:calc(50% + 19px);right:calc(-50% + 19px);top:16px}
+.v12-account-page .tf706-progress-text{font-size:10px;line-height:1.4}
+.v12-account-page .tf706-shipping-card{padding:15px 13px;gap:10px;border-radius:14px}
+.v12-account-page .tf706-shipping-icon{flex-basis:37px;width:37px;height:37px}
+.v12-account-page .tf706-product-row{grid-template-columns:77px minmax(0,1fr);gap:12px;align-items:start;padding:14px 0}
+.v12-account-page .tf706-product-image{width:77px;height:83px;padding:6px;border-radius:11px}
+.v12-account-page .tf706-product-info{gap:6px}
+.v12-account-page .tf706-product-info>strong{font-size:13px;line-height:1.4}
+.v12-account-page .tf706-product-info>small,.v12-account-page .tf706-product-info>span{font-size:11px;line-height:1.45}
+.v12-account-page .tf706-product-total{grid-column:2;justify-self:start;font-size:15px}
+.v12-account-page .tf706-invoice-meta{grid-template-columns:minmax(0,1fr);gap:14px;padding:19px 17px}
+.v12-account-page .tf706-invoice-meta>span{gap:3px}
+.v12-account-page .tf706-invoice-total{padding:18px 17px;align-items:flex-end}
+.v12-account-page .tf706-invoice-total>span{font-size:12px}
+.v12-account-page .tf706-invoice-total strong{font-size:clamp(18px,5.3vw,23px)}
+.v12-account-page .tf706-member-invite{font-size:12px;justify-content:flex-start;text-align:left}
+}
+@media(max-width:380px){
+.v12-account-page .tf706-invoice-total{flex-wrap:wrap}
+.v12-account-page .tf706-invoice-total strong{white-space:normal}
+.v12-account-page .tf706-order-header{gap:9px}
+.v12-account-page .tf706-product-image{width:68px;height:74px}
+.v12-account-page .tf706-product-row{grid-template-columns:68px minmax(0,1fr)}
+}
