@@ -435,7 +435,11 @@
    border:1px solid #dce6da;border-radius:12px;background:#f9fbf8;
  }
  .v12-account-page .tf704-tier-row>strong{grid-column:1/-1}
- .v12-account-page .tf704-tier-row>span{font-size:12px}
+ .v12-account-page .tf704-tier-row>span{display:grid;gap:3px;font-size:12px}
+ .v12-account-page .tf704-tier-row>span::before{
+   content:attr(data-label);display:block;color:#697c6b;
+   font-size:10px;font-weight:600;line-height:1.35;
+ }
  .v12-account-page .tf704-tier-perks{grid-template-columns:repeat(2,minmax(0,1fr))}
  .v12-account-page .tf690-radar-grid{grid-template-columns:minmax(0,1fr)}
  .v12-account-page .v524-account-header{padding-inline:20px}
