@@ -60,9 +60,9 @@ const normalizeCustomerOrder=(raw:unknown):Order|null=>{
 };
 const normalizeCustomerOrders=(raw:unknown):Order[]=>asList<unknown>(raw).map(normalizeCustomerOrder).filter((order):order is Order=>Boolean(order));
 const readSessionOrders=():Order[]=>{try{return normalizeCustomerOrders(JSON.parse(localStorage.getItem(SESSION_ORDERS_KEY)||'[]'))}catch{return[]}};
-const normalizePhone=(value:string)=>{let digits=value.replace(/\D/g,'');if(digits.startsWith('84')&&digits.length>=10)digits=`0${digits.slice(2)}`;return digits};
+const normalizePhone=(value:unknown)=>{let digits=String(value||'').replace(/\D/g,'');if(digits.startsWith('84')&&digits.length>=10)digits=`0${digits.slice(2)}`;return digits};
 const readSessionCustomer=():Customer|undefined=>{try{const value=JSON.parse(localStorage.getItem(SESSION_CUSTOMER_KEY)||'null') as Customer|null;return value||undefined}catch{return undefined}};
-const orderBelongs=(order:Order,customer:Customer)=>order.customerId===customer.id||(customer.phone&&normalizePhone(order.customerPhone)===normalizePhone(customer.phone))||(Boolean(customer.email)&&order.customerEmail.toLowerCase()===customer.email.toLowerCase());
+const orderBelongs=(order:Order,customer:Customer)=>order.customerId===customer.id||(Boolean(customer.phone)&&Boolean(order.customerPhone)&&normalizePhone(order.customerPhone)===normalizePhone(customer.phone))||(Boolean(customer.email)&&String(order.customerEmail||'').toLowerCase()===String(customer.email||'').toLowerCase());
 export function CustomerLoginV12() {
   const navigate=useNavigate();
   const[mode,setMode]=useState<'login'|'register'>('login');
