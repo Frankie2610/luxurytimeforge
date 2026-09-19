@@ -116,7 +116,7 @@ const contentPageHtml=(page,fallback)=>{
   return `${clean(page.eyebrow)?`<p><strong>${esc(page.eyebrow)}</strong></p>`:''}${clean(page.lead)?`<p>${esc(stripHtml(page.lead))}</p>`:''}${sections}`;
 };
 
-const privatePaths=['/admin','/checkout','/account','/order-confirmation','/payment','/search','/cart','/wishlist','/compare','/track-order'];
+const privatePaths=['/admin','/checkout','/account','/member','/order-confirmation','/payment','/search','/cart','/wishlist','/compare','/track-order'];
 const isPrivate=p=>privatePaths.some(prefix=>p===prefix||p.startsWith(`${prefix}/`));
 
 function orgEntity(){
