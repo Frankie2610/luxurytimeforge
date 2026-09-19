@@ -9,16 +9,34 @@
 .v12-account-page .tf700-auth-copy{min-height:590px;display:flex;flex-direction:column;justify-content:center;padding:clamp(36px,6vw,80px) clamp(22px,5vw,80px)}
 .v12-account-page .tf700-auth-copy h1{font-size:clamp(36px,4.4vw,68px);line-height:1.1;letter-spacing:-.045em;margin:20px 0}
 .v12-account-page .tf700-auth-copy>p{font-size:clamp(14px,1.2vw,17px);line-height:1.7;color:#e4efe8}
-.v12-account-page .tf700-auth-benefits{gap:11px;margin:26px 0}
-.v12-account-page .tf700-auth-benefits>span{grid-template-columns:38px minmax(0,1fr);gap:3px 12px;padding:14px;border-radius:14px}
-.v12-account-page .tf700-auth-benefits svg{width:22px;height:22px;grid-row:1/3;color:#dfcf9a}
-.v12-account-page .tf700-auth-benefits b{font-size:13px;line-height:1.4;color:#fff}
-.v12-account-page .tf700-auth-benefits small{font-size:12px;line-height:1.55;color:#d4e6d9}
-.v12-account-page .tf700-guest-track{font-size:13px;min-height:42px;max-width:100%;line-height:1.45}
+/* Restore the grid overridden by the old .v12-login-copy > div rules. */
+.v12-account-page .tf700-auth-benefits{display:grid;grid-template-columns:minmax(0,1fr);flex-wrap:initial;align-items:stretch;gap:11px;margin:26px 0;width:100%;max-width:100%}
+.v12-account-page .tf700-auth-benefits>span{display:grid;flex-wrap:initial;align-items:start;grid-template-columns:38px minmax(0,1fr);gap:3px 12px;padding:14px;border-radius:14px}
+.v12-account-page .tf700-auth-benefits>span>svg{width:22px;height:22px;grid-row:1/3;grid-column:1;color:#f3de9c}
+.v12-account-page .tf700-auth-benefits>span>b{display:block;grid-column:2;color:#fff;font-size:14px;line-height:1.4}
+.v12-account-page .tf700-auth-benefits>span>small{display:block;grid-column:2;color:#e0eee3;font-size:12px;line-height:1.55}
+.v12-account-page .tf700-guest-track{display:inline-flex;align-items:center;justify-content:flex-start;width:fit-content;padding:10px 0;color:#fff;font-size:13px;min-height:42px;max-width:100%;line-height:1.45;text-decoration:underline;text-underline-offset:4px}
 .v12-account-page .tf700-guest-track svg{width:18px;height:18px;flex:none}
-.v12-account-page .v524-login-form-wrap{padding:clamp(20px,4vw,52px)}
-.v12-account-page .tf700-auth-card{width:min(530px,100%);padding:clamp(23px,3vw,38px)}
-.v12-account-page .tf700-auth-tabs button{font-size:13px;min-height:44px;padding:8px}
+.v12-account-page .tf700-auth-layout{display:grid;width:100%;min-width:0}
+.v12-account-page .tf700-auth-layout>.v524-login-form-wrap{display:grid;align-content:center;justify-items:stretch;min-width:0;padding:clamp(20px,4vw,52px)}
+.v12-account-page .tf700-auth-copy{min-width:0;overflow:hidden}
+.v12-account-page .tf700-auth-card{display:block;width:min(530px,100%);max-width:100%;margin-inline:auto;padding:clamp(23px,3vw,38px);background:#fff;color:#20372b;box-shadow:0 16px 42px #183d271a}
+.v12-account-page .tf700-auth-card>small{font-size:11px;color:#456d55}
+.v12-account-page .tf700-auth-card h2{color:#183827;font-size:clamp(26px,3vw,37px);line-height:1.18}
+.v12-account-page .tf700-auth-card>p{color:#43594a;font-size:13px;line-height:1.65}
+.v12-account-page .tf700-auth-card label{display:grid;gap:7px;margin:16px 0}
+.v12-account-page .tf700-auth-card label>span{color:#234532;font-size:13px;font-weight:750}
+.v12-account-page .tf700-auth-card label>small{color:#516858;font-size:12px;line-height:1.5}
+.v12-account-page .tf700-auth-card>.v12-primary{display:inline-flex;width:100%;min-height:50px;margin:12px 0 0;padding:12px 16px;border-radius:12px;background:#155c40;color:#fff;font-size:14px;font-weight:750;line-height:1.35}
+.v12-account-page .tf700-auth-card>.v12-primary:hover:not(:disabled){background:#0c422e;color:#fff}
+.v12-account-page .tf700-auth-card>.v12-primary:disabled{opacity:1;background:#476c57;color:#fff;cursor:not-allowed}
+.v12-account-page .tf700-auth-card .v12-track-link{display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:47px;height:auto;padding:10px 12px;border-radius:12px;color:#1a4e34;background:#f2f7f3;font-size:13px;line-height:1.4;text-align:center;text-decoration:none}
+.v12-account-page .tf700-auth-card .v12-track-link:hover{background:#e4f0e8;color:#123e28}
+.v12-account-page .tf700-auth-card .v12-track-link svg{width:17px;height:17px;flex:none}
+.v12-account-page .tf700-auth-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:6px;padding:5px;border-radius:13px;background:#ebf1ed}
+.v12-account-page .tf700-auth-tabs button{display:flex;align-items:center;justify-content:center;min-width:0;white-space:normal;text-align:center;font-size:14px;line-height:1.4;min-height:48px;padding:9px;border:1px solid transparent;border-radius:10px;background:transparent;color:#3e5347;font-weight:750}
+.v12-account-page .tf700-auth-tabs button.is-active{color:#103924;background:#fff;border-color:#cadad0;box-shadow:0 3px 11px #143e2315}
+.v12-account-page .tf700-auth-tabs button:focus-visible{outline:3px solid #b89b4e;outline-offset:2px}
 .v12-account-page .tf700-auth-card label>span{font-size:12px}
 .v12-account-page .tf700-auth-card label>small{font-size:11px}
 .v12-account-page .tf700-terms span{font-size:12px!important;line-height:1.55!important}
@@ -68,5 +86,20 @@
 .v12-account-page .tf710-order-summary b{font-size:13px;color:#283f30}
 .v12-account-page .tf710-order-summary .tf710-grand-total{padding-top:12px;border-top:1px solid #dbe7de;font-size:14px;font-weight:750}
 .v12-account-page .tf710-grand-total strong{font-size:clamp(18px,2.3vw,23px);color:#1b5639}
-@media(max-width:1024px){.v12-account-page .tf700-auth-layout{grid-template-columns:1fr}.v12-account-page .tf700-auth-copy{min-height:auto}.v12-account-page .tf690-account-grid{grid-template-columns:minmax(0,1fr)}.v12-account-page .tf690-member-aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.v12-account-page .tf690-wallet{grid-column:1/-1}.v12-account-page .tf690-member-hero{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:680px){.v12-account-page .tf700-auth-copy{padding:36px 20px}.v12-account-page .tf700-auth-copy h1{font-size:clamp(35px,9vw,44px)}.v12-account-page .v524-login-form-wrap{padding:18px 12px 38px}.v12-account-page .tf700-auth-card{padding:22px 18px}.v12-account-page .tf690-member-aside{grid-template-columns:1fr}.v12-account-page .tf690-value-strip{grid-template-columns:repeat(2,minmax(0,1fr));width:calc(100% - 24px)}.v12-account-page .tf690-next-grid,.v12-account-page .tf690-radar-grid,.v12-account-page .tf690-vault-grid{grid-template-columns:minmax(0,1fr)}.v12-account-page .tf690-account-grid{padding:18px 12px 42px}.v12-account-page .tf710-track-page{width:calc(100% - 22px);margin:14px auto 48px;gap:14px}.v12-account-page .tf710-track-hero{padding:23px 19px}.v12-account-page .tf710-track-result{padding:16px 13px}.v12-account-page .tf710-order-item{grid-template-columns:70px minmax(0,1fr);gap:11px}.v12-account-page .tf710-item-photo{width:70px;height:70px}.v12-account-page .tf710-order-item>strong{grid-column:2;justify-self:start}}
+@media(max-width:1024px){.v12-account-page .tf700-auth-layout{display:grid;grid-template-columns:minmax(0,1fr)}.v12-account-page .tf700-auth-copy{min-height:auto}.v12-account-page .tf690-account-grid{grid-template-columns:minmax(0,1fr)}.v12-account-page .tf690-member-aside{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.v12-account-page .tf690-wallet{grid-column:1/-1}.v12-account-page .tf690-member-hero{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:680px){.v12-account-page .tf700-auth-layout{display:grid;grid-template-columns:minmax(0,1fr)}.v12-account-page .tf700-auth-copy{min-height:0;padding:34px 20px}.v12-account-page .tf700-auth-copy h1{font-size:clamp(35px,9vw,44px)}.v12-account-page .v524-login-form-wrap{padding:18px 12px 38px}.v12-account-page .tf700-auth-card{padding:22px 18px}.v12-account-page .tf690-member-aside{grid-template-columns:1fr}.v12-account-page .tf690-value-strip{grid-template-columns:repeat(2,minmax(0,1fr));width:calc(100% - 24px)}.v12-account-page .tf690-next-grid,.v12-account-page .tf690-radar-grid,.v12-account-page .tf690-vault-grid{grid-template-columns:minmax(0,1fr)}.v12-account-page .tf690-account-grid{padding:18px 12px 42px}.v12-account-page .tf710-track-page{width:calc(100% - 22px);margin:14px auto 48px;gap:14px}.v12-account-page .tf710-track-hero{padding:23px 19px}.v12-account-page .tf710-track-result{padding:16px 13px}.v12-account-page .tf710-order-item{grid-template-columns:70px minmax(0,1fr);gap:11px}.v12-account-page .tf710-item-photo{width:70px;height:70px}.v12-account-page .tf710-order-item>strong{grid-column:2;justify-self:start}}
+
+/* Mobile nav and form: preserve the original Account layout, without icon/text overlap. */
+@media(max-width:680px){
+.v12-account-page .v524-account-header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding-inline:14px}
+.v12-account-page .v524-account-header nav{display:flex;align-items:center;justify-content:flex-end;flex:none;gap:7px}
+.v12-account-page .v524-account-shop-link{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;min-width:42px;min-height:42px;padding:0;color:#1b4a34!important;background:#e8f2eb!important;font-size:0;line-height:0}
+.v12-account-page .v524-account-shop-link svg{display:block;flex:none;width:19px;height:19px;color:#1b4a34}
+.v12-account-page .tf700-auth-benefits{margin:20px 0 0}
+.v12-account-page .tf700-auth-benefits>span{padding:13px}
+.v12-account-page .tf700-auth-copy>p{font-size:14px}
+.v12-account-page .tf700-auth-card{border-radius:18px;padding:23px 17px}
+.v12-account-page .tf700-auth-tabs button{font-size:13px}
+.v12-account-page .tf700-auth-card label input:not([type="checkbox"]){height:47px}
+.v12-account-page .tf700-auth-card>.v12-primary{font-size:14px}
+}

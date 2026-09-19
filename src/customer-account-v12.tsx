@@ -1,3 +1,6 @@
+// These account primitives previously came only from the lazy storefront chunk.
+// Import them here so /member and /member/login have identical CSS on hard refresh.
+import './legacy.css';
 import './v524-customer-account.css';
 import './v525-customer-order-detail.css';
 import './v582-customer-polish.css';
@@ -39,7 +42,7 @@ function AccountShell({customer, children}: {customer?: Customer; children: Reac
   const storeName=resolveStoreName(storeProfile.storeName);
   const storeLogo=resolveStoreLogo(storeProfile.logoImage);
   const logout = () => {localStorage.removeItem(SESSION_KEY);localStorage.removeItem('tf.v70.member-customer');localStorage.removeItem('tf.v70.member-orders'); navigate('/account/login', {replace:true});};
-  return <div className="v12-account-page v524-account-page"><a className="v12-skip-link" href="#account-main">Bỏ qua đến nội dung</a><header className="v12-account-header v524-account-header"><Link to="/" className="v12-account-logo v524-account-brand"><span className="v524-account-brand-mark"><img src={storeLogo} alt="" width="48" height="48" decoding="async"/></span><span className="v524-account-brand-copy"><b>{storeName}</b><small>Member Hub</small></span></Link><nav aria-label="Tài khoản khách hàng"><Link className="v524-account-shop-link" to="/collections"><ShoppingBag/>Tiếp tục mua sắm</Link>{customer&&<button className="v524-account-logout" onClick={logout}><LogOut/>Đăng xuất</button>}</nav></header><main id="account-main">{children}</main></div>;
+  return <div className="v12-account-page v524-account-page"><a className="v12-skip-link" href="#account-main">Bỏ qua đến nội dung</a><header className="v12-account-header v524-account-header"><Link to="/" className="v12-account-logo v524-account-brand"><span className="v524-account-brand-mark"><img src={storeLogo} alt="" width="48" height="48" decoding="async"/></span><span className="v524-account-brand-copy"><b>{storeName}</b><small>Member Hub</small></span></Link><nav aria-label="Tài khoản khách hàng"><Link className="v524-account-shop-link" to="/collections" aria-label="Tiếp tục mua sắm"><ShoppingBag/>Tiếp tục mua sắm</Link>{customer&&<button className="v524-account-logout" onClick={logout}><LogOut/>Đăng xuất</button>}</nav></header><main id="account-main">{children}</main></div>;
 }
 const SESSION_CUSTOMER_KEY='tf.v70.member-customer';
 const SESSION_ORDERS_KEY='tf.v70.member-orders';
