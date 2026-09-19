@@ -1,0 +1,307 @@
+/* TimeForge 0.70.9 — luxury account/track refinement with restrained, high-contrast surfaces. */
+/* Resolve old dark-account hero rule bleeding white copy onto the Member's pale hero. */
+.v12-account-page .tf690-member-hero .v524-account-hero-copy>p {
+  color:#3c5845!important;
+  font-size:14px;
+  font-weight:400;
+  line-height:1.7;
+}
+/* Clear typographic hierarchy and crisp (not translucent) product information. */
+.v12-account-page .tf706-track-page {
+  width:min(980px,calc(100% - 40px));
+  gap:18px;
+  padding:0;
+  font-family:Inter,"Segoe UI",Arial,sans-serif;
+  font-weight:400;
+}
+.v12-account-page .tf706-track-page :is(h1,h2,h3,b,strong){font-weight:700}
+.v12-account-page .tf706-track-page>.tf706-track-hero {
+  position:relative;
+  padding:clamp(28px,4vw,44px);
+  border:1px solid #345641;
+  border-radius:20px;
+  background:#153b2b;
+  color:#fff;
+  box-shadow:0 16px 37px rgba(12,44,29,.16);
+}
+.v12-account-page .tf706-track-hero>small{color:#e9d2a1;letter-spacing:.13em}
+.v12-account-page .tf706-track-hero>h1 {
+  max-width:710px;
+  color:#fff;
+  font-size:clamp(30px,4vw,45px);
+  line-height:1.17;
+  letter-spacing:-.03em;
+}
+.v12-account-page .tf706-track-hero>p {
+  max-width:665px;
+  color:#e7efe8;
+  font-size:14px;
+  line-height:1.75;
+}
+.v12-account-page .tf706-track-page>.tf706-track-form {
+  padding:clamp(20px,3vw,28px);
+  border:1px solid #d7e2d7;
+  border-radius:18px;
+  background:#fff!important;
+  box-shadow:0 12px 30px rgba(18,55,31,.07);
+}
+.v12-account-page .tf706-track-form label>span {
+  color:#234331;
+  font-size:13px;
+  font-weight:700;
+}
+.v12-account-page .tf706-track-form input {
+  color:#183d29!important;
+  background:#fff!important;
+  border:1px solid #bacdbb!important;
+  font-size:14px;
+  font-weight:500;
+}
+.v12-account-page .tf706-track-form input:focus-visible{
+  outline:3px solid #bc9b57;
+  outline-offset:2px;
+}
+.v12-account-page .tf706-track-form>button {
+  min-height:50px;
+  border-radius:11px;
+  background:#194b35;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+}
+.v12-account-page .tf706-track-page .tf706-order-header,
+.v12-account-page .tf706-track-page .tf706-progress-card,
+.v12-account-page .tf706-track-page .tf706-products,
+.v12-account-page .tf706-track-page .tf707-invoice {
+  border-color:#d9e4da;
+  box-shadow:0 10px 29px rgba(16,48,27,.055);
+}
+.v12-account-page .tf706-order-header h2,
+.v12-account-page .tf706-card-heading h3,
+.v12-account-page .tf706-products-heading h3,
+.v12-account-page .tf707-watch-info>strong {
+  color:#193b2a;
+}
+.v12-account-page .tf706-order-header p,
+.v12-account-page .tf706-shipping-card p,
+.v12-account-page .tf706-product-info>small,
+.v12-account-page .tf707-watch-sku,
+.v12-account-page .tf707-watch-pricing {
+  color:#4c6353;
+}
+.v12-account-page .tf706-track-page .tf707-products>.tf707-products-heading {
+  padding:clamp(19px,3vw,28px);
+  border-bottom:1px solid #e0e7dc;
+  background:#fff;
+}
+.v12-account-page .tf706-track-page .tf707-product-list {
+  gap:17px;
+  padding:clamp(12px,2.5vw,22px);
+  background:#f3f6f2;
+}
+.v12-account-page .tf706-track-page .tf707-watch-card {
+  border:1px solid #cadbcd;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 6px 17px rgba(24,64,34,.065);
+}
+.v12-account-page .tf706-track-page .tf707-watch-card>.tf707-watch-heading {
+  border-bottom:1px solid #e1e9df;
+  background:#f8faf6;
+}
+.v12-account-page .tf706-track-page .tf707-watch-card>.tf707-watch-body{
+  background:#fff;
+}
+.v12-account-page .tf706-track-page .tf707-watch-card>.tf707-watch-footer {
+  border-top:1px solid #dde8db;
+  background:#eff5ed;
+}
+.v12-account-page .tf706-track-page .tf707-watch-info>strong{
+  color:#173b28;
+  line-height:1.45;
+}
+.v12-account-page .tf706-track-page .tf707-watch-pricing>b,
+.v12-account-page .tf706-track-page .tf707-watch-line-total>strong {
+  color:#173e2a;
+  font-variant-numeric:tabular-nums;
+}
+.v12-account-page .tf706-track-page .tf707-invoice .tf706-invoice-total {
+  background:#153b2b;
+}
+.v12-account-page .tf706-track-page .tf707-invoice .tf706-invoice-total>span{color:#e9f0e8}
+.v12-account-page .tf706-track-page .tf707-invoice .tf706-invoice-total>strong{color:#f5e3b7}
+
+/* The invitation is a distinct editorial panel, NOT a long clickable inline sentence. */
+.v12-account-page .tf709-member-invitation {
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:clamp(20px,3.5vw,42px);
+  min-width:0;
+  max-width:100%;
+  padding:clamp(23px,3vw,32px);
+  border:1px solid #325a43;
+  border-radius:19px;
+  background:#103a29;
+  color:#f9f8f2;
+  box-shadow:0 15px 38px rgba(10,44,25,.14);
+  overflow:hidden;
+}
+.v12-account-page .tf709-member-invitation::before{
+  content:"";
+  position:absolute;
+  inset:0 auto auto 0;
+  width:100%;
+  height:3px;
+  background:#d1b473;
+}
+.v12-account-page .tf709-invitation-content{
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr);
+  align-items:start;
+  gap:17px;
+  min-width:0;
+}
+.v12-account-page .tf709-invitation-monogram{
+  display:grid;
+  place-items:center;
+  width:52px;
+  height:52px;
+  border:1px solid #849f8b;
+  border-radius:14px;
+  background:#1e4b35;
+  color:#f2deaf;
+}
+.v12-account-page .tf709-invitation-monogram svg{
+  width:23px;
+  height:23px;
+  display:block;
+}
+.v12-account-page .tf709-invitation-copy{
+  display:grid;
+  gap:7px;
+  min-width:0;
+  align-content:center;
+}
+.v12-account-page .tf709-invitation-copy>small{
+  color:#f0d69f;
+  font-size:10px;
+  font-weight:700;
+  line-height:1.4;
+  letter-spacing:.16em;
+}
+.v12-account-page .tf709-invitation-copy>h3{
+  margin:0;
+  color:#fff;
+  font-size:clamp(19px,2.1vw,25px);
+  font-weight:700;
+  line-height:1.27;
+  letter-spacing:-.02em;
+  overflow-wrap:normal;
+}
+.v12-account-page .tf709-invitation-copy>p{
+  max-width:510px;
+  margin:0;
+  color:#e2ece2;
+  font-size:13px;
+  font-weight:400;
+  line-height:1.65;
+}
+.v12-account-page .tf709-invitation-action{
+  display:inline-flex;
+  flex:none;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-width:192px;
+  min-height:49px;
+  width:auto;
+  max-width:100%;
+  padding:12px 17px;
+  border:1px solid #e8d6ab;
+  border-radius:10px;
+  background:#ead9b5;
+  color:#173724!important;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.35;
+  text-align:center;
+  text-decoration:none;
+  white-space:normal;
+}
+.v12-account-page .tf709-invitation-action:hover{
+  border-color:#fff2d2;
+  background:#fff0cf;
+  color:#102b1f!important;
+}
+.v12-account-page .tf709-invitation-action:focus-visible{
+  outline:3px solid #f6e4bb;
+  outline-offset:3px;
+}
+.v12-account-page .tf709-invitation-action>span{
+  min-width:0;
+}
+.v12-account-page .tf709-invitation-action svg{
+  display:block;
+  width:17px;
+  height:17px;
+  flex:none;
+}
+@media(max-width:900px){
+  .v12-account-page .tf709-member-invitation{
+    grid-template-columns:minmax(0,1fr);
+    gap:19px;
+  }
+  .v12-account-page .tf709-invitation-action{
+    justify-self:start;
+    min-width:0;
+  }
+}
+@media(max-width:700px){
+  .v12-account-page .tf706-track-page{
+    width:calc(100% - 22px);
+    gap:13px;
+    margin:14px auto 47px;
+  }
+  .v12-account-page .tf706-track-page>.tf706-track-hero{padding:25px 20px;border-radius:17px}
+  .v12-account-page .tf706-track-hero>h1{font-size:clamp(28px,7vw,36px);line-height:1.2}
+  .v12-account-page .tf706-track-hero>p{font-size:13px;line-height:1.65}
+  .v12-account-page .tf706-track-page>.tf706-track-form{padding:17px 15px}
+  .v12-account-page .tf709-member-invitation{
+    gap:17px;
+    padding:21px 16px 17px;
+    border-radius:16px;
+  }
+  .v12-account-page .tf709-invitation-content{
+    grid-template-columns:43px minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+  }
+  .v12-account-page .tf709-invitation-monogram{
+    width:43px;
+    height:43px;
+    border-radius:11px;
+  }
+  .v12-account-page .tf709-invitation-monogram svg{width:19px;height:19px}
+  .v12-account-page .tf709-invitation-copy{gap:7px}
+  .v12-account-page .tf709-invitation-copy>h3{font-size:19px;line-height:1.3}
+  .v12-account-page .tf709-invitation-copy>p{font-size:12px;line-height:1.65}
+  .v12-account-page .tf709-invitation-action{
+    display:flex;
+    justify-self:stretch;
+    width:100%;
+    min-width:0;
+    min-height:48px;
+    padding:12px 15px;
+    font-size:13px;
+  }
+}
+@media(max-width:375px){
+  .v12-account-page .tf709-invitation-copy>h3{font-size:17px}
+  .v12-account-page .tf709-invitation-content{gap:9px;grid-template-columns:38px minmax(0,1fr)}
+  .v12-account-page .tf709-invitation-monogram{width:38px;height:38px}
+}
+@media(prefers-reduced-motion:reduce){
+  .v12-account-page .tf709-member-invitation :is(a,button){transition:none}
+}

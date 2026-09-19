@@ -1,0 +1,48 @@
+name: Luxury mobile and tablet QA
+on:
+  push:
+    branches:
+      - fix/luxury-track-member-cta-v709
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Build production site
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+      - name: Install isolated browser QA runner
+        run: |
+          npm install --prefix /tmp/timeforge-qa --no-save playwright@1.55.0
+          /tmp/timeforge-qa/node_modules/.bin/playwright install chromium --with-deps
+      - name: Run local production preview
+        run: |
+          pnpm run preview -- --host 127.0.0.1 --port 4173 --strictPort > preview.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:4173/member/login >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat preview.log
+          exit 1
+      - name: Test Member login, terms, bell and tracking at mobile/tablet/desktop widths
+        run: node scripts/qa-luxury-member.mjs
+      - name: Upload responsive screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: luxury-member-responsive-screenshots
+          path: qa-screenshots/
+          if-no-files-found: ignore
+          retention-days: 3
