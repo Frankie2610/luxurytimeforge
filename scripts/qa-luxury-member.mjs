@@ -48,6 +48,9 @@ for(const width of sizes){
  });
  assert(contrast(styles.fg,styles.bg)>=4.5,'member '+width+'px: low rule heading contrast '+JSON.stringify(styles));
  assert(Number(styles.weight)%100===0,'member '+width+'px: nonstandard font weight '+styles.weight);
+ const heroParagraph=await page.locator('.tf690-member-hero .v524-account-hero-copy>p').evaluate(el=>({color:getComputedStyle(el).color,text:el.textContent?.trim()}));
+ assert(contrast(heroParagraph.color,'rgb(255, 255, 255)')>=4.5,'member '+width+'px: welcome copy has low contrast on pale background '+JSON.stringify(heroParagraph));
+
  const buttons=await page.evaluate(()=>{const a=document.querySelector('.v524-account-shop-link'),b=document.querySelector('.v524-account-logout');if(!a||!b)return null;const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();return{x:[x.left,x.right],y:[y.left,y.right],overlap:x.right>y.left+1}});
  assert(buttons&&!buttons.overlap,'member '+width+'px: nav actions overlap '+JSON.stringify(buttons));
  await page.locator('.tf708-notification-trigger').click();
