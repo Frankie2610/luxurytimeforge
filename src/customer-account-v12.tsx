@@ -9,6 +9,7 @@ import './v700-member-auth.css';
 import './v526-account-returns.css';
 import './v704-member-polish.css';
 import './v705-luxury-mobile.css';
+import './v706-track-tiers.css';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft, ArrowRight, Award, BadgePercent, Bell, BookOpen, CalendarDays, Check, ChevronRight, CircleUserRound, Clock3, Copy,
