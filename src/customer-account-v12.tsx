@@ -213,7 +213,7 @@ function TrackOrderProgress({order}:{order:Order}){
   {title:'Đã đặt hàng',complete:true},
   {title:'Đã xác nhận',complete:order.status==='confirmed'||order.status==='completed'||order.fulfillmentStatus==='processing'||order.fulfillmentStatus==='fulfilled'},
   {title:'Đang chuẩn bị',complete:order.fulfillmentStatus==='processing'||order.fulfillmentStatus==='fulfilled'},
-  {title:'Đã giao hàng',complete:order.fulfillmentStatus==='fulfilled'||order.status==='completed'}
+  {title:'Đã giao hàng',complete:order.fulfillmentStatus==='fulfilled'}
  ];
  const active=steps.reduce((index,step,i)=>step.complete?i:index,0);
  return <div className="tf706-progress" aria-label="Tiến trình xử lý đơn hàng">
@@ -247,7 +247,7 @@ export function TrackOrderV12() {
  const fulfillment=found?workflow.fulfillments.find(item=>item.orderId===found.id):undefined;
  const trackingCode=found?.trackingNumber||fulfillment?.trackingNumber||'';
  const carrier=found?.shippingCarrier||fulfillment?.carrier||'';
- const shippingLabel=found?(found.fulfillmentStatus==='unfulfilled'?'Đang chờ xử lý':fulfillmentLabel[found.fulfillmentStatus]):'';
+ const shippingLabel=found?(found.status==='cancelled'?'Đơn hàng đã hủy':found.fulfillmentStatus==='unfulfilled'?'Đang chờ xử lý':fulfillmentLabel[found.fulfillmentStatus]):'';
  return <AccountShell><section className="v12-track-page tf710-track-page tf706-track-page">
   <div className="v12-track-copy tf710-track-hero tf706-track-hero"><small><PackageSearch aria-hidden="true"/> TRA CỨU ĐƠN HÀNG</small><h1>Hành trình chiếc đồng hồ của bạn</h1><p>Theo dõi trạng thái xử lý, vận chuyển và sản phẩm trong đơn chỉ bằng mã đơn hàng cùng thông tin liên hệ đã dùng khi mua. Không cần đăng nhập.</p></div>
   <form className="tf710-track-form tf706-track-form" onSubmit={submit}>
