@@ -1,0 +1,52 @@
+name: Deploy Luxury Member (prebuilt)
+on:
+  push:
+    branches:
+      - deploy/prebuilt-luxury-member
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: timeforge-luxury-production-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: team_qMhNLXyEhrcUvT1yKRG7wYR9
+      VERCEL_PROJECT_ID: prj_lfPI9EcIWeL4o84P17duC6ZLc6yc
+    steps:
+      - name: Verify Vercel deployment authorization
+        shell: bash
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::VERCEL_TOKEN is not configured in GitHub Actions secrets. Add it in repository Settings > Secrets and variables > Actions, or use the Vercel dashboard after the rate limit resets."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install and verify production source
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+      - name: Install pinned Vercel CLI
+        run: npm install --global vercel@59.23.2
+      - name: Read production configuration
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=frankie2610s-projects
+      - name: Create prebuilt deployment artifact
+        run: vercel build --prod --token="$VERCEL_TOKEN" --scope=frankie2610s-projects
+      - name: Verify output contains compiled site and functions
+        run: |
+          test -f .vercel/output/config.json
+          test -f .vercel/output/static/index.html
+          test -d .vercel/output/functions
+      - name: Deploy prebuilt to production
+        run: vercel deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN" --scope=frankie2610s-projects
