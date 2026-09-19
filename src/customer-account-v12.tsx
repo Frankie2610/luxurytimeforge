@@ -259,14 +259,31 @@ export function TrackOrderV12() {
    <header className="tf706-order-header"><div><small>ĐƠN HÀNG <span>{found.number}</span></small><h2>{statusLabel[found.status]}</h2><p>Ngày đặt hàng: {fmt(found.createdAt)}</p></div><span className={`tf706-status-badge ${found.status==='cancelled'?'is-cancelled':found.fulfillmentStatus==='fulfilled'?'is-delivered':'is-processing'}`}>{found.fulfillmentStatus==='fulfilled'?'Đã giao hàng':found.status==='cancelled'?'Đã hủy':shippingLabel}</span></header>
    <section className="tf706-progress-card" aria-label="Trạng thái đơn hàng"><div className="tf706-card-heading"><div><small>CẬP NHẬT ĐƠN HÀNG</small><h3>Tiến trình xử lý</h3></div><Clock3 aria-hidden="true"/></div><TrackOrderProgress order={found}/></section>
    <section className="tf706-shipping-card" aria-label="Thông tin vận chuyển"><span className="tf706-shipping-icon"><Truck aria-hidden="true"/></span><div><small>VẬN CHUYỂN</small><strong>{shippingLabel}</strong><p>{trackingCode?`${carrier||'Đơn vị vận chuyển'} · Mã vận đơn: ${trackingCode}`:'Mã vận đơn sẽ được cập nhật khi đơn hàng được bàn giao cho đơn vị vận chuyển.'}</p></div></section>
-   <section className="tf706-products" aria-label="Danh sách sản phẩm"><header className="tf706-products-heading"><div><small>CHI TIẾT ĐƠN HÀNG</small><h3>Sản phẩm đã đặt</h3></div><span>{found.lines.reduce((sum,line)=>sum+line.quantity,0)} sản phẩm</span></header>
-    <div className="tf706-product-list">{found.lines.length?found.lines.map(line=><article className="tf706-product-row" key={line.id}>
-     <div className="tf706-product-image"><SmartImage src={line.image} alt={line.title} width={180} height={180}/></div>
-     <div className="tf706-product-info"><strong>{line.title}</strong><small>{[line.variantTitle&&line.variantTitle.toLowerCase()!=='default title'?line.variantTitle:'',line.sku?`Mã sản phẩm: ${line.sku}`:''].filter(Boolean).join(' · ')}</small><span>Số lượng: {line.quantity} <i aria-hidden="true">·</i> Đơn giá: {money(line.unitPrice)}</span></div>
-     <strong className="tf706-product-total">{money(line.lineTotal)}</strong>
-    </article>):<p className="tf706-empty-products">Danh sách sản phẩm đang được cập nhật. Vui lòng liên hệ cửa hàng nếu cần hỗ trợ.</p>}</div>
+   <section className="tf706-products tf707-products" aria-label="Các đồng hồ trong đơn hàng">
+    <header className="tf706-products-heading tf707-products-heading">
+     <div><small>ĐƠN HÀNG CỦA BẠN</small><h3>Những chiếc đồng hồ đã đặt</h3><p>Mỗi mẫu được hiển thị riêng để bạn dễ kiểm tra.</p></div>
+     <span className="tf707-product-count">{found.lines.reduce((sum,line)=>sum+line.quantity,0)} chiếc</span>
+    </header>
+    <div className="tf706-product-list tf707-product-list">
+     {found.lines.length?found.lines.map((line,index)=><article className="tf706-product-row tf707-watch-card" key={line.id}>
+      <header className="tf707-watch-heading"><span className="tf707-watch-index">MẪU {String(index+1).padStart(2,'0')}</span><span className="tf707-watch-position">{index+1} / {found.lines.length}</span></header>
+      <div className="tf707-watch-body">
+       <div className="tf706-product-image tf707-watch-image"><SmartImage src={line.image} alt={line.title} width={280} height={280}/></div>
+       <div className="tf706-product-info tf707-watch-info">
+        <strong>{line.title}</strong>
+        {line.variantTitle&&line.variantTitle.trim().toLowerCase()!=='default title'&&<span className="tf707-watch-variant">{line.variantTitle}</span>}
+        {line.sku&&<span className="tf707-watch-sku">Mã sản phẩm <b>{line.sku}</b></span>}
+        <div className="tf707-watch-pricing"><span>Đơn giá</span><b>{money(line.unitPrice)}</b></div>
+       </div>
+      </div>
+      <footer className="tf707-watch-footer">
+       <span className="tf707-watch-quantity">Số lượng <b>{line.quantity.toLocaleString('vi-VN')}</b></span>
+       <span className="tf707-watch-line-total"><small>Thành tiền</small><strong>{money(line.lineTotal)}</strong></span>
+      </footer>
+     </article>):<p className="tf706-empty-products">Danh sách sản phẩm đang được cập nhật. Vui lòng liên hệ cửa hàng nếu cần hỗ trợ.</p>}
+    </div>
    </section>
-   <section className="tf706-invoice"><div className="tf706-invoice-meta"><span><small>Người nhận</small><strong>{found.customerName||'Khách hàng'}</strong></span><span><small>Thanh toán</small><strong>{trackedPaymentLabel(found)}</strong></span></div><div className="tf706-invoice-total"><span>Tổng tiền đơn hàng</span><strong>{money(found.total)}</strong></div></section>
+   <section className="tf706-invoice tf707-invoice"><div className="tf706-invoice-meta"><span><small>Người nhận</small><strong>{found.customerName||'Khách hàng'}</strong></span><span><small>Thanh toán</small><strong>{trackedPaymentLabel(found)}</strong></span></div><div className="tf706-invoice-total"><span>Tổng tiền đơn hàng</span><strong>{money(found.total)}</strong></div></section>
   </motion.section>:<motion.div key="empty" className="v12-form-error tf706-track-error" initial={{opacity:0}} animate={{opacity:1}} role="alert">{error||'Không tìm thấy đơn hàng phù hợp. Vui lòng kiểm tra lại mã đơn và thông tin liên hệ.'}</motion.div>)}</AnimatePresence>
   <Link className="v12-track-account tf706-member-invite" to="/member/login"><UserRound aria-hidden="true"/>Tham gia TimeForge để lưu lịch sử mua hàng và nhận quyền lợi thành viên<ArrowRight aria-hidden="true"/></Link>
  </section></AccountShell>;
