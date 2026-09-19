@@ -180,3 +180,169 @@
 .v12-account-page .tf706-product-image{width:68px;height:74px}
 .v12-account-page .tf706-product-row{grid-template-columns:68px minmax(0,1fr)}
 }
+
+/* V0.70.7 — order details, fully separated watch purchase cards. */
+.v12-account-page .tf707-products{
+ display:grid;gap:0;width:100%;min-width:0;padding:0;
+ border:1px solid #dce6db;border-radius:22px;background:#f8faf7;
+ overflow:hidden;box-shadow:0 18px 42px #183c2410;
+}
+.v12-account-page .tf707-products>.tf707-products-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+ margin:0;padding:25px 28px;border-bottom:1px solid #dce6dc;background:#fff;
+}
+.v12-account-page .tf707-products-heading>div{display:grid;gap:5px;min-width:0}
+.v12-account-page .tf707-products-heading small{color:#8a763e;letter-spacing:.12em;font-size:10px;font-weight:700}
+.v12-account-page .tf707-products-heading h3{
+ font-family:Inter,'Segoe UI',Arial,sans-serif;font-size:clamp(20px,2.7vw,26px);
+ line-height:1.2;letter-spacing:-.025em;font-weight:700;color:#183c2a;margin:0;
+}
+.v12-account-page .tf707-products-heading p{margin:0;color:#607568;font-size:12px;line-height:1.55}
+.v12-account-page .tf707-product-count{
+ display:inline-flex;align-items:center;justify-content:center;min-height:35px;padding:6px 12px;
+ border:1px solid #d8e3d7;border-radius:9px;background:#f2f6f1;
+ color:#214d35;font-size:12px;font-weight:700;white-space:nowrap;
+}
+.v12-account-page .tf707-product-list{
+ display:grid;grid-template-columns:minmax(0,1fr);gap:17px;padding:22px;background:#f6f8f4;
+}
+.v12-account-page .tf707-products .tf707-watch-card{
+ display:block;min-width:0;padding:0;border:1px solid #cbdccd;border-radius:17px;
+ background:#fff;overflow:hidden;box-shadow:0 7px 18px #1939200e;
+}
+.v12-account-page .tf707-watch-card>.tf707-watch-heading{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:41px;
+ margin:0;padding:11px 18px;border-bottom:1px solid #e4ebe2;background:#f9faf8;
+}
+.v12-account-page .tf707-watch-heading .tf707-watch-index{
+ color:#6e5928;font-size:11px;font-weight:700;letter-spacing:.11em;
+}
+.v12-account-page .tf707-watch-heading .tf707-watch-position{
+ color:#6d806e;font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;
+}
+.v12-account-page .tf707-watch-body{
+ display:grid;grid-template-columns:142px minmax(0,1fr);gap:21px;align-items:center;
+ padding:23px 22px;min-width:0;background:#fff;
+}
+.v12-account-page .tf707-watch-body .tf707-watch-image{
+ display:flex;align-items:center;justify-content:center;width:142px;height:150px;
+ min-width:0;max-width:100%;margin:0;padding:9px;border:1px solid #e5ece4;
+ border-radius:14px;background:#fcfcfa;overflow:hidden;box-shadow:none;
+}
+.v12-account-page .tf707-watch-image img{
+ display:block;width:100%;height:100%;max-width:100%;max-height:100%;
+ object-fit:contain;object-position:center;
+}
+.v12-account-page .tf707-watch-info{
+ display:grid;align-content:center;gap:11px;min-width:0;max-width:100%;
+}
+.v12-account-page .tf707-watch-info>strong{
+ color:#173c29;font-size:clamp(16px,2vw,19px);font-weight:700;
+ line-height:1.4;letter-spacing:-.015em;overflow-wrap:break-word;
+}
+.v12-account-page .tf707-watch-info .tf707-watch-variant{
+ color:#526e5c;font-size:12px;font-weight:500;line-height:1.45;
+}
+.v12-account-page .tf707-watch-info .tf707-watch-sku{
+ display:block;max-width:100%;color:#607667;font-size:12px;line-height:1.55;
+ overflow-wrap:anywhere;
+}
+.v12-account-page .tf707-watch-sku b{color:#375541;font-weight:700}
+.v12-account-page .tf707-watch-pricing{
+ display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+ margin-top:4px;color:#667b6b;font-size:12px;line-height:1.45;
+}
+.v12-account-page .tf707-watch-pricing>b{
+ color:#1b402b;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+.v12-account-page .tf707-watch-footer{
+ display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+ padding:16px 22px;border-top:1px solid #e2eae1;background:#f1f6f0;
+}
+.v12-account-page .tf707-watch-quantity{
+ display:inline-flex;align-items:center;gap:10px;color:#486450;
+ font-size:12px;font-weight:500;
+}
+.v12-account-page .tf707-watch-quantity>b{
+ display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 7px;
+ border:1px solid #c8d9c9;border-radius:8px;background:#fff;color:#1d4931;
+ font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+}
+.v12-account-page .tf707-watch-line-total{
+ display:flex;align-items:baseline;justify-content:flex-end;gap:12px;flex-wrap:wrap;
+ min-width:0;
+}
+.v12-account-page .tf707-watch-line-total>small{
+ color:#506958;font-size:12px;font-weight:600;
+}
+.v12-account-page .tf707-watch-line-total>strong{
+ color:#163c28;font-size:clamp(17px,2vw,21px);font-weight:700;
+ letter-spacing:-.015em;font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.v12-account-page .tf707-invoice{
+ border:1px solid #d9e3d9;border-radius:20px;overflow:hidden;
+ background:#fff;box-shadow:0 12px 34px #173b250d;
+}
+.v12-account-page .tf707-invoice .tf706-invoice-meta{
+ padding:23px 28px;gap:24px;
+}
+.v12-account-page .tf707-invoice .tf706-invoice-total{
+ padding:23px 28px;background:#153e2c;
+}
+.v12-account-page .tf707-invoice .tf706-invoice-total strong{
+ color:#f6e4b7;font-size:clamp(22px,3vw,28px);letter-spacing:-.02em;
+}
+@media(max-width:700px){
+ .v12-account-page .tf707-products{border-radius:17px}
+ .v12-account-page .tf707-products>.tf707-products-heading{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+  gap:9px;padding:20px 15px;
+ }
+ .v12-account-page .tf707-products-heading h3{font-size:20px;line-height:1.27}
+ .v12-account-page .tf707-products-heading p{font-size:11px}
+ .v12-account-page .tf707-product-count{min-height:30px;padding:5px 8px;font-size:11px}
+ .v12-account-page .tf707-product-list{gap:13px;padding:12px}
+ .v12-account-page .tf707-products .tf707-watch-card{border-radius:14px}
+ .v12-account-page .tf707-watch-card>.tf707-watch-heading{padding:10px 12px;min-height:38px}
+ .v12-account-page .tf707-watch-body{
+  grid-template-columns:104px minmax(0,1fr);gap:12px;align-items:center;
+  padding:16px 12px;
+ }
+ .v12-account-page .tf707-watch-body .tf707-watch-image{
+  width:104px;height:118px;padding:5px;border-radius:10px;
+ }
+ .v12-account-page .tf707-watch-info{gap:6px}
+ .v12-account-page .tf707-watch-info>strong{font-size:15px;line-height:1.4}
+ .v12-account-page .tf707-watch-info .tf707-watch-sku{font-size:11px;line-height:1.45}
+ .v12-account-page .tf707-watch-pricing{
+  display:grid;gap:2px;margin-top:3px;font-size:11px;
+ }
+ .v12-account-page .tf707-watch-pricing>b{font-size:13px}
+ .v12-account-page .tf707-watch-footer{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;
+  gap:10px;padding:12px;
+ }
+ .v12-account-page .tf707-watch-quantity{font-size:11px;gap:6px}
+ .v12-account-page .tf707-watch-quantity>b{min-width:26px;height:26px;font-size:12px}
+ .v12-account-page .tf707-watch-line-total{display:grid;gap:3px;text-align:right}
+ .v12-account-page .tf707-watch-line-total>small{font-size:10px}
+ .v12-account-page .tf707-watch-line-total>strong{font-size:17px;white-space:normal}
+ .v12-account-page .tf707-invoice .tf706-invoice-meta{padding:19px 16px}
+ .v12-account-page .tf707-invoice .tf706-invoice-total{padding:18px 16px}
+}
+@media(max-width:380px){
+ .v12-account-page .tf707-products>.tf707-products-heading{
+  grid-template-columns:minmax(0,1fr);gap:10px;
+ }
+ .v12-account-page .tf707-product-count{justify-self:start}
+ .v12-account-page .tf707-watch-body{
+  grid-template-columns:87px minmax(0,1fr);gap:9px;padding:12px 10px;
+ }
+ .v12-account-page .tf707-watch-body .tf707-watch-image{
+  width:87px;height:101px;
+ }
+ .v12-account-page .tf707-watch-info>strong{font-size:13px}
+ .v12-account-page .tf707-watch-info .tf707-watch-sku{font-size:10px}
+ .v12-account-page .tf707-watch-footer{padding:11px 10px}
+ .v12-account-page .tf707-watch-line-total>strong{font-size:15px}
+}
