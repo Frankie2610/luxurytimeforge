@@ -10,12 +10,14 @@ import './v526-account-returns.css';
 import './v704-member-polish.css';
 import './v705-luxury-mobile.css';
 import './v706-track-tiers.css';
+import './v708-member-refinement.css';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   ArrowLeft, ArrowRight, Award, BadgePercent, Bell, BookOpen, CalendarDays, Check, ChevronRight, CircleUserRound, Clock3, Copy,
   Gift, Heart, LockKeyhole, LogOut, MapPin, PackageCheck, PackageSearch, RotateCcw, Scale, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Ticket, Truck, UserRound, Watch, X,
 } from 'lucide-react';
-import {FormEvent, useEffect, useMemo, useState} from 'react';
+import {FormEvent, useEffect, useMemo, useRef, useState} from 'react';
+import {createPortal} from 'react-dom';
 import {Link, Navigate, useNavigate, useParams} from 'react-router-dom';
 import {useCartActions, useCommerce} from './context';
 import {SmartImage} from './image-utils';
@@ -104,18 +106,63 @@ function MemberRules({settings,compact=false}:{settings:MemberSettings;compact?:
 }
 function MemberNotifications({customerId,updates}:{customerId:string;updates:MemberUpdate[]}){
  const key=`tf.member-notification-read:${customerId}`;
- const[open,setOpen]=useState(false);
- const[seen,setSeen]=useState<string[]>(()=>{try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.map(String):[]}catch{return[]}});
+ const [open,setOpen]=useState(false);
+ const [seen,setSeen]=useState<string[]>(()=>{try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.map(String):[]}catch{return[]}});
+ const triggerRef=useRef<HTMLButtonElement>(null);
+ const dialogRef=useRef<HTMLDivElement>(null);
  const unread=updates.filter(item=>!seen.includes(item.id)).length;
- const show=()=>{if(!open){const next=Array.from(new Set([...seen,...updates.map(item=>item.id)])).slice(-150);setSeen(next);try{localStorage.setItem(key,JSON.stringify(next))}catch{/* Local storage disabled. */}}setOpen(!open)};
+ const close=()=>{setOpen(false);triggerRef.current?.focus()};
+ const show=()=>{
+  if(!open){const next=Array.from(new Set([...seen,...updates.map(item=>item.id)])).slice(-150);setSeen(next);try{localStorage.setItem(key,JSON.stringify(next))}catch{/* Storage may be unavailable. */}}
+  setOpen(value=>!value);
+ };
+ useEffect(()=>{
+  if(!open)return;
+  const root=document.documentElement;
+  const body=document.body;
+  const scrollY=window.scrollY;
+  const htmlOverflow=root.style.overflow,bodyOverflow=body.style.overflow;
+  const bodyPosition=body.style.position,bodyTop=body.style.top,bodyWidth=body.style.width;
+  root.style.overflow='hidden';
+  body.style.overflow='hidden';
+  body.style.position='fixed';
+  body.style.top=`-${scrollY}px`;
+  body.style.width='100%';
+  dialogRef.current?.focus();
+  const onKey=(event:KeyboardEvent)=>{
+   if(event.key==='Escape'){event.preventDefault();close();return}
+   if(event.key!=='Tab'||!dialogRef.current)return;
+   const items=Array.from(dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(element=>element.getClientRects().length>0);
+   if(!items.length){event.preventDefault();dialogRef.current.focus();return}
+   const first=items[0],last=items[items.length-1],focused=document.activeElement;
+   if(event.shiftKey&&(focused===first||focused===dialogRef.current)){event.preventDefault();last.focus()}
+   else if(!event.shiftKey&&focused===last){event.preventDefault();first.focus()}
+  };
+  document.addEventListener('keydown',onKey);
+  return()=>{
+   document.removeEventListener('keydown',onKey);
+   root.style.overflow=htmlOverflow;
+   body.style.overflow=bodyOverflow;
+   body.style.position=bodyPosition;
+   body.style.top=bodyTop;
+   body.style.width=bodyWidth;
+   window.scrollTo({top:scrollY,left:0,behavior:'instant'});
+  };
+ },[open]);
  return <div className="tf704-notification-wrap">
-  <button type="button" className="tf704-notification-button" aria-label={unread?`${unread} thông báo chưa đọc`:'Thông báo thành viên'} aria-expanded={open} aria-controls="tf704-notification-panel" onClick={show}><Bell aria-hidden="true"/>{unread>0&&<span className="tf704-notification-count">{unread>9?'9+':unread}</span>}</button>
-  {open&&<div id="tf704-notification-panel" className="tf704-notification-panel" role="region" aria-label="Thông báo thành viên"><header><div><strong>Thông báo của bạn</strong><small>Từ đơn hàng và quyền lợi hiện có</small></div><button type="button" aria-label="Đóng thông báo" onClick={()=>setOpen(false)}><X aria-hidden="true"/></button></header>
-   {updates.length?<div className="tf704-notification-list">{updates.map(item=><article key={item.id}><span className="tf704-notification-dot"/><div><strong>{item.title}</strong><p>{item.detail}</p>{item.date&&<small>{fmt(item.date)}</small>}{item.url&&<Link to={item.url} onClick={()=>setOpen(false)}>Xem chi tiết <ArrowRight aria-hidden="true"/></Link>}</div></article>)}</div>:<p className="tf704-notification-empty">Hiện chưa có cập nhật mới về đơn hàng hoặc quyền lợi của bạn.</p>}
-  </div>}
+  <button ref={triggerRef} type="button" className="tf704-notification-button tf708-notification-trigger" aria-label={unread?`${unread} thông báo chưa đọc`:'Thông báo thành viên'} aria-expanded={open} aria-haspopup="dialog" aria-controls="tf708-notification-dialog" onClick={show}><Bell aria-hidden="true"/>{unread>0&&<span className="tf704-notification-count">{unread>9?'9+':unread}</span>}</button>
+  {open&&createPortal(<div className="tf708-notification-layer">
+   <button className="tf708-notification-backdrop" type="button" aria-label="Đóng thông báo" onClick={close}/>
+   <div ref={dialogRef} id="tf708-notification-dialog" className="tf708-notification-dialog" role="dialog" aria-modal="true" aria-labelledby="tf708-notification-title" tabIndex={-1}>
+    <header className="tf708-notification-header"><div className="tf708-notification-header-icon"><Bell aria-hidden="true"/></div><div><small>TIMEFORGE MEMBER</small><h2 id="tf708-notification-title">Thông báo của bạn</h2><p>Cập nhật đơn hàng và quyền lợi thành viên</p></div><button type="button" className="tf708-notification-close" aria-label="Đóng thông báo" onClick={close}><X aria-hidden="true"/></button></header>
+    <div className="tf708-notification-content">
+     {updates.length?<div className="tf708-notification-list">{updates.map(item=><article key={item.id} className="tf708-notification-item"><span className="tf708-notification-item-icon"><PackageCheck aria-hidden="true"/></span><div><strong>{item.title}</strong><p>{item.detail}</p>{item.date&&<small>{fmt(item.date)}</small>}{item.url&&<Link to={item.url} onClick={()=>setOpen(false)}>Xem chi tiết <ArrowRight aria-hidden="true"/></Link>}</div></article>)}</div>:<div className="tf708-notification-empty"><Bell aria-hidden="true"/><strong>Chưa có thông báo mới</strong><p>Khi đơn hàng hoặc quyền lợi thành viên có cập nhật, thông tin sẽ xuất hiện tại đây.</p></div>}
+    </div>
+    <footer className="tf708-notification-footer"><button type="button" onClick={close}>Đóng thông báo</button></footer>
+   </div>
+  </div>,document.body)}
  </div>;
 }
-
 export function CustomerAccountV12() {
   const {customers,orders,products,discounts}=useCommerce();
   const {addToCart}=useCartActions();
@@ -174,13 +221,13 @@ export function CustomerAccountV12() {
     <section className="tf690-value-strip" aria-label="Tóm tắt thành viên"><article className={`tf706-tier-stat is-${progress.tier.id}`}><Award/><span><small>Hạng hiện tại</small><b>{progress.tier.label}</b></span></article><article><Sparkles/><span><small>Hệ số tích điểm</small><b>x{progress.tier.creditMultiplier.toFixed(progress.tier.creditMultiplier%1?2:0)}</b></span></article><article><Watch/><span><small>Đồng hồ đã mua</small><b>{vaultItems.length}</b></span></article><article><Gift/><span><small>Lượt giới thiệu thành công</small><b>{referralQualified}</b></span></article></section>
 
     <section className="v12-account-grid tf690-account-grid"><main>
-      <section className="tf690-section"><div className="v12-section-title"><div><small>BỘ SƯU TẬP ĐỒNG HỒ</small><h2>Đồng hồ đã sở hữu</h2><p>Các đồng hồ trong đơn hàng đã thanh toán sẽ xuất hiện tại đây.</p></div><ShieldCheck/></div>{vault.length?<div className="tf690-vault-grid">{vault.map(item=><article key={item.key}><div className="tf690-vault-image"><SmartImage src={item.line.image||item.product?.images?.[0]||''} alt={item.line.title} width={220} height={220}/><span>{item.years}Y CARE</span></div><div className="tf690-vault-copy"><small>{item.product?.vendor||'TIMEFORGE'} · {item.line.sku||'NO SKU'}</small><h3>{item.line.title}</h3><dl><div><dt>Mua ngày</dt><dd>{fmt(item.order.paidAt||item.order.createdAt)}</dd></div><div><dt>Bảo hành dự kiến đến</dt><dd>{fmt(item.warrantyEnd.toISOString())}</dd></div><div><dt>Đơn gốc</dt><dd><Link to={`/account/orders/${item.order.id}`}>{item.order.number}</Link></dd></div></dl></div></article>)}</div>:<div className="tf690-empty"><Watch/><h3>Chưa có đồng hồ nào</h3><p>Chiếc đồng hồ đầu tiên sẽ tự xuất hiện sau khi đơn được xác nhận thanh toán.</p><Link to="/collections">Khám phá sản phẩm<ArrowRight/></Link></div>}</section>
+      <section className="tf690-section"><div className="v12-section-title"><div><small>BỘ SƯU TẬP ĐỒNG HỒ</small><h2>Đồng hồ đã sở hữu</h2><p>Các đồng hồ trong đơn hàng đã thanh toán sẽ xuất hiện tại đây.</p></div><ShieldCheck/></div>{vault.length?<div className="tf690-vault-grid">{vault.map(item=><article key={item.key}><div className="tf690-vault-image"><SmartImage src={item.line.image||item.product?.images?.[0]||''} alt={item.line.title} width={220} height={220}/><span>{item.years}Y CARE</span></div><div className="tf690-vault-copy"><small>{item.product?.vendor||'TIMEFORGE'} · {item.line.sku||'NO SKU'}</small><h3>{item.line.title}</h3><dl><div><dt>Mua ngày</dt><dd>{fmt(item.order.paidAt||item.order.createdAt)}</dd></div><div><dt>Bảo hành dự kiến đến</dt><dd>{fmt(item.warrantyEnd.toISOString())}</dd></div><div><dt>Đơn gốc</dt><dd><Link to={`/account/orders/${item.order.id}`}>{item.order.number}</Link></dd></div></dl></div></article>)}</div>:<div className="tf690-empty tf708-empty tf708-empty-owned"><div className="tf708-empty-icon"><Watch aria-hidden="true"/></div><small>BỘ SƯU TẬP CỦA BẠN</small><h3>Hành trình bắt đầu từ chiếc đồng hồ đầu tiên</h3><p>Những chiếc đồng hồ trong đơn hàng đã thanh toán sẽ được lưu tại đây để bạn dễ dàng xem lại.</p><Link to="/collections">Khám phá bộ sưu tập <ArrowRight aria-hidden="true"/></Link></div>}</section>
 
-      <section className="tf690-section"><div className="v12-section-title"><div><small>MẪU ĐANG QUAN TÂM</small><h2>Những mẫu bạn đang cân nhắc</h2><p>Các mẫu bạn đã lưu hoặc so sánh, cùng tình trạng hàng hiện tại.</p></div><Scale/></div>{decisionProducts.length?<div className="tf690-radar-grid">{decisionProducts.map(product=><article key={product.id}><Link className="tf690-radar-image" to={`/products/${product.handle}`}><SmartImage src={product.images[0]} alt={product.title} width={260} height={260}/>{product.inventory>0&&product.inventory<=3?<span className="is-scarce">Chỉ còn {product.inventory}</span>:product.inventory<=0?<span className="is-out">Tạm hết hàng</span>:<span>Còn hàng</span>}</Link><div><small>{product.vendor}</small><Link to={`/products/${product.handle}`}>{product.title}</Link><b>{money(product.price)}</b>{product.compareAtPrice>product.price&&<em>Đang thấp hơn giá niêm yết {Math.round((1-product.price/product.compareAtPrice)*100)}%</em>}</div></article>)}</div>:<div className="tf690-empty compact"><Heart/><h3>Chưa có mẫu cần theo dõi</h3><p>Lưu hoặc so sánh mẫu đồng hồ bạn thích để xem lại tại đây.</p><Link to="/collections">Tìm mẫu phù hợp<ArrowRight/></Link></div>}</section>
+      <section className="tf690-section"><div className="v12-section-title"><div><small>MẪU ĐANG QUAN TÂM</small><h2>Những mẫu bạn đang cân nhắc</h2><p>Các mẫu bạn đã lưu hoặc so sánh, cùng tình trạng hàng hiện tại.</p></div><Scale/></div>{decisionProducts.length?<div className="tf690-radar-grid">{decisionProducts.map(product=><article key={product.id}><Link className="tf690-radar-image" to={`/products/${product.handle}`}><SmartImage src={product.images[0]} alt={product.title} width={260} height={260}/>{product.inventory>0&&product.inventory<=3?<span className="is-scarce">Chỉ còn {product.inventory}</span>:product.inventory<=0?<span className="is-out">Tạm hết hàng</span>:<span>Còn hàng</span>}</Link><div><small>{product.vendor}</small><Link to={`/products/${product.handle}`}>{product.title}</Link><b>{money(product.price)}</b>{product.compareAtPrice>product.price&&<em>Đang thấp hơn giá niêm yết {Math.round((1-product.price/product.compareAtPrice)*100)}%</em>}</div></article>)}</div>:<div className="tf690-empty compact tf708-empty tf708-empty-wishlist"><div className="tf708-empty-icon"><Heart aria-hidden="true"/></div><small>MẪU ĐANG QUAN TÂM</small><h3>Lưu lại chiếc đồng hồ khiến bạn ấn tượng</h3><p>Những mẫu bạn yêu thích hoặc đang so sánh sẽ xuất hiện ở đây để tiện theo dõi.</p><Link to="/collections">Khám phá đồng hồ <ArrowRight aria-hidden="true"/></Link></div>}</section>
 
       <section className="tf690-section"><div className="v12-section-title"><div><small>GỢI Ý DÀNH RIÊNG CHO BẠN</small><h2>3 mảnh ghép tiếp theo</h2><p>Gợi ý dựa trên những mẫu bạn đã mua, đã quan tâm và sản phẩm đang còn hàng.</p></div><Sparkles/></div><div className="tf690-next-grid">{recommendations.map(({product},index)=><article key={product.id}><span className="tf690-next-index">0{index+1}</span><SmartImage src={product.images[0]} alt={product.title} width={280} height={280}/><small>{product.vendor}</small><h3>{product.title}</h3><p>{ownedProducts.length&&!ownedProducts.some(item=>item.vendor===product.vendor)?'Bổ sung một thương hiệu mới cho bộ sưu tập.':averagePaid&&product.price>=averagePaid*.65&&product.price<=averagePaid*1.35?'Nằm trong vùng giá gần các lần mua trước.':'Một lựa chọn khác để mở rộng phong cách.'}</p><footer><b>{money(product.price)}</b><Link to={`/products/${product.handle}`}>Xem mẫu<ArrowRight/></Link></footer></article>)}</div></section>
 
-      <section className="tf690-section tf690-orders"><div className="v12-section-title"><div><small>LỊCH SỬ MUA HÀNG</small><h2>Đơn hàng gần đây</h2></div><Link to="/track-order">Tra cứu đơn<ArrowRight/></Link></div>{related.length?<div className="v12-order-list">{related.map(order=><article key={order.id}><header><div><small>{fmt(order.createdAt)}</small><Link to={`/account/orders/${order.id}`}>{order.number}</Link></div><span className={`v12-status ${order.status}`}>{statusLabel[order.status]}</span></header><div className="v12-order-thumbs">{order.lines.slice(0,3).map(line=><SmartImage key={line.id} src={line.image} alt={line.title} width={110} height={110}/>)}{order.lines.length>3&&<span>+{order.lines.length-3}</span>}</div><footer><div><b>{money(order.total)}</b><small>{order.lines.reduce((sum,line)=>sum+line.quantity,0)} sản phẩm · {fulfillmentLabel[order.fulfillmentStatus]}</small></div><div><button onClick={()=>reorder(order)}>Mua lại</button><Link to={`/account/orders/${order.id}`}>Xem chi tiết<ChevronRight/></Link></div></footer></article>)}</div>:<div className="v12-empty-state"><ShoppingBag/><h3>Chưa có đơn hàng</h3><p>Các đơn hàng dùng email hoặc số điện thoại này sẽ xuất hiện tại đây.</p><Link className="v12-primary" to="/collections">Khám phá bộ sưu tập</Link></div>}</section>
+      <section className="tf690-section tf690-orders tf708-orders"><div className="v12-section-title tf708-orders-heading"><div><small>LỊCH SỬ MUA HÀNG</small><h2>Đơn hàng gần đây</h2><p>Xem lại những lần mua sắm và trạng thái giao hàng của bạn.</p></div><Link to="/track-order"><PackageSearch aria-hidden="true"/>Tra cứu đơn <ArrowRight aria-hidden="true"/></Link></div>{related.length?<div className="v12-order-list tf708-order-list">{related.map(order=><article className="tf708-order-card" key={order.id}><header><div><small>Ngày đặt: {fmt(order.createdAt)}</small><Link to={`/account/orders/${order.id}`}>{order.number}</Link></div><span className={`v12-status ${order.status}`}>{statusLabel[order.status]}</span></header><div className="v12-order-thumbs">{order.lines.slice(0,3).map(line=><SmartImage key={line.id} src={line.image} alt={line.title} width={110} height={110}/>)}{order.lines.length>3&&<span>+{order.lines.length-3}</span>}</div><footer><div><b>{money(order.total)}</b><small>{order.lines.reduce((sum,line)=>sum+line.quantity,0)} sản phẩm · {fulfillmentLabel[order.fulfillmentStatus]}</small></div><div><button onClick={()=>reorder(order)}>Mua lại</button><Link to={`/account/orders/${order.id}`}>Xem chi tiết<ChevronRight/></Link></div></footer></article>)}</div>:<div className="v12-empty-state"><ShoppingBag/><h3>Chưa có đơn hàng</h3><p>Các đơn hàng dùng email hoặc số điện thoại này sẽ xuất hiện tại đây.</p><Link className="v12-primary" to="/collections">Khám phá bộ sưu tập</Link></div>}</section>
     </main>
 
     <aside className="tf690-member-aside">
