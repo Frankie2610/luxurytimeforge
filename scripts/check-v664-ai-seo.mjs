@@ -12,7 +12,13 @@ const store=await read('src/store-profile.ts');
 const envExample=await read('.env.example');
 const prerender=await read('scripts/prerender-seo.mjs');
 
-must(/^(?:0\.66\.(?:4|5|6)|0\.67\.0)$/.test(pkg.version),'package version must preserve the V0.66.x SEO baseline or be V0.67.0');
+// Accept future release versions without weakening the SEO baseline checks below.
+const versionParts=/^(\d+)\.(\d+)\.(\d+)$/.exec(String(pkg.version||''));
+const seoVersionOk=Boolean(versionParts) && (
+  Number(versionParts[1])>0 || Number(versionParts[2])>66 ||
+  (Number(versionParts[2])===66 && Number(versionParts[3])>=4)
+);
+must(seoVersionOk,'package version must be at least 0.66.4 while preserving the SEO baseline');
 must(String(pkg.scripts?.build||'').includes('prerender-seo.mjs'),'build must run SEO prerender');
 must(index.includes('rel="canonical"'),'index must include canonical fallback');
 must(index.includes('/llms.txt')&&index.includes('/ai-catalog.json'),'index must advertise AI-readable resources');
