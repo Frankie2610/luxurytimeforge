@@ -159,7 +159,7 @@ export function CustomerAccountV12() {
   const tierClass=`is-${progress.tier.id}`;
   const birthdayMonth=customer.birthDate?new Date(`${customer.birthDate}T00:00:00`).toLocaleDateString('vi-VN',{month:'long'}):'';
   const birthMonth=customer.birthDate?Number(customer.birthDate.slice(5,7)):0;
-  const memberUpdates:MemberUpdate=[
+  const memberUpdates:MemberUpdate[]=[
    ...related.slice(0,4).map(order=>({id:`order:${order.id}:${order.status}:${order.fulfillmentStatus}:${order.paymentStatus}`,title:`Đơn hàng ${order.number}`,detail:`${statusLabel[order.status]} · ${fulfillmentLabel[order.fulfillmentStatus]}`,date:order.createdAt,url:`/account/orders/${order.id}`})),
    ...(birthMonth===new Date().getMonth()+1&&memberSettings.birthdayBoostEnabled?[{id:`birthday:${new Date().getFullYear()}:${customer.id}`,title:'Quyền lợi sinh nhật của bạn',detail:`Tháng này, ${memberSettings.birthdayMaxOrders} đơn đủ điều kiện đầu tiên được nhân ×${memberSettings.birthdayMultiplier.toLocaleString('vi-VN',{maximumFractionDigits:2})} điểm.`}]:[])
   ];
