@@ -350,7 +350,7 @@ async function sendHomeFeed(req,res){
     const buckets=new Map();
     for(const product of candidates){
       const brand=product.vendor||'Other';
-      const model=product.title.toLocaleLowerCase('vi').replace(/\\s+/g,' ').trim();
+      const model=product.title.toLocaleLowerCase('vi').replace(/\s+/g,' ').trim();
       const key=brand+'|'+model;
       if(!buckets.has(brand))buckets.set(brand,new Map());
       const models=buckets.get(brand);
