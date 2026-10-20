@@ -34,6 +34,7 @@ import './v580-admin-polish.css';
 import './v582-admin-ui-polish.css';
 import './v620-admin-polish.css';
 import './v650-admin-polish.css';
+import './v671-admin-search-responsive.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
