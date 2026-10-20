@@ -116,6 +116,7 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
   }
   const completedDebits=[];
   let orderCommitted=false;
+  let commitAttempted=false;
   try{
   const method=normalizePaymentMethod(payload.paymentMethod);
   // Validate and deduplicate cart identifiers before constructing Firebase paths.
@@ -223,6 +224,7 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     }
   }
   if(promo.discount&&promo.key)updates[`timeforge/discounts/${promo.key}`]={...promo.discount,usageCount:Number(promo.discount.usageCount||0)+1};
+  commitAttempted=true;
   await firebaseMultiPatch(updates);
   orderCommitted=true;
   await finishCheckoutClaim(id,'completed').catch(error=>console.warn('[TimeForge] Checkout claim finalization failed:',error));
@@ -236,6 +238,13 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     if(hasOrder){
       await finishCheckoutClaim(id,'completed').catch(()=>{});
       return readCheckoutOrder(id);
+    }
+    if(commitAttempted){
+      console.error('[TimeForge] Checkout commit outcome uncertain; preserving stock and claim for reconciliation:',id,error);
+      await finishCheckoutClaim(id,'requires_review','Order commit outcome uncertain').catch(()=>{});
+      const uncertain=new Error('Đơn hàng cần kiểm tra trạng thái thanh toán. Vui lòng liên hệ cửa hàng, không tạo lại đơn ngay.');
+      uncertain.statusCode=503;
+      throw uncertain;
     }
     let rollbackFailed=false;
     for(const debit of completedDebits.reverse()){
