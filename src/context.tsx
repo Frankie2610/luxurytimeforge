@@ -153,6 +153,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
   let active=true;
   let cancelCritical:undefined|(()=>void);
   let cancelSecondary:undefined|(()=>void);
+  const isHome=location.pathname==='/' || location.pathname==='/home';
   const hasCachedCatalog=products.length>0;
   if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
   else{setIsLoading(false);setDataSource('local')}
@@ -189,7 +190,10 @@ export function CommerceProvider({children}:{children:ReactNode}){
 
   const refreshCritical=()=>{
    if(!active)return;
-   const catalogRequest=firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products').then(value=>{
+   const catalogRequest=(isHome
+    ?fetch('/api/storefront/home',{headers:{Accept:'application/json'}})
+      .then(async response=>{if(!response.ok)throw new Error('Home feed returned '+response.status);return (await response.json()).products as Product[]})
+    :firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products')).then(value=>{
     if(!active)return;
     const next=productsFromFirebase(value);
     setProducts(next);
@@ -224,11 +228,11 @@ export function CommerceProvider({children}:{children:ReactNode}){
    });
   };
 
-  if(hasCachedCatalog)cancelCritical=scheduleIdleTask(refreshCritical,1100);
+  if(hasCachedCatalog && isHome)cancelCritical=scheduleIdleTask(refreshCritical,1100);
   else refreshCritical();
 
   return()=>{active=false;cancelCritical?.();cancelSecondary?.()};
- },[]);
+ },[location.pathname]);
 
  /* Protected Admin datasets hydrate only when the current screen needs them.
     The order feed is handled by the realtime subscription below, so it is not
