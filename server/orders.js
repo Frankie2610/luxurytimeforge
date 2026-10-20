@@ -239,7 +239,7 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
       await finishCheckoutClaim(id,'completed').catch(()=>{});
       return readCheckoutOrder(id);
     }
-    if(commitAttempted){
+    if(commitAttempted||error?.inventoryOutcomeUnknown){
       console.error('[TimeForge] Checkout commit outcome uncertain; preserving stock and claim for reconciliation:',id,error);
       await finishCheckoutClaim(id,'requires_review','Order commit outcome uncertain').catch(()=>{});
       const uncertain=new Error('Đơn hàng cần kiểm tra trạng thái thanh toán. Vui lòng liên hệ cửa hàng, không tạo lại đơn ngay.');
