@@ -1,0 +1,32 @@
+/* 2026 responsive search polish: shared across product, order, customer and inventory screens. */
+.tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"]) {
+  display:flex;align-items:center;gap:10px;position:relative;min-width:220px;min-height:44px;
+  padding:0 13px!important;border:1px solid #d6e1d9!important;border-radius:13px!important;
+  background:linear-gradient(180deg,#fff,#fafcfa)!important;
+  box-shadow:0 2px 8px rgba(25,49,32,.035),inset 0 1px 0 #fff!important;
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"]):hover{border-color:#a8c5b3!important}
+.tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"]):focus-within{border-color:#3e8960!important;background:white!important;box-shadow:0 0 0 4px rgba(46,113,69,.12),0 5px 15px rgba(32,69,43,.06)!important}
+.tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"])>svg{flex:none;width:17px;height:17px;color:#628470}
+.tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"])>input{flex:1;min-width:0;width:100%;height:40px;min-height:40px;margin:0!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;font-size:13px;font-weight:540}
+.tf-admin-v499 .v16-admin-content .v9-search>kbd{flex:none;font:600 11px/1 ui-monospace,monospace;color:#82968a;background:#f0f5f0;border:1px solid #e0e8e1;border-radius:6px;padding:5px 7px}
+.tf-admin-v499 .v16-command-button{min-width:0;border:1px solid #d5e3d8;border-radius:12px;background:rgba(255,255,255,.88)}
+.tf-admin-v499 .v16-command-button:hover,.tf-admin-v499 .v16-command-button:focus-visible{border-color:#8bb99e;background:#fff}
+@media(max-width:1024px){
+ .tf-admin-v499 .v16-page-header,.tf-admin-v499 .v16-admin-page:not(.is-fullbleed) .v16-admin-content{width:min(100% - 32px,1320px)}
+ .tf-admin-v499 .v16-admin-content :is(.v9-index-tools,.s11-toolbar,.v10-index-tools){flex-wrap:wrap;gap:10px}
+ .tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search){flex:1 1 260px}
+}
+@media(max-width:640px){
+ .tf-admin-v499 .v16-page-header,.tf-admin-v499 .v16-admin-page:not(.is-fullbleed) .v16-admin-content{width:calc(100% - 24px)}
+ .tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"]){min-width:0;width:100%;flex:1 1 100%;min-height:46px}
+ .tf-admin-v499 .v16-admin-content :is(.v9-index-tools,.s11-toolbar,.v10-index-tools){width:100%;align-items:stretch}
+ .tf-admin-v499 .v16-admin-content :is(.v9-table-wrap,.s11-table-wrap,.v10-table-wrap,.table-wrap){max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ .tf-admin-v499 .v16-admin-content :is(.v9-tool-button,.v9-sort,button){touch-action:manipulation}
+ .tf-admin-v499 .v16-admin-topbar{min-width:0}
+ .tf-admin-v499 .v16-command-button{min-width:0;max-width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .tf-admin-v499 .v16-admin-content :is(.v9-search,.tf55-admin-search,.tf4925-admin-search,[class*="index-search"],[class*="toolbar-search"]){transition:none}
+}

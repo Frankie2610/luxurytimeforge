@@ -111,16 +111,16 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const[products,setProducts]=useState<Product[]>(()=>productsFromFirebase(load<Product[]>(K.p,[])));
  const[collections,setCollections]=useState(()=>normalizeCollections(load(K.c,seedCollections)));
  const[productGroups,setProductGroups]=useState<ProductGroup[]>(()=>asList<ProductGroup>(load(K.groups,[])));
- const[customers,setCustomers]=useState(()=>asList<Customer>(load(K.u,seedCustomers)));
- const[newsletterSubscribers,setNewsletterSubscribers]=useState<NewsletterSubscriber[]>(()=>asList<NewsletterSubscriber>(load(K.newsletter,[])));
+ const[customers,setCustomers]=useState<Customer[]>(()=>seedCustomers);
+ const[newsletterSubscribers,setNewsletterSubscribers]=useState<NewsletterSubscriber[]>([]);
  const[reviews,setReviews]=useState<StoreReview[]>(()=>asList<StoreReview>(load(K.reviews,[])));
  const[cart,setCart]=useState<CartLine[]>(()=>asList<CartLine>(load(K.cart,[])));
  const cartRef=useRef(cart);
  cartRef.current=cart;
- const[orders,setOrders]=useState<Order[]>(()=>normalizeOrders(load(K.orders,seedOrders)));
+ const[orders,setOrders]=useState<Order[]>(()=>seedOrders);
  const[discounts,setDiscounts]=useState<Discount[]>(()=>asList<Discount>(load(K.discounts,seedDiscounts)));
- const[adjustments,setAdjustments]=useState<InventoryAdjustment[]>(()=>asList<InventoryAdjustment>(load(K.adjustments,seedAdjustments)));
- const[activities,setActivities]=useState<Activity[]>(()=>asList<Activity>(load(K.activities,seedActivities)));
+ const[adjustments,setAdjustments]=useState<InventoryAdjustment[]>(()=>seedAdjustments);
+ const[activities,setActivities]=useState<Activity[]>(()=>seedActivities);
  const[themeState,setThemeState]=useState<ThemeState>(loadTheme);
  const[storeProfile,setStoreProfile]=useState<StoreProfile>(()=>normalizeStoreProfile(load<StoreProfile>(K.profile,storeProfileFromTheme(themeState.published)),storeProfileFromTheme(themeState.published)));
  const[previewTheme,setPreviewTheme]=useState<Theme|null>(()=>isThemePreviewV26()?readThemePreviewV26():null);
@@ -129,17 +129,18 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const[dataSource,setDataSource]=useState<CommerceDataSource>(()=>firebaseClient.enabled?(products.length?'local':'loading'):'local');
  const[dataError,setDataError]=useState('');
 
- useIdleLocalStorage(K.p,products,products.length>0);
+ useIdleLocalStorage(K.p,products,products.length>0 && !location.pathname.startsWith('/admin'));
+ useEffect(()=>{for(const key of [K.u,K.newsletter,K.orders,K.adjustments,K.activities]){try{localStorage.removeItem(key)}catch{}}},[]);
  useIdleLocalStorage(K.c,collections);
  useIdleLocalStorage(K.groups,productGroups);
- useIdleLocalStorage(K.u,customers);
- useIdleLocalStorage(K.newsletter,newsletterSubscribers);
+ /* Protected u records are intentionally not persisted to localStorage. */
+ /* Protected newsletter records are intentionally not persisted to localStorage. */
  useIdleLocalStorage(K.reviews,reviews);
  useIdleLocalStorage(K.cart,cart);
- useIdleLocalStorage(K.orders,orders);
+ /* Protected orders records are intentionally not persisted to localStorage. */
  useIdleLocalStorage(K.discounts,discounts);
- useIdleLocalStorage(K.adjustments,adjustments);
- useIdleLocalStorage(K.activities,activities);
+ /* Protected adjustments records are intentionally not persisted to localStorage. */
+ /* Protected activities records are intentionally not persisted to localStorage. */
  useIdleLocalStorage(K.theme,themeState);
  useIdleLocalStorage(K.profile,storeProfile);
  useEffect(()=>{if(!isThemePreviewV26())return;const sync=()=>setPreviewTheme(readThemePreviewV26());const storage=(event:StorageEvent)=>{if(event.key===THEME_PREVIEW_KEY_V26)sync()};window.addEventListener('storage',storage);window.addEventListener(THEME_PREVIEW_UPDATED_V26,sync);return()=>{window.removeEventListener('storage',storage);window.removeEventListener(THEME_PREVIEW_UPDATED_V26,sync)}},[]);
@@ -153,6 +154,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
   let active=true;
   let cancelCritical:undefined|(()=>void);
   let cancelSecondary:undefined|(()=>void);
+  const isHome=location.pathname==='/' || location.pathname==='/home';
   const hasCachedCatalog=products.length>0;
   if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
   else{setIsLoading(false);setDataSource('local')}
@@ -189,7 +191,10 @@ export function CommerceProvider({children}:{children:ReactNode}){
 
   const refreshCritical=()=>{
    if(!active)return;
-   const catalogRequest=firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products').then(value=>{
+   const catalogRequest=(isHome
+    ?fetch('/api/meta?resource=home-feed',{headers:{Accept:'application/json'}})
+      .then(async response=>{if(!response.ok)throw new Error('Home feed returned '+response.status);return (await response.json()).products as Product[]})
+    :firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products')).then(value=>{
     if(!active)return;
     const next=productsFromFirebase(value);
     setProducts(next);
@@ -224,11 +229,11 @@ export function CommerceProvider({children}:{children:ReactNode}){
    });
   };
 
-  if(hasCachedCatalog)cancelCritical=scheduleIdleTask(refreshCritical,1100);
+  if(hasCachedCatalog && isHome)cancelCritical=scheduleIdleTask(refreshCritical,1100);
   else refreshCritical();
 
   return()=>{active=false;cancelCritical?.();cancelSecondary?.()};
- },[]);
+ },[location.pathname]);
 
  /* Protected Admin datasets hydrate only when the current screen needs them.
     The order feed is handled by the realtime subscription below, so it is not

@@ -34,6 +34,7 @@ import './v580-admin-polish.css';
 import './v582-admin-ui-polish.css';
 import './v620-admin-polish.css';
 import './v650-admin-polish.css';
+import './v671-admin-search-responsive.css';
 import {
   Button,DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -158,6 +159,7 @@ export function AdminLayoutV16(){
       {to:'/admin/referrals',label:'Referral & Growth',icon:Gift},
       {to:'/admin/marketing/meta',label:'Meta Ads',icon:Megaphone},
       {to:'/admin/blogs',label:'Bài viết',icon:BookOpen},
+      {to:'/admin/seo-health',label:'SEO Health',icon:Search},
       {to:'/admin/reviews',label:'Review & testimonial',icon:MessageSquareQuote},
       {to:'/admin/pages',label:'Trang nội dung',icon:FileText},
       {to:'/admin/analytics',label:'Phân tích',icon:BarChart3},

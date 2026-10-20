@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import {firebaseEntries,firebaseMultiPatch,firebaseRead,findOrder} from './firebase-rest.js';
+import {claimCheckout,finishCheckoutClaim,readCheckoutOrder,debitCheckoutProduct,restoreCheckoutProduct} from './checkout-atomic.js';
 
 const cleanText=(value,max=160)=>String(value||'').trim().slice(0,max);
 const safeInteger=(value)=>Number.isSafeInteger(Number(value))?Number(value):0;
@@ -104,33 +105,28 @@ function customerFromOrder(customerEntries,payload,total){
 export async function createVerifiedStorefrontOrder({payload,cart,requestId,requestContext={},memberSessionToken=''}){
   if(!payload||!Array.isArray(cart)||!cart.length||cart.length>50)throw new Error('Giỏ hàng không hợp lệ.');
   const id=safeRequestId(requestId);
-  const existing=await findOrder(id).catch(()=>null);
-  if(existing)return existing.order;
+  const existing=await readCheckoutOrder(id);
+  if(existing)return existing;
+  if(!await claimCheckout(id)){
+    const finished=await readCheckoutOrder(id);
+    if(finished)return finished;
+    const conflict=new Error('Yêu cầu đặt hàng này đang được xử lý hoặc cần đối soát. Vui lòng không gửi lại cùng mã đơn.');
+    conflict.statusCode=409;
+    throw conflict;
+  }
+  const completedDebits=[];
+  let orderCommitted=false;
+  let commitAttempted=false;
+  try{
   const method=normalizePaymentMethod(payload.paymentMethod);
-  const[catalogRaw,discountRaw,integrationRaw,customersRaw,referralRaw,ordersRaw,holdsRaw,opportunitiesRaw]=await Promise.all([
-    firebaseRead('timeforge/products'),
-    firebaseRead('timeforge/discounts').catch(()=>({})),
-    firebaseRead('timeforge/settings/integrations').catch(()=>({})),
-    firebaseRead('timeforge/customers').catch(()=>({})),
-    firebaseRead('timeforge/settings/referral').catch(()=>({})),
-    firebaseRead('timeforge/orders').catch(()=>({})),
-    firebaseRead('timeforge/memberHolds').catch(()=>({})),
-    firebaseRead('timeforge/memberOpportunities').catch(()=>({})),
-  ]);
-  const memberSession=verifyMemberSession(memberSessionToken);
-  const activeHolds=firebaseEntries(holdsRaw).filter(([,hold])=>hold?.status==='active'&&Number(hold?.expiresAt)>Date.now());
-  const productEntries=firebaseEntries(catalogRaw);
-  const discountEntries=firebaseEntries(discountRaw);
-  const settings=normalizeIntegrations(integrationRaw||{});
-  const referralSettings=normalizeReferralSettings(referralRaw||{});
-  if(method==='cod'&&!settings.payment.cod)throw new Error('Thanh toán khi nhận hàng hiện đang tạm tắt.');
-  if(method==='bank_transfer'&&!settings.payment.bankTransfer)throw new Error('Chuyển khoản ngân hàng hiện đang tạm tắt.');
-  if(method==='payos'&&!settings.payment.online)throw new Error('Thanh toán PayOS hiện đang tạm tắt.');
+  // Validate and deduplicate cart identifiers before constructing Firebase paths.
+  // Canonical TimeForge product.id === SKU (Firebase record key).
   const mergedCart=[...cart.reduce((groups,line)=>{
     const productId=cleanText(line?.productId,120);
     const variantId=cleanText(line?.variantId,120);
     const quantity=safeInteger(line?.quantity);
-    if(!productId||quantity<1||quantity>99)throw new Error('Số lượng sản phẩm không hợp lệ.');
+    if(!productId||/[.#$\[\]\\/]/.test(productId))throw new Error('Mã sản phẩm không hợp lệ.');
+    if(!Number.isInteger(quantity)||quantity<1||quantity>99)throw new Error('Số lượng sản phẩm không hợp lệ.');
     const key=`${productId}::${variantId}`;
     const previous=groups.get(key);
     const mergedQuantity=(previous?.quantity||0)+quantity;
@@ -138,6 +134,29 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     groups.set(key,{productId,variantId,quantity:mergedQuantity});
     return groups;
   },new Map()).values()];
+  const requestedProducts=[...new Set(mergedCart.map(line=>line.productId))];
+  if(requestedProducts.length>30)throw new Error('Giỏ hàng vượt số dòng sản phẩm cho phép.');
+  const memberSession=verifyMemberSession(memberSessionToken);
+  // Read exactly the ordered SKUs, not every product in the store.
+  // Referral history is only required for orders using a referral code.
+  const [productRecords,discountRaw,integrationRaw,customersRaw,referralRaw,ordersRaw,holdsRaw,opportunitiesRaw]=await Promise.all([
+    Promise.all(requestedProducts.map(async key=>[key,await firebaseRead(`timeforge/products/${key}`)])),
+    payload.discountCode?firebaseRead('timeforge/discounts').catch(()=>({})):Promise.resolve({}),
+    firebaseRead('timeforge/settings/integrations').catch(()=>({})),
+    firebaseRead('timeforge/customers').catch(()=>({})),
+    payload.referralCode?firebaseRead('timeforge/settings/referral').catch(()=>({})):Promise.resolve({}),
+    payload.referralCode?firebaseRead('timeforge/orders').catch(()=>({})):Promise.resolve({}),
+    firebaseRead('timeforge/memberHolds').catch(()=>({})),
+    memberSession?firebaseRead('timeforge/memberOpportunities').catch(()=>({})):Promise.resolve({}),
+  ]);
+  const activeHolds=firebaseEntries(holdsRaw).filter(([,hold])=>hold?.status==='active'&&Number(hold?.expiresAt)>Date.now());
+  const productEntries=productRecords.filter(([,product])=>Boolean(product));
+  const discountEntries=firebaseEntries(discountRaw);
+  const settings=normalizeIntegrations(integrationRaw||{});
+  const referralSettings=normalizeReferralSettings(referralRaw||{});
+  if(method==='cod'&&!settings.payment.cod)throw new Error('Thanh toán khi nhận hàng hiện đang tạm tắt.');
+  if(method==='bank_transfer'&&!settings.payment.bankTransfer)throw new Error('Chuyển khoản ngân hàng hiện đang tạm tắt.');
+  if(method==='payos'&&!settings.payment.online)throw new Error('Thanh toán PayOS hiện đang tạm tắt.');
   const lines=mergedCart.map((line,index)=>{
     const found=productEntries.find(([,product])=>product?.id===line.productId);
     if(!found)throw new Error('Sản phẩm không còn tồn tại.');
@@ -189,27 +208,52 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     grouped.push(line);
     linesByProduct.set(line.productKey,grouped);
   }
-  for(const[productKey,productLines]of linesByProduct){
-    const found=productEntries.find(([key])=>key===productKey);
-    if(!found)continue;
-    const original=found[1];
-    const product=structuredClone(original);
-    const quantitiesByVariant=new Map(productLines.map(line=>[line.variantId,line.quantity]));
-    const totalQuantity=productLines.reduce((sum,line)=>sum+line.quantity,0);
-    product.variants=(Array.isArray(product.variants)?product.variants:[]).map(variant=>{
-      const quantity=quantitiesByVariant.get(variant.id)||0;
-      return quantity?{...variant,inventory:Math.max(0,Number(variant.inventory||0)-quantity)}:variant;
-    });
-    product.inventory=Math.max(0,Number(product.inventory||0)-totalQuantity);
-    product.updatedAt=now;
-    updates[`timeforge/products/${productKey}`]=product;
-    for(const line of productLines){
-      const before=Number(original.variants?.find(item=>item.id===line.variantId)?.inventory??original.inventory??0);
+  // Each SKU is conditionally decremented under its current RTDB ETag.
+  // Stable key order avoids unnecessary contention between simultaneous carts.
+  for(const [productKey,productLines] of [...linesByProduct.entries()].sort(([a],[b])=>a.localeCompare(b))){
+    const debit=await debitCheckoutProduct(productKey,productLines);
+    completedDebits.push(debit);
+    for(const line of debit.lines){
       const adjustmentId=uid('adjustment');
-      updates[`timeforge/inventoryAdjustments/${adjustmentId}`]={id:adjustmentId,productId:line.productId,variantId:line.variantId,sku:line.sku,productTitle:line.title,delta:-line.quantity,before,after:Math.max(0,before-line.quantity),reason:'order',note:`Trừ kho cho ${order.number}`,createdAt:now,referenceId:id};
+      updates[`timeforge/inventoryAdjustments/${adjustmentId}`]={
+        id:adjustmentId,productId:line.productId,variantId:line.variantId,sku:line.sku,
+        productTitle:line.title,delta:-line.quantity,before:line.before,
+        after:Math.max(0,line.before-line.quantity),reason:'order',
+        note:`Trừ kho cho ${order.number}`,createdAt:now,referenceId:id
+      };
     }
   }
   if(promo.discount&&promo.key)updates[`timeforge/discounts/${promo.key}`]={...promo.discount,usageCount:Number(promo.discount.usageCount||0)+1};
+  commitAttempted=true;
   await firebaseMultiPatch(updates);
+  orderCommitted=true;
+  await finishCheckoutClaim(id,'completed').catch(error=>console.warn('[TimeForge] Checkout claim finalization failed:',error));
   return order;
+  }catch(error){
+    if(orderCommitted)throw error;
+    // On an ambiguous network error we must not blindly release the claim:
+    // the order write may have been applied despite the connection failure.
+    let hasOrder=false;
+    try{hasOrder=Boolean(await readCheckoutOrder(id))}catch{}
+    if(hasOrder){
+      await finishCheckoutClaim(id,'completed').catch(()=>{});
+      return readCheckoutOrder(id);
+    }
+    if(commitAttempted||error?.inventoryOutcomeUnknown){
+      console.error('[TimeForge] Checkout commit outcome uncertain; preserving stock and claim for reconciliation:',id,error);
+      await finishCheckoutClaim(id,'requires_review','Order commit outcome uncertain').catch(()=>{});
+      const uncertain=new Error('Đơn hàng cần kiểm tra trạng thái thanh toán. Vui lòng liên hệ cửa hàng, không tạo lại đơn ngay.');
+      uncertain.statusCode=503;
+      throw uncertain;
+    }
+    let rollbackFailed=false;
+    for(const debit of completedDebits.reverse()){
+      try{await restoreCheckoutProduct(debit)}catch(rollbackError){
+        rollbackFailed=true;
+        console.error('[TimeForge] Checkout stock compensation requires review:',id,rollbackError);
+      }
+    }
+    await finishCheckoutClaim(id,rollbackFailed?'requires_review':'failed',error?.message||'Checkout failed').catch(()=>{});
+    throw error;
+  }
 }

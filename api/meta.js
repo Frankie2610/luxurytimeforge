@@ -306,8 +306,90 @@ async function sendSocialImage(req,res){
   }
 }
 
+
+/** Public home feed shares the existing meta function to stay inside Hobby limits. */
+async function sendHomeFeed(req,res){
+  if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({message:'Method not allowed'})}
+  const base=publicDatabaseUrl();
+  if(!/^https:\/\//.test(base))return res.status(503).json({message:'Catalog unavailable'});
+  const target=new URL(base+'/timeforge/products.json');
+  target.searchParams.set('orderBy','"status"');
+  target.searchParams.set('equalTo','"active"');
+  target.searchParams.set('limitToFirst','320');
+  if(process.env.FIREBASE_DATABASE_AUTH)target.searchParams.set('auth',process.env.FIREBASE_DATABASE_AUTH);
+  try{
+    const upstream=await fetchWithTimeout(target.toString(),{headers:{Accept:'application/json'}},6500);
+    if(!upstream.ok)throw new Error('Home query returned '+upstream.status);
+    const raw=await upstream.json();
+    const homeProduct=(product,key)=>{
+      if(!product||product.status!=='active'||product.published===false||!clean(product.handle)||Number(product.price)<=0)return null;
+      // This storefront sells watches; related imported accessories stay discoverable in the full catalog, not the homepage watch edit.
+      if(!/watch(es)?/i.test(clean(product.productType))&&!/^đồng hồ\b/i.test(clean(product.title)))return null;
+      const sku=clean(product.sku||key).slice(0,120);
+      const variants=list(product.variants).slice(0,6).map((item,i)=>({
+        id:clean(item.id||(i===0?sku:item.sku)).slice(0,120),sku:clean(item.sku||sku).slice(0,120),
+        title:clean(item.title||'Mặc định').slice(0,120),
+        price:Math.max(0,Number(item.price||product.price)||0),
+        compareAtPrice:Math.max(0,Number(item.compareAtPrice)||0),
+        inventory:Math.max(0,Number(item.inventory)||0),
+        optionValues:item.optionValues&&typeof item.optionValues==='object'?item.optionValues:{}
+      }));
+      return {
+        id:clean(product.id||sku).slice(0,120),sku,handle:clean(product.handle).slice(0,180),
+        title:clean(product.title).slice(0,220),vendor:clean(product.vendor).slice(0,100),
+        productType:clean(product.productType).slice(0,100),category:clean(product.category).slice(0,100),
+        status:'active',published:true,price:Math.max(0,Number(product.price)||0),
+        compareAtPrice:Math.max(0,Number(product.compareAtPrice)||0),
+        inventory:Math.max(0,Number(product.inventory)||0),
+        images:list(product.images).slice(0,2).map(item=>clean(item).slice(0,1500)),
+        variants,tags:list(product.tags).slice(0,12).map(item=>clean(item).slice(0,80)),
+        createdAt:clean(product.createdAt).slice(0,35),updatedAt:clean(product.updatedAt).slice(0,35)
+      };
+    };
+    const candidates=Object.entries(raw||{}).map(([key,value])=>homeProduct(value,key)).filter(Boolean);
+    // Spread the home edit across brands and models. RTDB keys are SKU-sorted;
+    // simply taking the first 48 used to surface near-identical LOCMAN variants.
+    const buckets=new Map();
+    for(const product of candidates){
+      const brand=product.vendor||'Other';
+      const model=product.title.toLocaleLowerCase('vi').replace(/\s+/g,' ').trim();
+      const key=brand+'|'+model;
+      if(!buckets.has(brand))buckets.set(brand,new Map());
+      const models=buckets.get(brand);
+      if(!models.has(key))models.set(key,[]);
+      models.get(key).push(product);
+    }
+    const brands=[...buckets.keys()];
+    const products=[];
+    const used=new Set();
+    for(let pass=0;pass<48&&products.length<48;pass++){
+      let added=false;
+      for(const brand of brands){
+        const models=buckets.get(brand);
+        const groups=[...models.values()].filter(group=>group.some(item=>!used.has(item.sku)));
+        if(!groups.length)continue;
+        const targetGroup=groups[pass%groups.length];
+        const next=targetGroup.find(item=>!used.has(item.sku));
+        if(!next)continue;
+        used.add(next.sku);products.push(next);added=true;
+        if(products.length===48)break;
+      }
+      if(!added)break;
+    }
+    if(!products.length)return res.status(503).json({message:'Catalog not ready'});
+    res.setHeader('Cache-Control','public, s-maxage=120, stale-while-revalidate=300');
+    res.setHeader('X-TimeForge-Catalog-Scope','home-48');
+    return res.status(200).json({products,scope:'home',totalReturned:products.length});
+  }catch(error){
+    console.warn('[TimeForge] Home feed failed:',error instanceof Error?error.message:error);
+    res.setHeader('Cache-Control','no-store');
+    return res.status(503).json({message:'Không thể tải sản phẩm nổi bật'});
+  }
+}
+
 export default async function handler(req,res){
   const resource=resourceFromRequest(req);
+  if(resource==='home-feed')return sendHomeFeed(req,res);
   if(resource==='sitemap'){
     if((req.method||'GET')!=='GET')return res.status(405).end('Method not allowed');
     return sendSitemap(req,res);
