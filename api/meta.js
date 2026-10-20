@@ -323,6 +323,8 @@ async function sendHomeFeed(req,res){
     const raw=await upstream.json();
     const homeProduct=(product,key)=>{
       if(!product||product.status!=='active'||product.published===false||!clean(product.handle)||Number(product.price)<=0)return null;
+      // This storefront sells watches; related imported accessories stay discoverable in the full catalog, not the homepage watch edit.
+      if(!/watch(es)?/i.test(clean(product.productType))&&!/^đồng hồ\b/i.test(clean(product.title)))return null;
       const sku=clean(product.sku||key).slice(0,120);
       const variants=list(product.variants).slice(0,6).map((item,i)=>({
         id:clean(item.id||(i===0?sku:item.sku)).slice(0,120),sku:clean(item.sku||sku).slice(0,120),
