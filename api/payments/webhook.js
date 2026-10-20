@@ -12,7 +12,6 @@ export default async function handler(req,res){
     if(Number(data.amount)!==Number(session.amount))return res.status(400).json({message:'Payment amount mismatch'});
     if(session.orderCode&&Number(data.orderCode)!==Number(session.orderCode))return res.status(400).json({message:'Payment code mismatch'});
     if(session.paymentLinkId&&data.paymentLinkId&&String(data.paymentLinkId)!==String(session.paymentLinkId))return res.status(400).json({message:'Payment link mismatch'});
-    if(String(session.status).toUpperCase()==='PAID')return res.status(200).json({success:true,duplicate:true});
     if(String(data.code)!=='00')return res.status(200).json({success:true,ignored:true});
     const paidAt=data.transactionDateTime||new Date().toISOString();
     const synchronized=await syncPaymentState({orderId:session.orderId,status:'PAID',paymentLinkId:data.paymentLinkId,reference:data.reference,orderCode:data.orderCode,paidAt});
