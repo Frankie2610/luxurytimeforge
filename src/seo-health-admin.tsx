@@ -2,7 +2,6 @@ import {useMemo,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {AlertCircle,ArrowUpRight,CheckCircle2,ImageOff,Search,ShieldCheck,Tag,TextSearch} from 'lucide-react';
 import {useCommerce} from './context';
-import type {Product} from './types';
 import './seo-health-admin.css';
 
 type Issue='no-image'|'no-description'|'no-seo-title'|'no-seo-description'|'duplicate-handle';
