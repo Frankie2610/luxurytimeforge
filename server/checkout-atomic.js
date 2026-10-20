@@ -33,7 +33,17 @@ const withEtag=async(path)=>{
   return {etag,value:await response.json()};
 };
 const conditionalPut=async(path,etag,value)=>{
-  const response=await fetch(url(path),{method:'PUT',headers:{'Content-Type':'application/json','if-match':etag},body:JSON.stringify(value)});
+  let response;
+  try{
+    response=await fetch(url(path),{method:'PUT',headers:{'Content-Type':'application/json','if-match':etag},body:JSON.stringify(value)});
+  }catch(cause){
+    // The conditional PUT may have succeeded before the transport failed.
+    // Never automatically credit stock back or retry the same debit.
+    const error=makeError('Không xác định được kết quả cập nhật tồn kho. Cần đối soát đơn hàng.',503);
+    error.inventoryOutcomeUnknown=true;
+    error.cause=cause;
+    throw error;
+  }
   if(response.status===412)return false;
   if(!response.ok)throw makeError(`Firebase conditional inventory write failed (${response.status})`,503);
   return true;
