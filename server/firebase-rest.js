@@ -50,6 +50,37 @@ export async function firebasePatch(path,value){
   return response.json().catch(()=>value);
 }
 
+
+/**
+ * Atomically update one RTDB JSON node with optimistic concurrency.
+ * Passing null/undefined from mutate means "no change", not deletion.
+ * A network failure during PUT must be treated as an uncertain outcome.
+ */
+export async function firebaseCompareAndSwap(path,mutate,{retries=7}={}){
+  for(let attempt=0;attempt<retries;attempt++){
+    const read=await fetch(firebaseUrl(path),{headers:{'Cache-Control':'no-store','X-Firebase-ETag':'true'}});
+    if(!read.ok)throw new Error(`Firebase conditional read failed (${read.status})`);
+    const tag=read.headers.get('etag');
+    if(!tag)throw new Error('Firebase conditional read did not return ETag');
+    const current=await read.json();
+    const next=mutate(current);
+    if(next===null||next===undefined)return{updated:false,value:current};
+    let response;
+    try{
+      response=await fetch(firebaseUrl(path),{method:'PUT',headers:{'Content-Type':'application/json','if-match':tag},body:JSON.stringify(next)});
+    }catch(cause){
+      const error=new Error('Firebase conditional write outcome is unknown; retry by reading current state');
+      error.uncertainWrite=true;
+      error.cause=cause;
+      throw error;
+    }
+    if(response.status===412)continue;
+    if(!response.ok)throw new Error(`Firebase conditional write failed (${response.status})`);
+    return{updated:true,value:next};
+  }
+  throw new Error('Firebase conditional update contention; retry later');
+}
+
 export function firebaseEntries(raw){
   if(Array.isArray(raw))return raw.map((value,index)=>[String(index),value]).filter(([,value])=>Boolean(value));
   return Object.entries(raw||{}).filter(([,value])=>Boolean(value));
