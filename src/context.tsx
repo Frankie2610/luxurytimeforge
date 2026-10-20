@@ -191,7 +191,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
   const refreshCritical=()=>{
    if(!active)return;
    const catalogRequest=(isHome
-    ?fetch('/api/storefront/home',{headers:{Accept:'application/json'}})
+    ?fetch('/api/meta?resource=home-feed',{headers:{Accept:'application/json'}})
       .then(async response=>{if(!response.ok)throw new Error('Home feed returned '+response.status);return (await response.json()).products as Product[]})
     :firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products')).then(value=>{
     if(!active)return;
