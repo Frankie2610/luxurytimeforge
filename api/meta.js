@@ -315,7 +315,7 @@ async function sendHomeFeed(req,res){
   const target=new URL(base+'/timeforge/products.json');
   target.searchParams.set('orderBy','"status"');
   target.searchParams.set('equalTo','"active"');
-  target.searchParams.set('limitToFirst','96');
+  target.searchParams.set('limitToFirst','320');
   if(process.env.FIREBASE_DATABASE_AUTH)target.searchParams.set('auth',process.env.FIREBASE_DATABASE_AUTH);
   try{
     const upstream=await fetchWithTimeout(target.toString(),{headers:{Accept:'application/json'}},6500);
@@ -344,7 +344,36 @@ async function sendHomeFeed(req,res){
         createdAt:clean(product.createdAt).slice(0,35),updatedAt:clean(product.updatedAt).slice(0,35)
       };
     };
-    const products=Object.entries(raw||{}).map(([key,value])=>homeProduct(value,key)).filter(Boolean).slice(0,48);
+    const candidates=Object.entries(raw||{}).map(([key,value])=>homeProduct(value,key)).filter(Boolean);
+    // Spread the home edit across brands and models. RTDB keys are SKU-sorted;
+    // simply taking the first 48 used to surface near-identical LOCMAN variants.
+    const buckets=new Map();
+    for(const product of candidates){
+      const brand=product.vendor||'Other';
+      const model=product.title.toLocaleLowerCase('vi').replace(/\\s+/g,' ').trim();
+      const key=brand+'|'+model;
+      if(!buckets.has(brand))buckets.set(brand,new Map());
+      const models=buckets.get(brand);
+      if(!models.has(key))models.set(key,[]);
+      models.get(key).push(product);
+    }
+    const brands=[...buckets.keys()];
+    const products=[];
+    const used=new Set();
+    for(let pass=0;pass<48&&products.length<48;pass++){
+      let added=false;
+      for(const brand of brands){
+        const models=buckets.get(brand);
+        const groups=[...models.values()].filter(group=>group.some(item=>!used.has(item.sku)));
+        if(!groups.length)continue;
+        const targetGroup=groups[pass%groups.length];
+        const next=targetGroup.find(item=>!used.has(item.sku));
+        if(!next)continue;
+        used.add(next.sku);products.push(next);added=true;
+        if(products.length===48)break;
+      }
+      if(!added)break;
+    }
     if(!products.length)return res.status(503).json({message:'Catalog not ready'});
     res.setHeader('Cache-Control','public, s-maxage=120, stale-while-revalidate=300');
     res.setHeader('X-TimeForge-Catalog-Scope','home-48');
