@@ -9,6 +9,6 @@ export default async function handler(req,res){
   }catch(error){
     const message=error instanceof Error?error.message:'Không thể tạo đơn hàng.';
     const config=/Firebase server credentials/i.test(message);
-    return res.status(config?501:400).json({message:config?'Firebase phía server chưa được cấu hình.':message});
+    return res.status(config?501:Number(error?.statusCode)||400).json({message:config?'Firebase phía server chưa được cấu hình.':message});
   }
 }
