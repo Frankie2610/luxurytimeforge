@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import {firebaseEntries,firebaseMultiPatch,firebaseRead,findOrder} from './firebase-rest.js';
+import {claimCheckout,finishCheckoutClaim,readCheckoutOrder,debitCheckoutProduct,restoreCheckoutProduct} from './checkout-atomic.js';
 
 const cleanText=(value,max=160)=>String(value||'').trim().slice(0,max);
 const safeInteger=(value)=>Number.isSafeInteger(Number(value))?Number(value):0;
@@ -104,8 +105,18 @@ function customerFromOrder(customerEntries,payload,total){
 export async function createVerifiedStorefrontOrder({payload,cart,requestId,requestContext={},memberSessionToken=''}){
   if(!payload||!Array.isArray(cart)||!cart.length||cart.length>50)throw new Error('Giỏ hàng không hợp lệ.');
   const id=safeRequestId(requestId);
-  const existing=await findOrder(id).catch(()=>null);
-  if(existing)return existing.order;
+  const existing=await readCheckoutOrder(id);
+  if(existing)return existing;
+  if(!await claimCheckout(id)){
+    const finished=await readCheckoutOrder(id);
+    if(finished)return finished;
+    const conflict=new Error('Yêu cầu đặt hàng này đang được xử lý hoặc cần đối soát. Vui lòng không gửi lại cùng mã đơn.');
+    conflict.statusCode=409;
+    throw conflict;
+  }
+  const completedDebits=[];
+  let orderCommitted=false;
+  try{
   const method=normalizePaymentMethod(payload.paymentMethod);
   // Validate and deduplicate cart identifiers before constructing Firebase paths.
   // Canonical TimeForge product.id === SKU (Firebase record key).
@@ -196,27 +207,44 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     grouped.push(line);
     linesByProduct.set(line.productKey,grouped);
   }
-  for(const[productKey,productLines]of linesByProduct){
-    const found=productEntries.find(([key])=>key===productKey);
-    if(!found)continue;
-    const original=found[1];
-    const product=structuredClone(original);
-    const quantitiesByVariant=new Map(productLines.map(line=>[line.variantId,line.quantity]));
-    const totalQuantity=productLines.reduce((sum,line)=>sum+line.quantity,0);
-    product.variants=(Array.isArray(product.variants)?product.variants:[]).map(variant=>{
-      const quantity=quantitiesByVariant.get(variant.id)||0;
-      return quantity?{...variant,inventory:Math.max(0,Number(variant.inventory||0)-quantity)}:variant;
-    });
-    product.inventory=Math.max(0,Number(product.inventory||0)-totalQuantity);
-    product.updatedAt=now;
-    updates[`timeforge/products/${productKey}`]=product;
-    for(const line of productLines){
-      const before=Number(original.variants?.find(item=>item.id===line.variantId)?.inventory??original.inventory??0);
+  // Each SKU is conditionally decremented under its current RTDB ETag.
+  // Stable key order avoids unnecessary contention between simultaneous carts.
+  for(const [productKey,productLines] of [...linesByProduct.entries()].sort(([a],[b])=>a.localeCompare(b))){
+    const debit=await debitCheckoutProduct(productKey,productLines);
+    completedDebits.push(debit);
+    for(const line of debit.lines){
       const adjustmentId=uid('adjustment');
-      updates[`timeforge/inventoryAdjustments/${adjustmentId}`]={id:adjustmentId,productId:line.productId,variantId:line.variantId,sku:line.sku,productTitle:line.title,delta:-line.quantity,before,after:Math.max(0,before-line.quantity),reason:'order',note:`Trừ kho cho ${order.number}`,createdAt:now,referenceId:id};
+      updates[`timeforge/inventoryAdjustments/${adjustmentId}`]={
+        id:adjustmentId,productId:line.productId,variantId:line.variantId,sku:line.sku,
+        productTitle:line.title,delta:-line.quantity,before:line.before,
+        after:Math.max(0,line.before-line.quantity),reason:'order',
+        note:`Trừ kho cho ${order.number}`,createdAt:now,referenceId:id
+      };
     }
   }
   if(promo.discount&&promo.key)updates[`timeforge/discounts/${promo.key}`]={...promo.discount,usageCount:Number(promo.discount.usageCount||0)+1};
   await firebaseMultiPatch(updates);
+  orderCommitted=true;
+  await finishCheckoutClaim(id,'completed').catch(error=>console.warn('[TimeForge] Checkout claim finalization failed:',error));
   return order;
+  }catch(error){
+    if(orderCommitted)throw error;
+    // On an ambiguous network error we must not blindly release the claim:
+    // the order write may have been applied despite the connection failure.
+    let hasOrder=false;
+    try{hasOrder=Boolean(await readCheckoutOrder(id))}catch{}
+    if(hasOrder){
+      await finishCheckoutClaim(id,'completed').catch(()=>{});
+      return readCheckoutOrder(id);
+    }
+    let rollbackFailed=false;
+    for(const debit of completedDebits.reverse()){
+      try{await restoreCheckoutProduct(debit)}catch(rollbackError){
+        rollbackFailed=true;
+        console.error('[TimeForge] Checkout stock compensation requires review:',id,rollbackError);
+      }
+    }
+    await finishCheckoutClaim(id,rollbackFailed?'requires_review':'failed',error?.message||'Checkout failed').catch(()=>{});
+    throw error;
+  }
 }
