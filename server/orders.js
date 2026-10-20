@@ -107,30 +107,14 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
   const existing=await findOrder(id).catch(()=>null);
   if(existing)return existing.order;
   const method=normalizePaymentMethod(payload.paymentMethod);
-  const[catalogRaw,discountRaw,integrationRaw,customersRaw,referralRaw,ordersRaw,holdsRaw,opportunitiesRaw]=await Promise.all([
-    firebaseRead('timeforge/products'),
-    firebaseRead('timeforge/discounts').catch(()=>({})),
-    firebaseRead('timeforge/settings/integrations').catch(()=>({})),
-    firebaseRead('timeforge/customers').catch(()=>({})),
-    firebaseRead('timeforge/settings/referral').catch(()=>({})),
-    firebaseRead('timeforge/orders').catch(()=>({})),
-    firebaseRead('timeforge/memberHolds').catch(()=>({})),
-    firebaseRead('timeforge/memberOpportunities').catch(()=>({})),
-  ]);
-  const memberSession=verifyMemberSession(memberSessionToken);
-  const activeHolds=firebaseEntries(holdsRaw).filter(([,hold])=>hold?.status==='active'&&Number(hold?.expiresAt)>Date.now());
-  const productEntries=firebaseEntries(catalogRaw);
-  const discountEntries=firebaseEntries(discountRaw);
-  const settings=normalizeIntegrations(integrationRaw||{});
-  const referralSettings=normalizeReferralSettings(referralRaw||{});
-  if(method==='cod'&&!settings.payment.cod)throw new Error('Thanh toán khi nhận hàng hiện đang tạm tắt.');
-  if(method==='bank_transfer'&&!settings.payment.bankTransfer)throw new Error('Chuyển khoản ngân hàng hiện đang tạm tắt.');
-  if(method==='payos'&&!settings.payment.online)throw new Error('Thanh toán PayOS hiện đang tạm tắt.');
+  // Validate and deduplicate cart identifiers before constructing Firebase paths.
+  // Canonical TimeForge product.id === SKU (Firebase record key).
   const mergedCart=[...cart.reduce((groups,line)=>{
     const productId=cleanText(line?.productId,120);
     const variantId=cleanText(line?.variantId,120);
     const quantity=safeInteger(line?.quantity);
-    if(!productId||quantity<1||quantity>99)throw new Error('Số lượng sản phẩm không hợp lệ.');
+    if(!productId||/[.#$\[\]\\/]/.test(productId))throw new Error('Mã sản phẩm không hợp lệ.');
+    if(!Number.isInteger(quantity)||quantity<1||quantity>99)throw new Error('Số lượng sản phẩm không hợp lệ.');
     const key=`${productId}::${variantId}`;
     const previous=groups.get(key);
     const mergedQuantity=(previous?.quantity||0)+quantity;
@@ -138,6 +122,29 @@ export async function createVerifiedStorefrontOrder({payload,cart,requestId,requ
     groups.set(key,{productId,variantId,quantity:mergedQuantity});
     return groups;
   },new Map()).values()];
+  const requestedProducts=[...new Set(mergedCart.map(line=>line.productId))];
+  if(requestedProducts.length>30)throw new Error('Giỏ hàng vượt số dòng sản phẩm cho phép.');
+  const memberSession=verifyMemberSession(memberSessionToken);
+  // Read exactly the ordered SKUs, not every product in the store.
+  // Referral history is only required for orders using a referral code.
+  const [productRecords,discountRaw,integrationRaw,customersRaw,referralRaw,ordersRaw,holdsRaw,opportunitiesRaw]=await Promise.all([
+    Promise.all(requestedProducts.map(async key=>[key,await firebaseRead(`timeforge/products/${key}`)])),
+    payload.discountCode?firebaseRead('timeforge/discounts').catch(()=>({})):Promise.resolve({}),
+    firebaseRead('timeforge/settings/integrations').catch(()=>({})),
+    firebaseRead('timeforge/customers').catch(()=>({})),
+    payload.referralCode?firebaseRead('timeforge/settings/referral').catch(()=>({})):Promise.resolve({}),
+    payload.referralCode?firebaseRead('timeforge/orders').catch(()=>({})):Promise.resolve({}),
+    firebaseRead('timeforge/memberHolds').catch(()=>({})),
+    memberSession?firebaseRead('timeforge/memberOpportunities').catch(()=>({})):Promise.resolve({}),
+  ]);
+  const activeHolds=firebaseEntries(holdsRaw).filter(([,hold])=>hold?.status==='active'&&Number(hold?.expiresAt)>Date.now());
+  const productEntries=productRecords.filter(([,product])=>Boolean(product));
+  const discountEntries=firebaseEntries(discountRaw);
+  const settings=normalizeIntegrations(integrationRaw||{});
+  const referralSettings=normalizeReferralSettings(referralRaw||{});
+  if(method==='cod'&&!settings.payment.cod)throw new Error('Thanh toán khi nhận hàng hiện đang tạm tắt.');
+  if(method==='bank_transfer'&&!settings.payment.bankTransfer)throw new Error('Chuyển khoản ngân hàng hiện đang tạm tắt.');
+  if(method==='payos'&&!settings.payment.online)throw new Error('Thanh toán PayOS hiện đang tạm tắt.');
   const lines=mergedCart.map((line,index)=>{
     const found=productEntries.find(([,product])=>product?.id===line.productId);
     if(!found)throw new Error('Sản phẩm không còn tồn tại.');
