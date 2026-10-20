@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import {PayOS} from '@payos/node';
-import {firebaseAppendUnique,firebaseEntries,firebasePatch,firebaseRead,firebaseWrite,findOrder} from './firebase-rest.js';
+import {firebaseAppendUnique,firebaseCompareAndSwap,firebaseEntries,firebaseRead,firebaseWrite,findOrder} from './firebase-rest.js';
 import {syncWarrantyForPaidOrder} from './warranty-automation.js';
 
 export const paymentSessionPath=(orderId)=>`timeforge/paymentSessions/${orderId}`;
@@ -125,20 +125,30 @@ export async function readPaymentSession(orderId){
 }
 
 export async function syncPaymentState({orderId,status,paymentLinkId,reference,orderCode,paidAt}){
-  const found=await findOrder(orderId);
-  if(!found)return{persisted:false};
+  const id=safeOrderId(orderId);
   const paymentStatus=mapPayOSStatus(status);
-  const patch={
-    paymentStatus,
-    paymentProvider:'payos',
-    paymentReference:reference||paymentLinkId||found.order.paymentReference||'',
-    paymentOrderCode:Number(orderCode)||found.order.paymentOrderCode||0,
-    updatedAt:new Date().toISOString(),
-    ...(paymentStatus==='paid'?{status:found.order.status==='open'?'confirmed':found.order.status,paidAt:paidAt||new Date().toISOString(),paymentConfirmationSource:'payos_webhook'}:{}),
-  };
-  await firebasePatch(`timeforge/orders/${found.key}`,patch);
-  if(paymentStatus==='paid')await syncWarrantyForPaidOrder(orderId).catch(error=>console.warn('[TimeForge] Warranty automation skipped:',error?.message||error));
-  return{persisted:true,order:{...found.order,...patch}};
+  const result=await firebaseCompareAndSwap(`timeforge/orders/${id}`,current=>{
+    if(!current)return null;
+    // Paid is terminal for payment accounting. Delayed failed/cancelled callbacks must
+    // never overwrite an already-paid order or create a duplicate warranty event.
+    if(current.paymentStatus==='paid')return null;
+    if(current.status==='cancelled'&&paymentStatus!=='paid')return null;
+    if(paymentStatus==='pending'&&current.paymentStatus==='pending')return null;
+    return {
+      ...current,paymentStatus,paymentProvider:'payos',
+      paymentReference:reference||paymentLinkId||current.paymentReference||'',
+      paymentOrderCode:Number(orderCode)||current.paymentOrderCode||0,
+      updatedAt:new Date().toISOString(),
+      ...(paymentStatus==='paid'?{
+        status:current.status==='open'?'confirmed':current.status,
+        paidAt:paidAt||new Date().toISOString(),paymentConfirmationSource:'payos_webhook'
+      }:{})
+    };
+  });
+  if(!result.value)return{persisted:false};
+  if(paymentStatus==='paid'&&result.value.paymentStatus==='paid')
+    await syncWarrantyForPaidOrder(id).catch(error=>console.warn('[TimeForge] Warranty automation skipped:',error?.message||error));
+  return{persisted:true,changed:result.updated,order:result.value};
 }
 
 export async function savePaymentSession(orderId,session){
