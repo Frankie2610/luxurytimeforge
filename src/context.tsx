@@ -104,11 +104,13 @@ const NewsletterActionsC=createContext<NewsletterActions|null>(null);
 export function CommerceProvider({children}:{children:ReactNode}){
  const{user,loading:authLoading}=useAuth();
  const location=useLocation();
+ const isPagedCollectionRoute=location.pathname==='/collections'||location.pathname.startsWith('/collections/');
  const protectedLoadedRef=useRef(new Set<string>());
  const protectedInFlightRef=useRef(new Set<string>());
  const protectedSessionRef=useRef(user?.uid||'');
  protectedSessionRef.current=user?.uid||'';
  const[products,setProducts]=useState<Product[]>(()=>productsFromFirebase(load<Product[]>(K.p,[])));
+ const[transientProducts,setTransientProducts]=useState<Product[]>([]);
  const[collections,setCollections]=useState(()=>normalizeCollections(load(K.c,seedCollections)));
  const[productGroups,setProductGroups]=useState<ProductGroup[]>(()=>asList<ProductGroup>(load(K.groups,[])));
  const[customers,setCustomers]=useState<Customer[]>(()=>seedCustomers);
@@ -125,13 +127,23 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const[storeProfile,setStoreProfile]=useState<StoreProfile>(()=>normalizeStoreProfile(load<StoreProfile>(K.profile,storeProfileFromTheme(themeState.published)),storeProfileFromTheme(themeState.published)));
  const[previewTheme,setPreviewTheme]=useState<Theme|null>(()=>isThemePreviewV26()?readThemePreviewV26():null);
  const[headers,setHeaders]=useState<string[]>(()=>load(K.headers,[]));
- const[isLoading,setIsLoading]=useState(()=>firebaseClient.enabled&&products.length===0);
- const[dataSource,setDataSource]=useState<CommerceDataSource>(()=>firebaseClient.enabled?(products.length?'local':'loading'):'local');
+ const[isLoading,setIsLoading]=useState(()=>firebaseClient.enabled&&products.length===0&&!isPagedCollectionRoute);
+ const[dataSource,setDataSource]=useState<CommerceDataSource>(()=>firebaseClient.enabled?(products.length?'local':isPagedCollectionRoute?'local':'loading'):'local');
  const[dataError,setDataError]=useState('');
 
- // The lean 48-product home feed is only a presentation cache. Never let it
- // overwrite the persistent full catalog used by collection/search/product routes.
- useIdleLocalStorage(K.p,products,products.length>0 && location.pathname!=='/' && location.pathname!=='/home' && !location.pathname.startsWith('/admin'));
+ useEffect(()=>{
+  const receive=(event:Event)=>{
+   const incoming=productsFromFirebase((event as CustomEvent<Product[]>).detail||[]);
+   if(!incoming.length)return;
+   setTransientProducts(current=>{const map=new Map(current.map(product=>[product.id,product]));incoming.forEach(product=>map.set(product.id,product));return[...map.values()].slice(-480)});
+  };
+  window.addEventListener('timeforge:paged-products',receive as EventListener);
+  return()=>window.removeEventListener('timeforge:paged-products',receive as EventListener);
+ },[]);
+ const sessionProducts=useMemo(()=>{if(!transientProducts.length)return products;const map=new Map(products.map(product=>[product.id,product]));transientProducts.forEach(product=>map.set(product.id,product));return[...map.values()]},[products,transientProducts]);
+
+ // Lean home/collection pages are presentation data only. Never persist them as the full catalog cache.
+ useIdleLocalStorage(K.p,products,products.length>0 && location.pathname!=='/' && location.pathname!=='/home' && !isPagedCollectionRoute && !location.pathname.startsWith('/admin'));
  useEffect(()=>{for(const key of [K.u,K.newsletter,K.orders,K.adjustments,K.activities]){try{localStorage.removeItem(key)}catch{}}},[]);
  useIdleLocalStorage(K.c,collections);
  useIdleLocalStorage(K.groups,productGroups);
@@ -148,21 +160,21 @@ export function CommerceProvider({children}:{children:ReactNode}){
  useEffect(()=>{if(!isThemePreviewV26())return;const sync=()=>setPreviewTheme(readThemePreviewV26());const storage=(event:StorageEvent)=>{if(event.key===THEME_PREVIEW_KEY_V26)sync()};window.addEventListener('storage',storage);window.addEventListener(THEME_PREVIEW_UPDATED_V26,sync);return()=>{window.removeEventListener('storage',storage);window.removeEventListener(THEME_PREVIEW_UPDATED_V26,sync)}},[]);
  useIdleLocalStorage(K.headers,headers);
 
- /* Public storefront uses stale-while-revalidate: a verified local catalog is
-    painted immediately. Critical catalog/layout data gets the first network turn;
-    reviews, discounts and product-family metadata hydrate afterward during idle time. */
+ /* Public storefront uses stale-while-revalidate. Collection routes own their
+    paged product request and only hydrate layout/facets here, so the browser never
+    downloads the complete catalog merely to render one collection page. */
  useEffect(()=>{
   if(!firebaseClient.enabled){setIsLoading(false);return;}
   let active=true;
   let cancelCritical:undefined|(()=>void);
   let cancelSecondary:undefined|(()=>void);
   const isHome=location.pathname==='/' || location.pathname==='/home';
-  const cachedFullCatalog=!isHome?productsFromFirebase(load<Product[]>(K.p,[])):[];
-  const hasCachedCatalog=isHome?products.length>0:(products.length>48||cachedFullCatalog.length>48);
-  // Returning from the lean homepage should repaint the full cached catalog
-  // immediately while Firebase refreshes it in the background.
-  if(!isHome&&cachedFullCatalog.length>48&&cachedFullCatalog.length>products.length)setProducts(cachedFullCatalog);
-  if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
+  const isCollection=isPagedCollectionRoute;
+  const cachedFullCatalog=!isHome&&!isCollection?productsFromFirebase(load<Product[]>(K.p,[])):[];
+  const hasCachedCatalog=isCollection?true:isHome?products.length>0:(products.length>48||cachedFullCatalog.length>48);
+  if(!isHome&&!isCollection&&cachedFullCatalog.length>48&&cachedFullCatalog.length>products.length)setProducts(cachedFullCatalog);
+  if(isCollection){setIsLoading(false);setDataSource(products.length?'local':'firebase')}
+  else if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
   else{setIsLoading(false);setDataSource('local')}
   setDataError('');
 
@@ -197,7 +209,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
 
   const refreshCritical=()=>{
    if(!active)return;
-   const catalogRequest=(isHome
+   const catalogRequest=isCollection?Promise.resolve():(isHome
     ?fetch('/api/meta?resource=home-feed',{headers:{Accept:'application/json'}})
       .then(async response=>{if(!response.ok)throw new Error('Home feed returned '+response.status);return (await response.json()).products as Product[]})
     :firebaseClient.read<Product[]|Record<string,Product>>('timeforge/products')).then(value=>{
@@ -239,7 +251,7 @@ export function CommerceProvider({children}:{children:ReactNode}){
   else refreshCritical();
 
   return()=>{active=false;cancelCritical?.();cancelSecondary?.()};
- },[location.pathname]);
+ },[location.pathname,isPagedCollectionRoute]);
 
  /* Protected Admin datasets hydrate only when the current screen needs them.
     The order feed is handled by the realtime subscription below, so it is not
@@ -321,10 +333,10 @@ export function CommerceProvider({children}:{children:ReactNode}){
   setThemeState(cur=>({...cur,draft:applyStoreProfileToTheme(cur.draft,nextProfile),published:applyStoreProfileToTheme(cur.published,nextProfile),publishedAt:new Date().toISOString()}));
   log('theme','store-profile','Cập nhật thông tin cửa hàng',nextProfile.storeName);
  };
- const addToCart=useCallback((pid:string,vid:string,q=1)=>setCart(cur=>{const product=products.find(x=>x.id===pid);const variant=product?.variants.find(x=>x.id===vid)||product?.variants[0];const available=variant?.inventory??product?.inventory??0;if(!product||available<=0||q<=0)return cur;const resolvedVariantId=variant?.id||vid;const found=cur.find(x=>x.productId===pid&&x.variantId===resolvedVariantId);const nextQuantity=Math.min(available,(found?.quantity||0)+q);return found?cur.map(x=>x===found?{...x,quantity:nextQuantity}:x):[...cur,{productId:pid,variantId:resolvedVariantId,quantity:Math.min(available,q)}]}),[products]);
- const updateCart=useCallback((pid:string,vid:string,q:number)=>setCart(cur=>{if(q<=0)return cur.filter(x=>!(x.productId===pid&&x.variantId===vid));const product=products.find(x=>x.id===pid);const variant=product?.variants.find(x=>x.id===vid)||product?.variants[0];const available=variant?.inventory??product?.inventory??0;if(available<=0)return cur.filter(x=>!(x.productId===pid&&x.variantId===vid));return cur.map(x=>x.productId===pid&&x.variantId===vid?{...x,quantity:Math.min(q,available)}:x)}),[products]);
+ const addToCart=useCallback((pid:string,vid:string,q=1)=>setCart(cur=>{const product=sessionProducts.find(x=>x.id===pid);const variant=product?.variants.find(x=>x.id===vid)||product?.variants[0];const available=variant?.inventory??product?.inventory??0;if(!product||available<=0||q<=0)return cur;const resolvedVariantId=variant?.id||vid;const found=cur.find(x=>x.productId===pid&&x.variantId===resolvedVariantId);const nextQuantity=Math.min(available,(found?.quantity||0)+q);return found?cur.map(x=>x===found?{...x,quantity:nextQuantity}:x):[...cur,{productId:pid,variantId:resolvedVariantId,quantity:Math.min(available,q)}]}),[sessionProducts]);
+ const updateCart=useCallback((pid:string,vid:string,q:number)=>setCart(cur=>{if(q<=0)return cur.filter(x=>!(x.productId===pid&&x.variantId===vid));const product=sessionProducts.find(x=>x.id===pid);const variant=product?.variants.find(x=>x.id===vid)||product?.variants[0];const available=variant?.inventory??product?.inventory??0;if(available<=0)return cur.filter(x=>!(x.productId===pid&&x.variantId===vid));return cur.map(x=>x.productId===pid&&x.variantId===vid?{...x,quantity:Math.min(q,available)}:x)}),[sessionProducts]);
  const clearCart=useCallback(()=>setCart([]),[]);
- const collectionProducts=useCallback((c:Collection)=>resolvesCollectionProducts(c,products),[products]);
+ const collectionProducts=useCallback((c:Collection)=>resolvesCollectionProducts(c,sessionProducts),[sessionProducts]);
 
  const evaluateDiscount=(code:string,subtotal:number,shipping=0):DiscountEvaluation=>{const normalized=code.trim().toUpperCase();if(!normalized)return{valid:false,message:'Nhập mã giảm giá.',amount:0,shippingDiscount:0};const d=discounts.find(x=>x.code.toUpperCase()===normalized);if(!d||!d.active)return{valid:false,message:'Mã giảm giá không tồn tại hoặc đã tắt.',amount:0,shippingDiscount:0};const now=Date.now();if(d.startsAt&&new Date(d.startsAt).getTime()>now)return{valid:false,message:'Mã giảm giá chưa bắt đầu.',amount:0,shippingDiscount:0};if(d.endsAt&&new Date(d.endsAt).getTime()<now)return{valid:false,message:'Mã giảm giá đã hết hạn.',amount:0,shippingDiscount:0};if(d.usageLimit>0&&d.usageCount>=d.usageLimit)return{valid:false,message:'Mã giảm giá đã hết lượt sử dụng.',amount:0,shippingDiscount:0};if(subtotal<d.minimumSubtotal)return{valid:false,message:`Đơn hàng chưa đạt mức tối thiểu ${d.minimumSubtotal.toLocaleString('vi-VN')}đ.`,amount:0,shippingDiscount:0};const amount=d.type==='percentage'?Math.min(subtotal,Math.round(subtotal*d.value/100)):d.type==='fixed_amount'?Math.min(subtotal,d.value):0;const shippingDiscount=d.type==='free_shipping'?shipping:0;return{valid:true,message:`Đã áp dụng ${d.code}.`,discount:d,amount,shippingDiscount}};
  const saveDiscount=(d:Discount)=>setDiscounts(cur=>{const exists=cur.some(x=>x.id===d.id),n=exists?cur.map(x=>x.id===d.id?d:x):[d,...cur];sync('timeforge/discounts',n);log('discount',d.id,exists?'Cập nhật mã giảm giá':'Tạo mã giảm giá',d.code);return n});
@@ -417,13 +429,13 @@ export function CommerceProvider({children}:{children:ReactNode}){
  };
  const adjustInventory=(productId:string,variantId:string,delta:number,note:string)=>{const p=products.find(x=>x.id===productId);if(!p||!delta)return;const v=p.variants.find(x=>x.id===variantId)||p.variants[0],before=v?.inventory??p.inventory,after=Math.max(0,before+delta);const nextProducts=products.map(x=>x.id!==productId?x:{...x,inventory:Math.max(0,x.inventory+delta),variants:x.variants.map(y=>y.id===(v?.id||variantId)?{...y,inventory:after}:y),updatedAt:new Date().toISOString()});const adjustment:InventoryAdjustment={id:uid('adjustment'),productId,variantId:v?.id||variantId,sku:v?.sku||p.sku,productTitle:p.title,delta,before,after,reason:'manual',note:note||'Điều chỉnh thủ công',createdAt:new Date().toISOString(),referenceId:''};const nextAdjustments=[adjustment,...adjustments];setProducts(nextProducts);setAdjustments(nextAdjustments);syncProducts(nextProducts);sync('timeforge/inventoryAdjustments',nextAdjustments);log('inventory',productId,'Điều chỉnh tồn kho',`${p.title}: ${delta>0?'+':''}${delta}`)};
 
- const reset=()=>{Object.values(K).forEach(k=>localStorage.removeItem(k));const freshTheme=createThemeState();setProducts([]);setCollections(seedCollections);setProductGroups([]);setCustomers(seedCustomers);setNewsletterSubscribers([]);setReviews([]);setCart([]);setOrders(seedOrders);setDiscounts(seedDiscounts);setAdjustments(seedAdjustments);setActivities(seedActivities);setThemeState(freshTheme);setStoreProfile(storeProfileFromTheme(freshTheme.published));setHeaders([]);void import('./seed').then(({seed})=>setProducts(seed.products))};
+ const reset=()=>{Object.values(K).forEach(k=>localStorage.removeItem(k));const freshTheme=createThemeState();setProducts([]);setTransientProducts([]);setCollections(seedCollections);setProductGroups([]);setCustomers(seedCustomers);setNewsletterSubscribers([]);setReviews([]);setCart([]);setOrders(seedOrders);setDiscounts(seedDiscounts);setAdjustments(seedAdjustments);setActivities(seedActivities);setThemeState(freshTheme);setStoreProfile(storeProfileFromTheme(freshTheme.published));setHeaders([]);void import('./seed').then(({seed})=>setProducts(seed.products))};
  const activeTheme=useMemo(()=>previewTheme||applyStoreProfileToTheme(themeState.published,storeProfile),[previewTheme,themeState.published,storeProfile]);
  const draftTheme=useMemo(()=>applyStoreProfileToTheme(themeState.draft,storeProfile),[themeState.draft,storeProfile]);
  const value=useMemo(()=>({products,collections,productGroups,customers,newsletterSubscribers,reviews,orders,discounts,adjustments,activities,theme:activeTheme,draftTheme,themeState,storeProfile,headers,firebaseEnabled:firebaseClient.enabled,isLoading,dataSource,dataError,setHeaders,saveProduct,deleteProducts,replaceProducts,mergeProducts,saveCollection,deleteCollection,saveProductGroup,replaceProductGroups,deleteProductGroup,saveCustomer,subscribeNewsletter,updateNewsletterSubscriber,deleteNewsletterSubscriber,saveReview,deleteReview,saveThemeDraft,publishTheme,restoreThemeVersion,saveStoreProfile,evaluateDiscount,saveDiscount,deleteDiscount,createOrder,submitStorefrontOrder,createAdminOrder,updateOrder,cancelOrder,adjustInventory,reset,collectionProducts}),[products,collections,productGroups,customers,newsletterSubscribers,reviews,orders,discounts,adjustments,activities,activeTheme,draftTheme,themeState,storeProfile,headers,isLoading,dataSource,dataError,collectionProducts]);
  const cartActions=useMemo<CartActions>(()=>({addToCart,updateCart,clearCart}),[addToCart,updateCart,clearCart]);
- const productCatalog=useMemo<ProductCatalogContextValue>(()=>({products,productGroups}),[products,productGroups]);
- const storefrontData=useMemo<StorefrontDataContextValue>(()=>({products,collections,productGroups,theme:activeTheme,storeProfile,isLoading,dataError,collectionProducts}),[products,collections,productGroups,activeTheme,storeProfile,isLoading,dataError,collectionProducts]);
+ const productCatalog=useMemo<ProductCatalogContextValue>(()=>({products:sessionProducts,productGroups}),[sessionProducts,productGroups]);
+ const storefrontData=useMemo<StorefrontDataContextValue>(()=>({products:sessionProducts,collections,productGroups,theme:activeTheme,storeProfile,isLoading,dataError,collectionProducts}),[sessionProducts,collections,productGroups,activeTheme,storeProfile,isLoading,dataError,collectionProducts]);
  const productSales=useMemo<ProductSalesContextValue>(()=>{const counts=new Map<string,number>();orders.forEach(order=>{if(order.status==='cancelled')return;order.lines.forEach(line=>counts.set(line.productId,(counts.get(line.productId)||0)+line.quantity))});return counts},[orders]);
  const newsletterActions=useMemo<NewsletterActions>(()=>({subscribeNewsletter}),[newsletterSubscribers,customers]);
  return <C.Provider value={value}><StorefrontDataC.Provider value={storefrontData}><ProductCatalogC.Provider value={productCatalog}><ProductSalesC.Provider value={productSales}><StoreReviewsC.Provider value={reviews}><NewsletterActionsC.Provider value={newsletterActions}><CartActionsC.Provider value={cartActions}><CartStateC.Provider value={cart}>{children}</CartStateC.Provider></CartActionsC.Provider></NewsletterActionsC.Provider></StoreReviewsC.Provider></ProductSalesC.Provider></ProductCatalogC.Provider></StorefrontDataC.Provider></C.Provider>
