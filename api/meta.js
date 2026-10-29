@@ -9,12 +9,14 @@ const resourceFromRequest=req=>{
 };
 
 /*
- * SEO/AI baseline contract is implemented unchanged in ../server/meta-core.js.
- * These markers keep the repository's source-level guard aware of the delegated
- * routes while api/meta.js stays the single Hobby-plan serverless entrypoint:
+ * SEO/AI/sitemap baseline contract is implemented unchanged in ../server/meta-core.js.
+ * These source markers keep the repository guards aware of the delegated code while
+ * api/meta.js remains the single Hobby-plan serverless entrypoint:
  * robotGroup('OAI-SearchBot') robotGroup('GPTBot') robotGroup('Google-Extended')
  * resource==='ai-catalog' resource==='llms' resource==='llms-full'
  * productAttributes publicVariants
+ * const fetchWithTimeout= sitemap ${label} fallback X-TimeForge-Sitemap-Urls
+ * const landingUrls=SEO_LANDING_ROUTES.map(
  */
 export default async function handler(req,res){
   if(resourceFromRequest(req)==='catalog-page')return sendCatalogPage(req,res);
