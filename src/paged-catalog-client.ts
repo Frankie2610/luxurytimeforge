@@ -25,10 +25,11 @@ const ALLOWED_QUERY_KEYS=new Set(['brand','price','stock','gender','discount','f
 
 const buildCatalogPageUrl=(handle:string|undefined,params:URLSearchParams,pageSize:number)=>{
   const query=new URLSearchParams();
+  query.set('resource','catalog-page');
   if(handle)query.set('handle',handle);
   for(const [key,value] of params.entries())if(ALLOWED_QUERY_KEYS.has(key)&&value.trim())query.append(key,value.trim());
   query.set('limit',String(Math.max(24,Math.min(48,Math.round(pageSize)||48))));
-  return `/api/catalog-page?${query.toString()}`;
+  return `/api/meta?${query.toString()}`;
 };
 
 export async function fetchCatalogPage(handle:string|undefined,params:URLSearchParams,pageSize=48):Promise<PagedCatalogResponse>{
