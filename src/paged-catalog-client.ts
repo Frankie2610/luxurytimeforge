@@ -60,6 +60,5 @@ export async function fetchCatalogPage(handle:string|undefined,params:URLSearchP
   return promise;
 }
 
-export const prefetchCatalogPage=(handle:string|undefined,params:URLSearchParams,pageSize=48)=>{
-  void fetchCatalogPage(handle,params,pageSize).catch(()=>{});
-};
+// Intentionally no-op: collection pages only request the page the customer opens.
+export const prefetchCatalogPage=(_handle:string|undefined,_params:URLSearchParams,_pageSize=48)=>{};
