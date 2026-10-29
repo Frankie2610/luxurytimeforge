@@ -8,7 +8,7 @@ import {optimizedImage} from './image-utils';
 
 const StoreLayout=lazy(()=>import('./storefront-v10').then(m=>({default:m.StoreLayoutV10})));
 const Home=lazy(()=>import('./storefront-v10').then(m=>({default:m.HomeV10})));
-const CollectionPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.CollectionPageV10})));
+const CollectionPage=lazy(()=>import('./collection-page-paged-v671').then(m=>({default:m.CollectionPagePagedV671})));
 const ProductPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.ProductPageV10})));
 const SearchPage=lazy(()=>import('./storefront-v10').then(m=>({default:m.SearchPageV10})));
 const WishlistPageV53=lazy(()=>import('./wishlist-page-v53').then(m=>({default:m.WishlistPageV53})));
@@ -64,7 +64,6 @@ const SeoLandingPageV657=lazy(()=>import('./seo-landing-v657').then(m=>({default
 const ReferralLandingV68=lazy(()=>import('./referral-landing-v68').then(m=>({default:m.ReferralLandingV68})));
 const ReferralAdminV68=lazy(()=>import('./referral-admin-v68').then(m=>({default:m.ReferralAdminV68})));
 
-
 function AdminRouteLoading(){return <div className="tf-admin-boot" aria-label="Đang tải trang quản trị" aria-busy="true"><div className="tf-admin-boot-bar"/><div className="tf-admin-boot-shell"><aside><i/><i/><i/><i/><i/></aside><main><header><i/><i/></header><section><i/><i/><div><i/><i/><i/></div></section></main></div></div>}
 function RouteLoading(){const{storeProfile}=useStorefrontData();const adminRoute=typeof window!=='undefined'&&window.location.pathname.startsWith('/admin');if(adminRoute)return <AdminRouteLoading/>;return <div className="route-loading" aria-label="Đang tải trang" aria-busy="true"><div className="route-loading-bar"/><div className="route-loading-brand"><img src={optimizedImage(resolveStoreLogo(storeProfile.logoImage),180,180,'fit')} alt="" aria-hidden="true"/><i/><b>Đang tải {resolveStoreName(storeProfile.storeName)}</b></div></div>}
 
@@ -78,8 +77,6 @@ function StoreIdentityHeadSync(){
   if(!faviconLinks.length){const favicon=document.createElement('link');favicon.rel='icon';document.head.appendChild(favicon);faviconLinks=[favicon];}
   faviconLinks.forEach(link=>{
    link.href=faviconHref;
-   // The static fallback is SVG, while the Firebase/Cloudinary logo may be PNG/JPG/WebP.
-   // Removing the stale MIME declaration lets the browser detect the uploaded logo correctly.
    if(customLogo)link.removeAttribute('type');else link.type='image/svg+xml';
   });
   let touchLinks=[...document.querySelectorAll<HTMLLinkElement>('link[rel="apple-touch-icon"]')];
