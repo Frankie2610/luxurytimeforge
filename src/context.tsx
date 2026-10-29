@@ -129,7 +129,9 @@ export function CommerceProvider({children}:{children:ReactNode}){
  const[dataSource,setDataSource]=useState<CommerceDataSource>(()=>firebaseClient.enabled?(products.length?'local':'loading'):'local');
  const[dataError,setDataError]=useState('');
 
- useIdleLocalStorage(K.p,products,products.length>0 && !location.pathname.startsWith('/admin'));
+ // The lean 48-product home feed is only a presentation cache. Never let it
+ // overwrite the persistent full catalog used by collection/search/product routes.
+ useIdleLocalStorage(K.p,products,products.length>0 && location.pathname!=='/' && location.pathname!=='/home' && !location.pathname.startsWith('/admin'));
  useEffect(()=>{for(const key of [K.u,K.newsletter,K.orders,K.adjustments,K.activities]){try{localStorage.removeItem(key)}catch{}}},[]);
  useIdleLocalStorage(K.c,collections);
  useIdleLocalStorage(K.groups,productGroups);
@@ -155,7 +157,11 @@ export function CommerceProvider({children}:{children:ReactNode}){
   let cancelCritical:undefined|(()=>void);
   let cancelSecondary:undefined|(()=>void);
   const isHome=location.pathname==='/' || location.pathname==='/home';
-  const hasCachedCatalog=products.length>0;
+  const cachedFullCatalog=!isHome?productsFromFirebase(load<Product[]>(K.p,[])):[];
+  const hasCachedCatalog=isHome?products.length>0:(products.length>48||cachedFullCatalog.length>48);
+  // Returning from the lean homepage should repaint the full cached catalog
+  // immediately while Firebase refreshes it in the background.
+  if(!isHome&&cachedFullCatalog.length>48&&cachedFullCatalog.length>products.length)setProducts(cachedFullCatalog);
   if(!hasCachedCatalog){setIsLoading(true);setDataSource('loading')}
   else{setIsLoading(false);setDataSource('local')}
   setDataError('');
